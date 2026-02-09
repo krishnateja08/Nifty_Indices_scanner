@@ -134,7 +134,8 @@ sectors_config = {
         "ticker": "^CNXAUTO",
         "stocks": {
             "MARUTI.NS": {"weight": 20.0, "industry": "Passenger Vehicles"},
-            "TATAMOTORS.NS": {"weight": 15.0, "industry": "Commercial Vehicles"},
+            "TMCV.NS": {"weight": 15.0, "industry": "Commercial Vehicles"},
+            "TMPV.NS": {"weight": 15.0, "industry": "Commercial Vehicles"},
             "M&M.NS": {"weight": 12.0, "industry": "SUVs & Tractors"},
             "BAJAJ-AUTO.NS": {"weight": 10.0, "industry": "Two Wheelers"},
             "HEROMOTOCO.NS": {"weight": 9.0, "industry": "Two Wheelers"},
