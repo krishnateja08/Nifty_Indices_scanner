@@ -1,16 +1,24 @@
-name: NIFTY Indices  Stock Analyzer
+name: Market Intelligence Scanner
 
 on:
-  push:
-    branches: [ main ]
   schedule:
-    - cron: '0 4 * * *'
-    - cron: '0 11 * * *'
+    # Run at 9:30 AM IST (4:00 AM UTC)
+    # IST = UTC + 5:30, so 9:30 AM IST = 4:00 AM UTC
+    - cron: '0 4 * * 1-5'
+    
+    # Run at 4:40 PM IST (11:10 AM UTC)
+    # IST = UTC + 5:30, so 4:40 PM IST = 11:10 AM UTC
+    - cron: '10 11 * * 1-5'
+  
+  # Allow manual trigger from GitHub Actions tab
   workflow_dispatch:
 
 jobs:
-  analyze-stocks:
+  market-analysis:
     runs-on: ubuntu-latest
+    
+    # Set timeout to 15 minutes (default is 360)
+    timeout-minutes: 15
     
     steps:
     - name: Checkout repository
@@ -19,31 +27,36 @@ jobs:
     - name: Set up Python
       uses: actions/setup-python@v5
       with:
-        python-version: '3.10'
+        python-version: '3.11'
+        cache: 'pip'
     
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install yfinance pandas numpy tabulate openpyxl twilio
+        pip install yfinance pandas numpy pytz twilio tabulate
     
-    - name: Run stock analyzer
-      env:
-        # Email Secrets
-        GMAIL_USER: ${{ secrets.GMAIL_USER }}
-        GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
-        RECIPIENT_EMAIL: ${{ secrets.RECIPIENT_EMAIL }}
-        # Twilio Secrets (Added these so Twilio can actually authenticate)
-        TWILIO_ACCOUNT_SID: ${{ secrets.TWILIO_ACCOUNT_SID }}
-        TWILIO_AUTH_TOKEN: ${{ secrets.TWILIO_AUTH_TOKEN }}
-        TWILIO_FROM_NUMBER: ${{ secrets.TWILIO_FROM_NUMBER }}
-        TWILIO_TO_NUMBER: ${{ secrets.TWILIO_TO_NUMBER }}
+    - name: Display IST Time
       run: |
-        python Nifty_indices_scanner.py
+        echo "🕒 Current UTC Time: $(date -u)"
+        echo "🕒 Current IST Time: $(TZ='Asia/Kolkata' date)"
     
-    - name: Upload Excel report as artifact
-      if: always() 
+    - name: Run Market Intelligence Scanner
+      env:
+        GMAIL_USER: ${{ secrets.GMAIL_USER }}
+        GMAIL_APP_PASS: ${{ secrets.GMAIL_APP_PASS }}
+        RECEIVER_EMAIL: ${{ secrets.RECEIVER_EMAIL }}
+        TWILIO_SID: ${{ secrets.TWILIO_SID }}
+        TWILIO_AUTH_TOKEN: ${{ secrets.TWILIO_AUTH_TOKEN }}
+        TWILIO_FROM: ${{ secrets.TWILIO_FROM }}
+        TWILIO_TO: ${{ secrets.TWILIO_TO }}
+      run: |
+        python market_intelligence_final.py
+    
+    - name: Upload execution logs (if failed)
+      if: failure()
       uses: actions/upload-artifact@v4
       with:
-        name: nifty50-report
-        path: Nifty_indices_scanner.xlsx
+        name: error-logs-${{ github.run_number }}
+        path: |
+          *.log
         retention-days: 7
