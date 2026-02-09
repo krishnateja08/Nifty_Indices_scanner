@@ -1,5 +1,4 @@
-
-name: NIFTY 50 Stock Analyzer
+name: NIFTY Indices  Stock Analyzer
 
 on:
   push:
@@ -21,20 +20,24 @@ jobs:
       uses: actions/setup-python@v5
       with:
         python-version: '3.10'
-        # Removed the cache option to stop the requirement.txt warning
     
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install yfinance pandas numpy tabulate openpyxl
+        pip install yfinance pandas numpy tabulate openpyxl twilio
     
     - name: Run stock analyzer
       env:
+        # Email Secrets
         GMAIL_USER: ${{ secrets.GMAIL_USER }}
         GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
         RECIPIENT_EMAIL: ${{ secrets.RECIPIENT_EMAIL }}
+        # Twilio Secrets (Added these so Twilio can actually authenticate)
+        TWILIO_ACCOUNT_SID: ${{ secrets.TWILIO_ACCOUNT_SID }}
+        TWILIO_AUTH_TOKEN: ${{ secrets.TWILIO_AUTH_TOKEN }}
+        TWILIO_FROM_NUMBER: ${{ secrets.TWILIO_FROM_NUMBER }}
+        TWILIO_TO_NUMBER: ${{ secrets.TWILIO_TO_NUMBER }}
       run: |
-        # Ensure this filename exactly matches your file in GitHub!
         python Nifty_indices_scanner.py
     
     - name: Upload Excel report as artifact
