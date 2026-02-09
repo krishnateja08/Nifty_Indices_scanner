@@ -1,0 +1,46 @@
+
+name: NIFTY 50 Stock Analyzer
+
+on:
+  push:
+    branches: [ main ]
+  schedule:
+    - cron: '0 4 * * *'
+    - cron: '0 11 * * *'
+  workflow_dispatch:
+
+jobs:
+  analyze-stocks:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+    
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.10'
+        # Removed the cache option to stop the requirement.txt warning
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install yfinance pandas numpy tabulate openpyxl
+    
+    - name: Run stock analyzer
+      env:
+        GMAIL_USER: ${{ secrets.GMAIL_USER }}
+        GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
+        RECIPIENT_EMAIL: ${{ secrets.RECIPIENT_EMAIL }}
+      run: |
+        # Ensure this filename exactly matches your file in GitHub!
+        python Nifty_indices_scanner.py
+    
+    - name: Upload Excel report as artifact
+      if: always() 
+      uses: actions/upload-artifact@v4
+      with:
+        name: nifty50-report
+        path: Nifty_indices_scanner.xlsx
+        retention-days: 7
