@@ -37,6 +37,7 @@ GREEN = "\033[92m"
 YELLOW = "\033[93m"
 CYAN = "\033[96m"
 BLUE = "\033[94m"
+MAGENTA = "\033[95m"
 RESET = "\033[0m"
 
 # --- Enhanced Sector Config with Industry Classification ---
