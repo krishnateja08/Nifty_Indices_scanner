@@ -50,7 +50,7 @@ jobs:
         TWILIO_FROM: ${{ secrets.TWILIO_FROM }}
         TWILIO_TO: ${{ secrets.TWILIO_TO }}
       run: |
-        python market_intelligence_final.py
+        python Nifty_indices_scanner.py
     
     - name: Upload execution logs (if failed)
       if: failure()
