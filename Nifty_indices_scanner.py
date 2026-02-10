@@ -24,6 +24,12 @@ TWILIO_AUTH_TOKEN = os.getenv('TWILIO_AUTH_TOKEN')
 TWILIO_FROM = os.getenv('TWILIO_FROM', 'whatsapp:+14155238886')
 TWILIO_TO = os.getenv('TWILIO_TO', 'whatsapp:+17372876924')
 
+# --- GitHub Actions Run Link (auto-populated by GitHub Actions environment) ---
+GITHUB_SERVER_URL = os.getenv('GITHUB_SERVER_URL', 'https://github.com')
+GITHUB_REPOSITORY = os.getenv('GITHUB_REPOSITORY', '')
+GITHUB_RUN_ID = os.getenv('GITHUB_RUN_ID', '')
+GITHUB_RUN_LINK = f"{GITHUB_SERVER_URL}/{GITHUB_REPOSITORY}/actions/runs/{GITHUB_RUN_ID}" if GITHUB_REPOSITORY and GITHUB_RUN_ID else ''
+
 # --- Suppress all yfinance console output ---
 @contextlib.contextmanager
 def suppress_stdout():
@@ -368,9 +374,28 @@ def fetch_market_data(ticker, period="3mo"):
     except Exception as e:
         return None
 
-def generate_executive_html_report(sector_analysis, bullish_sectors, ist_time):
+def generate_executive_html_report(sector_analysis, bullish_sectors, ist_time, github_run_link=''):
     """Generate executive-level HTML report with advanced styling"""
     
+    # --- GitHub Actions Run Link Banner (only shown if link is available) ---
+    github_banner = ''
+    if github_run_link:
+        github_banner = f"""
+            <div style="background: linear-gradient(135deg, #24292e 0%, #3a3f47 100%); 
+                        border-radius: 10px; padding: 16px 20px; margin-bottom: 20px;
+                        display: flex; align-items: center; gap: 12px;">
+                <span style="font-size: 20px;">🔗</span>
+                <div>
+                    <div style="color: #adbac7; font-size: 12px; margin-bottom: 4px;">GitHub Actions Run</div>
+                    <a href="{github_run_link}" 
+                       style="color: #58a6ff; font-size: 14px; font-weight: 600; 
+                              text-decoration: none; word-break: break-all;">
+                        {github_run_link}
+                    </a>
+                </div>
+            </div>
+        """
+
     html = f"""
     <!DOCTYPE html>
     <html>
@@ -551,6 +576,8 @@ def generate_executive_html_report(sector_analysis, bullish_sectors, ist_time):
                 <h1>🎯 Market Intelligence Report</h1>
                 <div class="timestamp">Generated: {ist_time}</div>
             </div>
+            
+            {github_banner}
             
             <div class="summary-box">
                 <h3 style="margin-top: 0; border: none; color: #2c3e50;">📊 Executive Summary</h3>
@@ -824,8 +851,8 @@ def main():
         print(f"{YELLOW}   {i}. {pick['symbol']} - Score: {pick['score']}/100 ({pick['sector']}){RESET}")
     print(f"{CYAN}{'='*80}{RESET}\n")
     
-    # Generate HTML report
-    html_report = generate_executive_html_report(sector_analysis, bullish_sectors, ist_time_str)
+    # Generate HTML report (pass GitHub run link)
+    html_report = generate_executive_html_report(sector_analysis, bullish_sectors, ist_time_str, GITHUB_RUN_LINK)
     
     # Email subject
     if bullish_sectors:
@@ -841,6 +868,8 @@ def main():
     print(f"{GREEN}🎯 Report Generation Complete{RESET}")
     print(f"   Email: {'✅ Sent' if email_sent else '❌ Failed'}")
     print(f"   WhatsApp: {'✅ Sent' if whatsapp_sent else '⚠️ Skipped'}")
+    if GITHUB_RUN_LINK:
+        print(f"   GitHub Run: {GITHUB_RUN_LINK}")
     print(f"{CYAN}{'='*80}{RESET}\n")
 
 if __name__ == "__main__":
