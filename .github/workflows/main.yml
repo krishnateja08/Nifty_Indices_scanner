@@ -1,5 +1,4 @@
 name: Nifty Indices Scanner
-
 on:
   schedule:
     # Run at 9:30 AM IST (4:00 AM UTC)
@@ -8,7 +7,6 @@ on:
     - cron: '10 11 * * 1-5'
   
   workflow_dispatch:
-
 jobs:
   market-analysis:
     runs-on: ubuntu-latest
@@ -43,6 +41,10 @@ jobs:
         TWILIO_AUTH_TOKEN: ${{ secrets.TWILIO_AUTH_TOKEN }}
         TWILIO_FROM: ${{ secrets.TWILIO_FROM }}
         TWILIO_TO: ${{ secrets.TWILIO_TO }}
+        # GitHub automatically provides these — used to build the run link in the email
+        GITHUB_SERVER_URL: ${{ github.server_url }}
+        GITHUB_REPOSITORY: ${{ github.repository }}
+        GITHUB_RUN_ID: ${{ github.run_id }}
       run: |
         # Ensure the filename below matches your repository exactly
         python Nifty_indices_scanner.py
