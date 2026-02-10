@@ -24,12 +24,6 @@ TWILIO_AUTH_TOKEN = os.getenv('TWILIO_AUTH_TOKEN')
 TWILIO_FROM = os.getenv('TWILIO_FROM', 'whatsapp:+14155238886')
 TWILIO_TO = os.getenv('TWILIO_TO', 'whatsapp:+17372876924')
 
-# --- GitHub Actions Run Link (auto-populated by GitHub Actions environment) ---
-GITHUB_SERVER_URL = os.getenv('GITHUB_SERVER_URL', 'https://github.com')
-GITHUB_REPOSITORY = os.getenv('GITHUB_REPOSITORY', '')
-GITHUB_RUN_ID = os.getenv('GITHUB_RUN_ID', '')
-GITHUB_RUN_LINK = f"{GITHUB_SERVER_URL}/{GITHUB_REPOSITORY}/actions/runs/{GITHUB_RUN_ID}" if GITHUB_REPOSITORY and GITHUB_RUN_ID else ''
-
 # --- Suppress all yfinance console output ---
 @contextlib.contextmanager
 def suppress_stdout():
@@ -195,58 +189,39 @@ def calculate_moving_averages(data):
     }
 
 def calculate_profit_potential(ltp, high_52w, low_52w, rsi, trend):
-    """
-    Advanced profit potential calculation
-    Returns: profit_score (0-100), target_price, stop_loss, risk_reward_ratio
-    """
     score = 0
-    
-    # Distance from 52-week low (higher = better for momentum)
     dist_from_low = ((ltp - low_52w) / low_52w) * 100
     dist_from_high = ((high_52w - ltp) / ltp) * 100
-    
-    # RSI-based scoring (oversold = higher potential)
     if rsi < 25:
-        score += 35  # Extremely oversold
+        score += 35
     elif rsi < 30:
         score += 30
     elif rsi < 35:
         score += 25
     elif rsi < 40:
         score += 20
-    
-    # Trend momentum (positive weekly change even when oversold = strong reversal)
     if trend and trend > 0:
-        score += 25  # Bullish reversal in progress
+        score += 25
     elif trend and trend > -1:
-        score += 15  # Consolidating
-    
-    # Upside potential (room to 52W high)
+        score += 15
     if dist_from_high > 30:
-        score += 20  # Significant upside
+        score += 20
     elif dist_from_high > 20:
         score += 15
     elif dist_from_high > 10:
         score += 10
-    
-    # Position from 52W range (lower = better entry)
     range_position = (ltp - low_52w) / (high_52w - low_52w) * 100 if (high_52w - low_52w) > 0 else 50
     if range_position < 30:
-        score += 20  # In bottom 30% of range
+        score += 20
     elif range_position < 50:
         score += 10
-    
-    # Calculate targets
-    target_1 = ltp * 1.05  # 5% target
-    target_2 = ltp * 1.10  # 10% target
-    target_3 = ltp * 1.15  # 15% target
-    stop_loss = ltp * 0.95  # 5% stop loss
-    
-    # Risk-Reward Ratio
+    target_1 = ltp * 1.05
+    target_2 = ltp * 1.10
+    target_3 = ltp * 1.15
+    stop_loss = ltp * 0.95
     risk = ltp - stop_loss
     reward = target_2 - ltp
     risk_reward = reward / risk if risk > 0 else 0
-    
     return {
         'score': min(score, 100),
         'target_1': target_1,
@@ -260,24 +235,18 @@ def calculate_profit_potential(ltp, high_52w, low_52w, rsi, trend):
 def detect_bullish_signals(data, rsi_val, ltp):
     """Detect various bullish technical signals"""
     signals = []
-    
-    # RSI Levels
     if rsi_val < 25:
         signals.append("🔥 Extreme Oversold")
     elif rsi_val < 30:
         signals.append("🔥 RSI Oversold")
     elif rsi_val < 40:
         signals.append("📊 RSI Buy Zone")
-    
-    # Moving Average Analysis
     mas = calculate_moving_averages(data)
     if mas['ema_9'] and mas['ema_21']:
         if mas['ema_9'] > mas['ema_21'] and ltp > mas['ema_9']:
             signals.append("✅ Golden Cross")
         elif ltp > mas['ema_9']:
             signals.append("📈 Above EMA9")
-    
-    # Volume Surge
     if len(data) >= 20 and 'Volume' in data.columns:
         avg_volume = data['Volume'].iloc[-20:-1].mean()
         last_volume = data['Volume'].iloc[-1]
@@ -285,24 +254,18 @@ def detect_bullish_signals(data, rsi_val, ltp):
             signals.append("💥 High Volume")
         elif last_volume > avg_volume * 1.3:
             signals.append("📊 Volume Surge")
-    
-    # Price Action (Bullish Engulfing)
     if len(data) >= 2:
         prev_close = data['Close'].iloc[-2]
         prev_open = data['Open'].iloc[-2]
         curr_close = data['Close'].iloc[-1]
         curr_open = data['Open'].iloc[-1]
-        
         if prev_close < prev_open and curr_close > curr_open and curr_close > prev_open:
             signals.append("🕯️ Bullish Pattern")
-    
     return signals
 
 def calculate_index_strength(rsi, week_chg):
     """Calculate overall index strength score (0-100)"""
     score = 0
-    
-    # RSI Component
     if rsi < 25:
         score += 45
     elif rsi < 30:
@@ -313,8 +276,6 @@ def calculate_index_strength(rsi, week_chg):
         score += 30
     elif rsi < 50:
         score += 15
-    
-    # Trend Component
     if week_chg:
         if week_chg > 5:
             score += 30
@@ -324,11 +285,8 @@ def calculate_index_strength(rsi, week_chg):
             score += 20
         elif week_chg > -1:
             score += 10
-    
-    # Reversal Bonus
     if rsi < 40 and week_chg and week_chg > 0:
         score += 25
-    
     return min(score, 100)
 
 def fetch_market_data(ticker, period="3mo"):
@@ -336,24 +294,18 @@ def fetch_market_data(ticker, period="3mo"):
     try:
         with suppress_stdout():
             data = yf.download(ticker, period=period, interval="1d", progress=False, multi_level_index=False)
-        
         if data.empty or len(data) < 15:
             return None
-        
         ltp = data['Close'].iloc[-1]
         prev_close = data['Close'].iloc[-2] if len(data) >= 2 else ltp
         day_chg_pct = ((ltp - prev_close) / prev_close) * 100
         week_chg_pct = ((ltp - data['Close'].iloc[-6]) / data['Close'].iloc[-6]) * 100 if len(data) >= 6 else None
-        
         rsi_val = calculate_rsi(data['Close']).iloc[-1]
         mas = calculate_moving_averages(data)
         signals = detect_bullish_signals(data, rsi_val, ltp)
-        
         high_52w = data['High'].max()
         low_52w = data['Low'].min()
-        
         profit_metrics = calculate_profit_potential(ltp, high_52w, low_52w, rsi_val, week_chg_pct)
-        
         return {
             "ltp": ltp,
             "day_chg_pct": day_chg_pct,
@@ -374,200 +326,354 @@ def fetch_market_data(ticker, period="3mo"):
     except Exception as e:
         return None
 
-def generate_executive_html_report(sector_analysis, bullish_sectors, ist_time, github_run_link=''):
-    """Generate executive-level HTML report with advanced styling"""
-    
-    # --- GitHub Actions Run Link Banner (only shown if link is available) ---
-    github_banner = ''
-    if github_run_link:
-        github_banner = f"""
-            <div style="background: linear-gradient(135deg, #24292e 0%, #3a3f47 100%); 
-                        border-radius: 10px; padding: 16px 20px; margin-bottom: 20px;
-                        display: flex; align-items: center; gap: 12px;">
-                <span style="font-size: 20px;">🔗</span>
-                <div>
-                    <div style="color: #adbac7; font-size: 12px; margin-bottom: 4px;">GitHub Actions Run</div>
-                    <a href="{github_run_link}" 
-                       style="color: #58a6ff; font-size: 14px; font-weight: 600; 
-                              text-decoration: none; word-break: break-all;">
-                        {github_run_link}
-                    </a>
+# ─────────────────────────────────────────────────────────────
+#  NEW: GitHub Pages index.html generator
+# ─────────────────────────────────────────────────────────────
+def generate_github_pages_html(sector_analysis, bullish_sectors, ist_time):
+    """Generate a polished self-contained index.html for GitHub Pages."""
+
+    total_sectors = len(sector_analysis)
+    bullish_count = len(bullish_sectors)
+
+    all_stocks = []
+    for sn in bullish_sectors:
+        for st in sector_analysis[sn]['stocks']:
+            all_stocks.append({**st, 'sector': sn})
+    top_picks   = sorted(all_stocks, key=lambda x: x['profit_score'], reverse=True)[:20]
+    strong_buys = [s for s in all_stocks if s['profit_score'] >= 70 and s['rsi'] < 30]
+
+    # ── Sector cards ─────────────────────────────────────────
+    sector_cards = ""
+    for sn, analysis in sector_analysis.items():
+        idx  = analysis['index_data']
+        sc   = analysis['strength_score']
+        bull = sn in bullish_sectors
+        badge_color = "#27ae60" if bull else ("#e74c3c" if idx['rsi'] > 70 else "#f39c12")
+        badge_text  = "🟢 BULLISH" if bull else ("🔴 BEARISH" if idx['rsi'] > 70 else "🟡 NEUTRAL")
+        wk_color    = "#27ae60" if idx['week_chg_pct'] and idx['week_chg_pct'] > 0 else "#e74c3c"
+        wk_sign     = "+" if idx['week_chg_pct'] and idx['week_chg_pct'] > 0 else ""
+        sector_cards += f"""
+        <div class="sector-card {'bullish-card' if bull else ''}">
+            <div class="sector-name">{sn}</div>
+            <div class="sector-badge" style="background:{badge_color}">{badge_text}</div>
+            <div class="sector-metrics">
+                <span>RSI <strong>{idx['rsi']:.1f}</strong></span>
+                <span>Week <strong style="color:{wk_color}">{wk_sign}{idx['week_chg_pct']:.2f}%</strong></span>
+                <span>Score <strong>{sc}/100</strong></span>
+            </div>
+        </div>"""
+
+    # ── Top picks table rows ──────────────────────────────────
+    buy_rows = ""
+    for i, s in enumerate(top_picks, 1):
+        ps  = s['profit_score']
+        rsi = s['rsi']
+        pc  = "#27ae60" if ps >= 70 else "#f39c12" if ps >= 50 else "#95a5a6"
+        rc  = "#c0392b" if rsi < 25 else "#e74c3c" if rsi < 40 else "#f39c12" if rsi < 60 else "#27ae60"
+        dc  = "#27ae60" if s['day_chg_pct'] > 0 else "#e74c3c"
+        wc  = "#27ae60" if s['week_chg_pct'] and s['week_chg_pct'] > 0 else "#e74c3c"
+        if ps >= 70 and rsi < 30:
+            action = '<span class="tag strong-buy">🔥 STRONG BUY</span>'
+        elif ps >= 60 or rsi < 35:
+            action = '<span class="tag buy">📊 BUY</span>'
+        else:
+            action = '<span class="tag watch">👀 WATCH</span>'
+        sigs = " ".join([f'<span class="sig-pill">{sg}</span>' for sg in s['signals'][:2]])
+        buy_rows += f"""
+        <tr class="{'top-row' if ps >= 75 else ''}">
+            <td><strong>{i}</strong></td>
+            <td><strong>{s['symbol']}</strong><br><small style="color:#888">{s['sector']}</small></td>
+            <td>₹{s['ltp']:.2f}</td>
+            <td style="color:{dc}">{s['day_chg_pct']:+.2f}%</td>
+            <td style="color:{wc}">{s['week_chg_pct']:+.2f}%</td>
+            <td style="color:{rc}"><strong>{rsi:.1f}</strong></td>
+            <td style="color:{pc}"><strong>{ps}/100</strong></td>
+            <td style="color:#27ae60">₹{s['target_2']:.2f}</td>
+            <td style="color:#e74c3c">₹{s['stop_loss']:.2f}</td>
+            <td style="color:#27ae60">+{s['upside_potential']:.1f}%</td>
+            <td>{sigs}</td>
+            <td>{action}</td>
+        </tr>"""
+
+    # ── Detailed bullish sector breakdown ─────────────────────
+    sector_detail = ""
+    for sn in bullish_sectors:
+        analysis = sector_analysis[sn]
+        idx      = analysis['index_data']
+        wk_color = "#27ae60" if idx['week_chg_pct'] > 0 else "#e74c3c"
+        wk_sign  = "+" if idx['week_chg_pct'] > 0 else ""
+        industries: dict = {}
+        for st in analysis['stocks']:
+            industries.setdefault(st['industry'], []).append(st)
+        ind_tables = ""
+        for ind, stocks in sorted(industries.items()):
+            stocks_s = sorted(stocks, key=lambda x: x['profit_score'], reverse=True)
+            rows = ""
+            for st in stocks_s:
+                ps  = st['profit_score']
+                rsi = st['rsi']
+                pc  = "#27ae60" if ps >= 70 else "#f39c12" if ps >= 50 else "#95a5a6"
+                rc  = "#c0392b" if rsi < 25 else "#e74c3c" if rsi < 40 else "#f39c12" if rsi < 60 else "#27ae60"
+                dc  = "#27ae60" if st['day_chg_pct'] > 0 else "#e74c3c"
+                wc  = "#27ae60" if st['week_chg_pct'] and st['week_chg_pct'] > 0 else "#e74c3c"
+                if ps >= 70 and rsi < 30:
+                    act = '<span class="tag strong-buy">🔥 STRONG BUY</span>'
+                elif ps >= 60 or rsi < 35:
+                    act = '<span class="tag buy">📊 BUY</span>'
+                else:
+                    act = '<span class="tag watch">👀 WATCH</span>'
+                sigs = " ".join([f'<span class="sig-pill">{sg}</span>' for sg in st['signals'][:3]])
+                rows += f"""
+                <tr class="{'top-row' if ps >= 75 else ''}">
+                    <td><strong>{st['symbol']}</strong></td>
+                    <td>{st['weight']:.1f}%</td>
+                    <td>₹{st['ltp']:.2f}</td>
+                    <td style="color:{dc}">{st['day_chg_pct']:+.2f}%</td>
+                    <td style="color:{wc}">{st['week_chg_pct']:+.2f}%</td>
+                    <td style="color:{rc}"><strong>{rsi:.1f}</strong></td>
+                    <td style="color:{pc}"><strong>{ps}/100</strong></td>
+                    <td style="color:#27ae60">₹{st['target_2']:.2f}</td>
+                    <td style="color:#e74c3c">₹{st['stop_loss']:.2f}</td>
+                    <td style="color:#27ae60">+{st['upside_potential']:.1f}%</td>
+                    <td>{sigs}</td>
+                    <td>{act}</td>
+                </tr>"""
+            ind_tables += f"""
+            <h4 class="industry-title">🏭 {ind}</h4>
+            <div class="table-wrap">
+            <table>
+                <thead><tr>
+                    <th>Stock</th><th>Weight</th><th>LTP</th>
+                    <th>Day %</th><th>Week %</th><th>RSI</th>
+                    <th>Score</th><th>Target</th><th>Stop Loss</th>
+                    <th>Upside</th><th>Signals</th><th>Action</th>
+                </tr></thead>
+                <tbody>{rows}</tbody>
+            </table></div>"""
+        sector_detail += f"""
+        <div class="sector-detail-block">
+            <div class="sector-detail-header">
+                <h3>📊 {sn.upper()} — Bullish Setup</h3>
+                <div class="sector-meta">
+                    RSI: <strong>{idx['rsi']:.1f}</strong> &nbsp;|&nbsp;
+                    Week: <strong style="color:{wk_color}">{wk_sign}{idx['week_chg_pct']:.2f}%</strong> &nbsp;|&nbsp;
+                    LTP: <strong>₹{idx['ltp']:.2f}</strong> &nbsp;|&nbsp;
+                    Score: <strong>{analysis['strength_score']}/100</strong>
                 </div>
             </div>
-        """
+            {ind_tables}
+        </div>"""
+
+    top_symbol = top_picks[0]['symbol'] if top_picks else '—'
+
+    html = f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🎯 Nifty Indices Market Intelligence Report</title>
+<style>
+  :root {{
+    --purple:#667eea; --purple2:#764ba2;
+    --green:#27ae60;  --red:#e74c3c;
+    --yellow:#f39c12; --dark:#2c3e50;
+  }}
+  * {{ box-sizing:border-box; margin:0; padding:0; }}
+  body {{
+    font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;
+    background:linear-gradient(135deg,var(--purple) 0%,var(--purple2) 100%);
+    min-height:100vh; padding:20px;
+  }}
+  .container {{
+    max-width:1400px; margin:auto; background:#fff;
+    border-radius:16px; box-shadow:0 12px 48px rgba(0,0,0,.3); overflow:hidden;
+  }}
+  .header {{
+    background:linear-gradient(135deg,var(--purple) 0%,var(--purple2) 100%);
+    color:white; padding:36px 30px 28px; text-align:center;
+  }}
+  .header h1 {{ font-size:2.2rem; font-weight:700; margin-bottom:6px; }}
+  .header .subtitle {{ opacity:.85; font-size:.95rem; }}
+  .summary-strip {{
+    display:flex; flex-wrap:wrap; gap:16px;
+    padding:24px 30px; background:#f8f9fa; border-bottom:1px solid #dee2e6;
+  }}
+  .stat-box {{
+    flex:1 1 140px; background:white; border-radius:10px;
+    padding:16px 20px; text-align:center;
+    box-shadow:0 2px 8px rgba(0,0,0,.07); border-top:4px solid var(--purple);
+  }}
+  .stat-box .stat-val {{ font-size:2rem; font-weight:700; color:var(--dark); }}
+  .stat-box .stat-lbl {{ font-size:.78rem; color:#888; margin-top:4px; text-transform:uppercase; letter-spacing:.5px; }}
+  .section {{ padding:28px 30px; }}
+  .section-title {{
+    font-size:1.25rem; font-weight:700; color:var(--dark);
+    padding:10px 16px; border-left:5px solid var(--purple);
+    background:linear-gradient(90deg,#f0f0ff 0%,#fff 100%);
+    border-radius:4px; margin-bottom:20px;
+  }}
+  .sector-grid {{
+    display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr));
+    gap:14px; margin-bottom:10px;
+  }}
+  .sector-card {{
+    border:1px solid #dee2e6; border-radius:10px; padding:14px;
+    background:white; box-shadow:0 2px 6px rgba(0,0,0,.05); transition:transform .2s;
+  }}
+  .sector-card:hover {{ transform:translateY(-3px); }}
+  .bullish-card {{ border-color:var(--green); background:linear-gradient(135deg,#f0fff4 0%,#fff 100%); }}
+  .sector-name {{ font-weight:700; font-size:.9rem; color:var(--dark); margin-bottom:6px; }}
+  .sector-badge {{ display:inline-block; color:white; font-size:.72rem; font-weight:700; padding:3px 9px; border-radius:20px; margin-bottom:8px; }}
+  .sector-metrics {{ font-size:.8rem; color:#555; display:flex; flex-direction:column; gap:3px; }}
+  .table-wrap {{ overflow-x:auto; margin-bottom:20px; }}
+  table {{ width:100%; border-collapse:collapse; font-size:.83rem; }}
+  thead tr {{ background:linear-gradient(135deg,var(--purple) 0%,var(--purple2) 100%); }}
+  thead th {{
+    color:white; padding:11px 10px; text-align:left;
+    font-weight:600; font-size:.75rem; text-transform:uppercase;
+    letter-spacing:.4px; white-space:nowrap;
+  }}
+  tbody td {{ padding:10px; border-bottom:1px solid #f0f0f0; vertical-align:middle; }}
+  tbody tr:hover {{ background:#fafafa; }}
+  .top-row {{ background:linear-gradient(90deg,#fffbe6 0%,#fff 100%) !important; border-left:3px solid #ffc107; }}
+  .tag {{ display:inline-block; padding:4px 10px; border-radius:5px; font-size:.72rem; font-weight:700; white-space:nowrap; }}
+  .strong-buy {{ background:var(--green); color:white; }}
+  .buy        {{ background:#3498db;     color:white; }}
+  .watch      {{ background:#95a5a6;     color:white; }}
+  .sig-pill {{
+    display:inline-block;
+    background:linear-gradient(135deg,var(--purple) 0%,var(--purple2) 100%);
+    color:white; font-size:.65rem; padding:2px 7px; border-radius:12px; margin:1px; white-space:nowrap;
+  }}
+  .sector-detail-block {{ margin-bottom:40px; border:1px solid #dee2e6; border-radius:12px; overflow:hidden; }}
+  .sector-detail-header {{
+    background:linear-gradient(135deg,var(--purple) 0%,var(--purple2) 100%);
+    color:white; padding:16px 20px;
+  }}
+  .sector-detail-header h3 {{ font-size:1.1rem; margin-bottom:6px; }}
+  .sector-meta {{ font-size:.85rem; opacity:.9; }}
+  .industry-title {{ font-size:.9rem; color:#16a085; padding:10px 16px 4px; border-bottom:2px solid #ecf0f1; margin-bottom:4px; }}
+  .disclaimer {{
+    background:#fff8f8; border-left:4px solid var(--red);
+    border-radius:6px; padding:14px 18px; font-size:.8rem; color:#666; margin:10px 0 0;
+  }}
+  .footer {{
+    text-align:center; padding:20px; background:#f8f9fa;
+    font-size:.8rem; color:#888; border-top:1px solid #dee2e6;
+  }}
+</style>
+</head>
+<body>
+<div class="container">
+
+  <div class="header">
+    <h1>🎯 Nifty Indices Market Intelligence Report</h1>
+    <div class="subtitle">Generated: {ist_time}</div>
+  </div>
+
+  <div class="summary-strip">
+    <div class="stat-box">
+      <div class="stat-val">{total_sectors}</div>
+      <div class="stat-lbl">Sectors Analyzed</div>
+    </div>
+    <div class="stat-box" style="border-color:var(--green)">
+      <div class="stat-val" style="color:var(--green)">{bullish_count}</div>
+      <div class="stat-lbl">Bullish Sectors</div>
+    </div>
+    <div class="stat-box" style="border-color:#3498db">
+      <div class="stat-val" style="color:#3498db">{len(top_picks)}</div>
+      <div class="stat-lbl">Buy Opportunities</div>
+    </div>
+    <div class="stat-box" style="border-color:#ffc107">
+      <div class="stat-val" style="color:#ffc107">{len(strong_buys)}</div>
+      <div class="stat-lbl">Strong Buys</div>
+    </div>
+    <div class="stat-box" style="border-color:var(--purple)">
+      <div class="stat-val" style="color:var(--purple);font-size:1.1rem;padding-top:8px">{top_symbol}</div>
+      <div class="stat-lbl">Top Pick</div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">🏆 Sector Overview</div>
+    <div class="sector-grid">{sector_cards}</div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">🟢 Top Buy Recommendations</div>
+    <div class="table-wrap">
+    <table>
+      <thead><tr>
+        <th>#</th><th>Stock</th><th>LTP</th><th>Day %</th><th>Week %</th>
+        <th>RSI</th><th>Score</th><th>Target</th><th>Stop Loss</th>
+        <th>Upside</th><th>Signals</th><th>Action</th>
+      </tr></thead>
+      <tbody>{buy_rows}</tbody>
+    </table>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">📊 Detailed Sector Breakdown (Bullish Only)</div>
+    {sector_detail if sector_detail else '<p style="color:#888;padding:10px">No bullish sectors detected in this session.</p>'}
+  </div>
+
+  <div class="section">
+    <div class="disclaimer">
+      <strong>⚠️ Risk Disclaimer:</strong> This report is for informational and educational purposes only.
+      Past performance does not guarantee future results. All trading involves risk.
+      Please conduct your own research and consult with a certified financial advisor before making any investment decisions.
+      The profit scores and targets are algorithmic calculations and should not be considered as guaranteed outcomes.
+    </div>
+  </div>
+
+  <div class="footer">© 2026 Nifty Indices Scanner &nbsp;|&nbsp; Automated Market Intelligence &nbsp;|&nbsp; For Educational Purposes Only</div>
+</div>
+</body>
+</html>"""
+    return html
+
+
+def generate_executive_html_report(sector_analysis, bullish_sectors, ist_time):
+    """Generate executive-level HTML report with advanced styling (for email — unchanged)"""
 
     html = f"""
     <!DOCTYPE html>
     <html>
     <head>
         <style>
-            body {{ 
-                font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
-                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                padding: 20px; 
-                margin: 0;
-            }}
-            .container {{ 
-                max-width: 1400px; 
-                margin: auto; 
-                background: white; 
-                padding: 30px; 
-                border-radius: 15px; 
-                box-shadow: 0 10px 40px rgba(0,0,0,0.3);
-            }}
-            .header {{
-                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                color: white;
-                padding: 25px;
-                border-radius: 10px;
-                margin-bottom: 30px;
-                text-align: center;
-            }}
-            h1 {{ 
-                color: white; 
-                margin: 0;
-                font-size: 32px;
-                font-weight: 600;
-            }}
-            .timestamp {{
-                color: rgba(255,255,255,0.9);
-                font-size: 14px;
-                margin-top: 8px;
-            }}
-            h2 {{ 
-                color: #2c3e50; 
-                margin-top: 35px; 
-                padding: 12px 15px;
-                background: linear-gradient(90deg, #ecf0f1 0%, #ffffff 100%);
-                border-left: 5px solid #3498db;
-                border-radius: 5px;
-                font-size: 22px;
-            }}
-            h3 {{ 
-                color: #16a085; 
-                margin-top: 25px; 
-                font-size: 18px;
-                padding-bottom: 8px;
-                border-bottom: 2px solid #ecf0f1;
-            }}
-            table {{ 
-                width: 100%; 
-                border-collapse: collapse; 
-                margin: 20px 0; 
-                box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-                border-radius: 8px;
-                overflow: hidden;
-            }}
-            th {{ 
-                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                color: white; 
-                padding: 14px 10px; 
-                text-align: left; 
-                font-weight: 600;
-                font-size: 13px;
-                text-transform: uppercase;
-                letter-spacing: 0.5px;
-            }}
-            td {{ 
-                padding: 12px 10px; 
-                border-bottom: 1px solid #ecf0f1;
-                font-size: 13px;
-            }}
-            tr:hover {{ 
-                background-color: #f8f9fa; 
-            }}
+            body {{ font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 20px; margin: 0; }}
+            .container {{ max-width: 1400px; margin: auto; background: white; padding: 30px; border-radius: 15px; box-shadow: 0 10px 40px rgba(0,0,0,0.3); }}
+            .header {{ background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 25px; border-radius: 10px; margin-bottom: 30px; text-align: center; }}
+            h1 {{ color: white; margin: 0; font-size: 32px; font-weight: 600; }}
+            .timestamp {{ color: rgba(255,255,255,0.9); font-size: 14px; margin-top: 8px; }}
+            h2 {{ color: #2c3e50; margin-top: 35px; padding: 12px 15px; background: linear-gradient(90deg, #ecf0f1 0%, #ffffff 100%); border-left: 5px solid #3498db; border-radius: 5px; font-size: 22px; }}
+            h3 {{ color: #16a085; margin-top: 25px; font-size: 18px; padding-bottom: 8px; border-bottom: 2px solid #ecf0f1; }}
+            table {{ width: 100%; border-collapse: collapse; margin: 20px 0; box-shadow: 0 4px 6px rgba(0,0,0,0.1); border-radius: 8px; overflow: hidden; }}
+            th {{ background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 14px 10px; text-align: left; font-weight: 600; font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px; }}
+            td {{ padding: 12px 10px; border-bottom: 1px solid #ecf0f1; font-size: 13px; }}
+            tr:hover {{ background-color: #f8f9fa; }}
             .rsi-extreme {{ color: #c0392b; font-weight: bold; }}
             .rsi-low {{ color: #e74c3c; font-weight: bold; }}
             .rsi-medium {{ color: #f39c12; font-weight: bold; }}
             .rsi-high {{ color: #27ae60; font-weight: bold; }}
             .positive {{ color: #27ae60; font-weight: 600; }}
             .negative {{ color: #e74c3c; font-weight: 600; }}
-            .signal-badge {{ 
-                display: inline-block; 
-                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                color: white; 
-                padding: 4px 10px; 
-                border-radius: 15px; 
-                font-size: 10px; 
-                margin: 2px; 
-                font-weight: 600;
-            }}
-            .bullish-sector {{ 
-                background: linear-gradient(90deg, #d4edda 0%, #ffffff 100%);
-                border-left: 5px solid #28a745;
-            }}
-            .summary-box {{ 
-                background: linear-gradient(135deg, #e8f4f8 0%, #f0f8ff 100%);
-                padding: 20px; 
-                border-radius: 10px; 
-                margin: 25px 0; 
-                border-left: 5px solid #3498db;
-                box-shadow: 0 3px 10px rgba(0,0,0,0.1);
-            }}
-            .metric {{ 
-                display: inline-block; 
-                margin: 8px 15px;
-                font-size: 15px;
-            }}
-            .metric strong {{
-                color: #2c3e50;
-            }}
-            .sector-header {{
-                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                color: white;
-                padding: 18px;
-                border-radius: 10px;
-                margin-top: 35px;
-                box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
-            }}
-            .sector-header h2 {{
-                color: white;
-                margin: 0;
-                background: none;
-                border: none;
-                padding: 0;
-                font-size: 24px;
-            }}
+            .signal-badge {{ display: inline-block; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 4px 10px; border-radius: 15px; font-size: 10px; margin: 2px; font-weight: 600; }}
+            .bullish-sector {{ background: linear-gradient(90deg, #d4edda 0%, #ffffff 100%); border-left: 5px solid #28a745; }}
+            .summary-box {{ background: linear-gradient(135deg, #e8f4f8 0%, #f0f8ff 100%); padding: 20px; border-radius: 10px; margin: 25px 0; border-left: 5px solid #3498db; box-shadow: 0 3px 10px rgba(0,0,0,0.1); }}
+            .metric {{ display: inline-block; margin: 8px 15px; font-size: 15px; }}
+            .metric strong {{ color: #2c3e50; }}
+            .sector-header {{ background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 18px; border-radius: 10px; margin-top: 35px; box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4); }}
+            .sector-header h2 {{ color: white; margin: 0; background: none; border: none; padding: 0; font-size: 24px; }}
             .profit-high {{ color: #27ae60; font-weight: bold; }}
             .profit-medium {{ color: #f39c12; font-weight: bold; }}
             .profit-low {{ color: #95a5a6; }}
-            .action-strong-buy {{ 
-                background: #27ae60; 
-                color: white; 
-                padding: 6px 12px; 
-                border-radius: 5px; 
-                font-weight: bold;
-                display: inline-block;
-            }}
-            .action-buy {{ 
-                background: #3498db; 
-                color: white; 
-                padding: 6px 12px; 
-                border-radius: 5px; 
-                font-weight: bold;
-                display: inline-block;
-            }}
-            .action-watch {{ 
-                background: #95a5a6; 
-                color: white; 
-                padding: 6px 12px; 
-                border-radius: 5px; 
-                font-weight: bold;
-                display: inline-block;
-            }}
-            .top-pick {{
-                background: linear-gradient(90deg, #fff3cd 0%, #ffffff 100%);
-                border-left: 5px solid #ffc107;
-            }}
-            .disclaimer {{
-                background: #f8f9fa;
-                padding: 15px;
-                border-radius: 8px;
-                margin-top: 40px;
-                border-left: 4px solid #e74c3c;
-                font-size: 12px;
-                color: #6c757d;
-            }}
+            .action-strong-buy {{ background: #27ae60; color: white; padding: 6px 12px; border-radius: 5px; font-weight: bold; display: inline-block; }}
+            .action-buy {{ background: #3498db; color: white; padding: 6px 12px; border-radius: 5px; font-weight: bold; display: inline-block; }}
+            .action-watch {{ background: #95a5a6; color: white; padding: 6px 12px; border-radius: 5px; font-weight: bold; display: inline-block; }}
+            .top-pick {{ background: linear-gradient(90deg, #fff3cd 0%, #ffffff 100%); border-left: 5px solid #ffc107; }}
+            .disclaimer {{ background: #f8f9fa; padding: 15px; border-radius: 8px; margin-top: 40px; border-left: 4px solid #e74c3c; font-size: 12px; color: #6c757d; }}
         </style>
     </head>
     <body>
@@ -576,9 +682,6 @@ def generate_executive_html_report(sector_analysis, bullish_sectors, ist_time, g
                 <h1>🎯 Market Intelligence Report</h1>
                 <div class="timestamp">Generated: {ist_time}</div>
             </div>
-            
-            {github_banner}
-            
             <div class="summary-box">
                 <h3 style="margin-top: 0; border: none; color: #2c3e50;">📊 Executive Summary</h3>
                 <div class="metric">🎯 <strong>Bullish Sectors:</strong> {len(bullish_sectors)}</div>
@@ -586,107 +689,61 @@ def generate_executive_html_report(sector_analysis, bullish_sectors, ist_time, g
                 <div class="metric">💡 <strong>Top Opportunities:</strong> {', '.join(bullish_sectors[:3]) if bullish_sectors else 'None'}</div>
             </div>
     """
-    
-    # Sector Rankings Table
+
     html += "<h2>🏆 Sector Performance Rankings</h2>"
     html += '<table><tr><th>Rank</th><th>Sector</th><th>Index RSI</th><th>Week Change</th><th>Strength Score</th><th>Status</th><th>Top Stocks</th></tr>'
-    
     for rank, (sector_name, analysis) in enumerate(sector_analysis.items(), 1):
-        idx_data = analysis['index_data']
-        score = analysis['strength_score']
-        status = "🟢 BULLISH" if sector_name in bullish_sectors else "🔴 BEARISH" if idx_data['rsi'] > 70 else "🟡 NEUTRAL"
-        
-        rsi_class = "rsi-extreme" if idx_data['rsi'] < 25 else "rsi-low" if idx_data['rsi'] < 40 else "rsi-medium" if idx_data['rsi'] < 60 else "rsi-high"
+        idx_data   = analysis['index_data']
+        score      = analysis['strength_score']
+        status     = "🟢 BULLISH" if sector_name in bullish_sectors else "🔴 BEARISH" if idx_data['rsi'] > 70 else "🟡 NEUTRAL"
+        rsi_class  = "rsi-extreme" if idx_data['rsi'] < 25 else "rsi-low" if idx_data['rsi'] < 40 else "rsi-medium" if idx_data['rsi'] < 60 else "rsi-high"
         week_class = "positive" if idx_data['week_chg_pct'] and idx_data['week_chg_pct'] > 0 else "negative"
-        
-        # Get top 2 stocks by profit score
         top_stocks = sorted(analysis['stocks'], key=lambda x: x['profit_score'], reverse=True)[:2]
         top_stocks_str = ', '.join([s['symbol'] for s in top_stocks])
-        
         html += f"""
         <tr class="{'bullish-sector' if sector_name in bullish_sectors else ''}">
-            <td><strong>{rank}</strong></td>
-            <td><strong>{sector_name}</strong></td>
+            <td><strong>{rank}</strong></td><td><strong>{sector_name}</strong></td>
             <td class="{rsi_class}">{idx_data['rsi']:.1f}</td>
             <td class="{week_class}">{idx_data['week_chg_pct']:+.2f}%</td>
-            <td><strong>{score}/100</strong></td>
-            <td>{status}</td>
-            <td>{top_stocks_str}</td>
-        </tr>
-        """
+            <td><strong>{score}/100</strong></td><td>{status}</td><td>{top_stocks_str}</td>
+        </tr>"""
     html += "</table>"
-    
-    # Detailed Analysis for Bullish Sectors
+
     for sector_name in bullish_sectors:
         analysis = sector_analysis[sector_name]
         idx_data = analysis['index_data']
-        
         html += f"""
         <div class="sector-header">
             <h2>📊 {sector_name.upper()} - Bullish Setup</h2>
             <div style="margin-top: 10px; font-size: 14px;">
-                Index RSI: <strong>{idx_data['rsi']:.1f}</strong> | 
-                Week: <strong class="{'positive' if idx_data['week_chg_pct'] > 0 else 'negative'}">{idx_data['week_chg_pct']:+.2f}%</strong> | 
+                Index RSI: <strong>{idx_data['rsi']:.1f}</strong> |
+                Week: <strong class="{'positive' if idx_data['week_chg_pct'] > 0 else 'negative'}">{idx_data['week_chg_pct']:+.2f}%</strong> |
                 LTP: <strong>₹{idx_data['ltp']:.2f}</strong>
             </div>
-        </div>
-        """
-        
-        # Group stocks by industry
+        </div>"""
         industries = {}
         for stock_info in analysis['stocks']:
-            industry = stock_info['industry']
-            if industry not in industries:
-                industries[industry] = []
-            industries[industry].append(stock_info)
-        
-        # Display stocks grouped by industry
+            industries.setdefault(stock_info['industry'], []).append(stock_info)
         for industry, stocks in sorted(industries.items()):
-            # Sort by profit score
             stocks_sorted = sorted(stocks, key=lambda x: x['profit_score'], reverse=True)
-            
             html += f"<h3>🏭 {industry}</h3>"
-            html += """
-            <table>
-                <tr>
-                    <th>Stock</th>
-                    <th>Weight</th>
-                    <th>LTP</th>
-                    <th>Day %</th>
-                    <th>Week %</th>
-                    <th>RSI</th>
-                    <th>Profit Score</th>
-                    <th>Target</th>
-                    <th>Stop Loss</th>
-                    <th>Upside %</th>
-                    <th>Signals</th>
-                    <th>Action</th>
-                </tr>
-            """
-            
+            html += "<table><tr><th>Stock</th><th>Weight</th><th>LTP</th><th>Day %</th><th>Week %</th><th>RSI</th><th>Profit Score</th><th>Target</th><th>Stop Loss</th><th>Upside %</th><th>Signals</th><th>Action</th></tr>"
             for stock in stocks_sorted:
-                rsi_class = "rsi-extreme" if stock['rsi'] < 25 else "rsi-low" if stock['rsi'] < 40 else "rsi-medium" if stock['rsi'] < 60 else "rsi-high"
-                day_class = "positive" if stock['day_chg_pct'] > 0 else "negative"
-                week_class = "positive" if stock['week_chg_pct'] and stock['week_chg_pct'] > 0 else "negative"
-                
+                rsi_class    = "rsi-extreme" if stock['rsi'] < 25 else "rsi-low" if stock['rsi'] < 40 else "rsi-medium" if stock['rsi'] < 60 else "rsi-high"
+                day_class    = "positive" if stock['day_chg_pct'] > 0 else "negative"
+                week_class   = "positive" if stock['week_chg_pct'] and stock['week_chg_pct'] > 0 else "negative"
                 profit_class = "profit-high" if stock['profit_score'] >= 70 else "profit-medium" if stock['profit_score'] >= 50 else "profit-low"
-                
-                # Action based on profit score and RSI
                 if stock['profit_score'] >= 70 and stock['rsi'] < 30:
                     action = '<span class="action-strong-buy">🔥 STRONG BUY</span>'
                 elif stock['profit_score'] >= 60 or stock['rsi'] < 35:
                     action = '<span class="action-buy">📊 BUY</span>'
                 else:
                     action = '<span class="action-watch">👀 WATCH</span>'
-                
                 signals_html = ' '.join([f'<span class="signal-badge">{sig}</span>' for sig in stock['signals'][:3]])
-                
                 row_class = "top-pick" if stock['profit_score'] >= 75 else ""
-                
                 html += f"""
                 <tr class="{row_class}">
-                    <td><strong>{stock['symbol']}</strong></td>
-                    <td>{stock['weight']:.1f}%</td>
+                    <td><strong>{stock['symbol']}</strong></td><td>{stock['weight']:.1f}%</td>
                     <td>₹{stock['ltp']:.2f}</td>
                     <td class="{day_class}">{stock['day_chg_pct']:+.2f}%</td>
                     <td class="{week_class}">{stock['week_chg_pct']:+.2f}%</td>
@@ -695,25 +752,19 @@ def generate_executive_html_report(sector_analysis, bullish_sectors, ist_time, g
                     <td class="positive">₹{stock['target_2']:.2f}</td>
                     <td class="negative">₹{stock['stop_loss']:.2f}</td>
                     <td class="positive">+{stock['upside_potential']:.1f}%</td>
-                    <td>{signals_html}</td>
-                    <td>{action}</td>
-                </tr>
-                """
+                    <td>{signals_html}</td><td>{action}</td>
+                </tr>"""
             html += "</table>"
-    
+
     html += """
         <div class="disclaimer">
-            <strong>⚠️ Risk Disclaimer:</strong> This report is for informational and educational purposes only. 
-            Past performance does not guarantee future results. All trading involves risk. 
+            <strong>⚠️ Risk Disclaimer:</strong> This report is for informational and educational purposes only.
+            Past performance does not guarantee future results. All trading involves risk.
             Please conduct your own research and consult with a certified financial advisor before making any investment decisions.
             The profit scores and targets are algorithmic calculations and should not be considered as guaranteed outcomes.
-        </div>
-        </div>
-    </body>
-    </html>
-    """
-    
+        </div></div></body></html>"""
     return html
+
 
 def send_email_report(html_content, subject):
     """Send email report via Gmail (inline, no attachment)"""
@@ -723,12 +774,10 @@ def send_email_report(html_content, subject):
         msg['From'] = GMAIL_USER
         msg['To'] = RECEIVER_EMAIL
         msg.attach(MIMEText(html_content, 'html'))
-
         with smtplib.SMTP('smtp.gmail.com', 587) as server:
             server.starttls()
             server.login(GMAIL_USER, GMAIL_APP_PASS)
             server.send_message(msg)
-        
         print(f"{GREEN}✅ Email sent successfully to {RECEIVER_EMAIL}{RESET}")
         return True
     except Exception as e:
@@ -740,34 +789,21 @@ def send_whatsapp_alert(bullish_sectors, top_picks, ist_time):
     if not (TWILIO_SID and TWILIO_AUTH_TOKEN):
         print(f"{YELLOW}⚠️ WhatsApp disabled (missing credentials){RESET}")
         return False
-    
     try:
         client = Client(TWILIO_SID, TWILIO_AUTH_TOKEN)
-        
-        message_body = f"""🎯 *Market Alert - {ist_time}*
-
-📊 *Bullish Sectors:* {len(bullish_sectors)}
-"""
+        message_body = f"""🎯 *Market Alert - {ist_time}*\n\n📊 *Bullish Sectors:* {len(bullish_sectors)}\n"""
         if bullish_sectors:
-            message_body += f"\n💡 *Top Sectors:*\n"
+            message_body += "\n💡 *Top Sectors:*\n"
             for sector in bullish_sectors[:3]:
                 message_body += f"• {sector}\n"
-            
             if top_picks:
-                message_body += f"\n🔥 *Top Profit Picks:*\n"
+                message_body += "\n🔥 *Top Profit Picks:*\n"
                 for pick in top_picks[:5]:
                     message_body += f"• {pick['symbol']} (Score: {pick['score']}/100)\n"
         else:
             message_body += "\n⚠️ No bullish setups detected"
-        
-        message_body += f"\n📧 Full report sent via email"
-        
-        client.messages.create(
-            from_=TWILIO_FROM,
-            body=message_body,
-            to=TWILIO_TO
-        )
-        
+        message_body += "\n📧 Full report sent via email"
+        client.messages.create(from_=TWILIO_FROM, body=message_body, to=TWILIO_TO)
         print(f"{GREEN}✅ WhatsApp alert sent{RESET}")
         return True
     except Exception as e:
@@ -778,40 +814,31 @@ def main():
     print(f"{CYAN}{'='*80}{RESET}")
     print(f"{CYAN}🎯 MARKET INTELLIGENCE SCANNER - Executive Edition{RESET}")
     print(f"{CYAN}{'='*80}{RESET}\n")
-    
+
     ist = pytz.timezone("Asia/Kolkata")
     now_ist = datetime.now(ist)
     ist_time_str = now_ist.strftime("%Y-%m-%d %H:%M IST")
-    
+
     print(f"{BLUE}⏰ Analysis Time: {ist_time_str}{RESET}\n")
-    
+
     sector_analysis = {}
     bullish_sectors = []
     all_stocks = []
-    
-    # Analyze each sector
+
     for sector_name, config in sectors_config.items():
         print(f"{YELLOW}📊 Analyzing {sector_name}...{RESET}")
-        
-        # Fetch index data
         index_data = fetch_market_data(config['ticker'])
         if not index_data:
             print(f"{RED}   ❌ Failed to fetch index data{RESET}")
             continue
-        
-        # Calculate strength score
         strength_score = calculate_index_strength(index_data['rsi'], index_data['week_chg_pct'])
-        
-        # Determine if sector is bullish
         is_bullish = (index_data['rsi'] < 40) or (index_data['rsi'] < 50 and index_data['week_chg_pct'] and index_data['week_chg_pct'] > 2)
-        
         if is_bullish:
             bullish_sectors.append(sector_name)
             print(f"{GREEN}   ✅ BULLISH - RSI: {index_data['rsi']:.1f}, Score: {strength_score}/100{RESET}")
         else:
             print(f"{RED}   ⏸️  Not Bullish - RSI: {index_data['rsi']:.1f}{RESET}")
-        
-        # Analyze stocks in this sector
+
         stocks_data = []
         for stock_ticker, stock_info in config['stocks'].items():
             stock_data = fetch_market_data(stock_ticker)
@@ -824,22 +851,17 @@ def main():
                 }
                 stocks_data.append(stock_entry)
                 if is_bullish:
-                    all_stocks.append({
-                        'symbol': stock_entry['symbol'],
-                        'score': stock_entry['profit_score'],
-                        'sector': sector_name
-                    })
-        
+                    all_stocks.append({'symbol': stock_entry['symbol'], 'score': stock_entry['profit_score'], 'sector': sector_name})
+
         sector_analysis[sector_name] = {
             'index_data': index_data,
             'strength_score': strength_score,
             'is_bullish': is_bullish,
             'stocks': stocks_data
         }
-    
-    # Get top profit picks
+
     top_picks = sorted(all_stocks, key=lambda x: x['score'], reverse=True)[:10]
-    
+
     print(f"\n{CYAN}{'='*80}{RESET}")
     print(f"{GREEN}✅ Analysis Complete!{RESET}")
     print(f"{MAGENTA}📊 Bullish Sectors: {len(bullish_sectors)}{RESET}")
@@ -850,26 +872,28 @@ def main():
     for i, pick in enumerate(top_picks[:5], 1):
         print(f"{YELLOW}   {i}. {pick['symbol']} - Score: {pick['score']}/100 ({pick['sector']}){RESET}")
     print(f"{CYAN}{'='*80}{RESET}\n")
-    
-    # Generate HTML report (pass GitHub run link)
-    html_report = generate_executive_html_report(sector_analysis, bullish_sectors, ist_time_str, GITHUB_RUN_LINK)
-    
-    # Email subject
+
+    # ── Save GitHub Pages HTML ──────────────────────────────────
+    pages_html = generate_github_pages_html(sector_analysis, bullish_sectors, ist_time_str)
+    with open("index.html", "w", encoding="utf-8") as f:
+        f.write(pages_html)
+    print(f"{GREEN}✅ index.html saved for GitHub Pages{RESET}")
+
+    # ── Send email (logic completely unchanged) ─────────────────
+    html_report = generate_executive_html_report(sector_analysis, bullish_sectors, ist_time_str)
     if bullish_sectors:
         subject = f"🎯 {len(bullish_sectors)} Bullish Sectors | Top Pick: {top_picks[0]['symbol']} | {ist_time_str}"
     else:
         subject = f"📊 Market Report | No Bullish Signals | {ist_time_str}"
-    
-    # Send notifications
-    email_sent = send_email_report(html_report, subject)
+
+    email_sent    = send_email_report(html_report, subject)
     whatsapp_sent = send_whatsapp_alert(bullish_sectors, top_picks, ist_time_str)
-    
+
     print(f"\n{CYAN}{'='*80}{RESET}")
     print(f"{GREEN}🎯 Report Generation Complete{RESET}")
-    print(f"   Email: {'✅ Sent' if email_sent else '❌ Failed'}")
-    print(f"   WhatsApp: {'✅ Sent' if whatsapp_sent else '⚠️ Skipped'}")
-    if GITHUB_RUN_LINK:
-        print(f"   GitHub Run: {GITHUB_RUN_LINK}")
+    print(f"   Email:      {'✅ Sent' if email_sent else '❌ Failed'}")
+    print(f"   WhatsApp:   {'✅ Sent' if whatsapp_sent else '⚠️ Skipped'}")
+    print(f"   Pages HTML: ✅ index.html written")
     print(f"{CYAN}{'='*80}{RESET}\n")
 
 if __name__ == "__main__":
