@@ -5,33 +5,38 @@ on:
     - cron: '6 4 * * 1-5'
     # Run at 4:40 PM IST (11:10 AM UTC)
     - cron: '10 11 * * 1-5'
-  
+
   workflow_dispatch:
+
 jobs:
   market-analysis:
     runs-on: ubuntu-latest
     timeout-minutes: 15
-    
+
+    # Required so the job can push index.html back to the repo
+    permissions:
+      contents: write
+
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
-    
+
     - name: Set up Python
       uses: actions/setup-python@v5
       with:
         python-version: '3.11'
         # Removed the cache: 'pip' line to prevent the "file not found" error
-    
+
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
         pip install yfinance pandas numpy pytz twilio tabulate
-    
+
     - name: Display IST Time
       run: |
         echo "🕒 Current UTC Time: $(date -u)"
         echo "🕒 Current IST Time: $(TZ='Asia/Kolkata' date)"
-    
+
     - name: Run Market Intelligence Scanner
       env:
         GMAIL_USER: ${{ secrets.GMAIL_USER }}
@@ -41,14 +46,27 @@ jobs:
         TWILIO_AUTH_TOKEN: ${{ secrets.TWILIO_AUTH_TOKEN }}
         TWILIO_FROM: ${{ secrets.TWILIO_FROM }}
         TWILIO_TO: ${{ secrets.TWILIO_TO }}
-        # GitHub automatically provides these — used to build the run link in the email
-        GITHUB_SERVER_URL: ${{ github.server_url }}
-        GITHUB_REPOSITORY: ${{ github.repository }}
-        GITHUB_RUN_ID: ${{ github.run_id }}
       run: |
         # Ensure the filename below matches your repository exactly
         python Nifty_indices_scanner.py
-    
+
+    - name: Deploy index.html to GitHub Pages
+      run: |
+        git config user.name  "github-actions[bot]"
+        git config user.email "github-actions[bot]@users.noreply.github.com"
+
+        # Switch to (or create) the gh-pages branch
+        git fetch origin gh-pages 2>/dev/null || true
+        git checkout gh-pages 2>/dev/null || git checkout --orphan gh-pages
+
+        # Copy the freshly generated index.html into place
+        cp $GITHUB_WORKSPACE/index.html ./index.html  2>/dev/null || \
+          git checkout ${{ github.sha }} -- index.html
+
+        git add index.html
+        git commit -m "📊 Auto-update report $(TZ='Asia/Kolkata' date '+%Y-%m-%d %H:%M IST')" || echo "Nothing to commit"
+        git push origin gh-pages
+
     - name: Upload execution logs (if failed)
       if: failure()
       uses: actions/upload-artifact@v4
