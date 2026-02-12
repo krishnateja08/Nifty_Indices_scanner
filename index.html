@@ -1,0 +1,839 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🎯 Nifty Indices Market Intelligence Report</title>
+<style>
+  :root {
+    --purple:#667eea; --purple2:#764ba2;
+    --green:#27ae60;  --red:#e74c3c;
+    --yellow:#f39c12; --dark:#2c3e50;
+  }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body {
+    font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;
+    background:linear-gradient(135deg,var(--purple) 0%,var(--purple2) 100%);
+    min-height:100vh; padding:20px;
+  }
+  .container {
+    max-width:1400px; margin:auto; background:#fff;
+    border-radius:16px; box-shadow:0 12px 48px rgba(0,0,0,.3); overflow:hidden;
+  }
+  .header {
+    background:linear-gradient(135deg,var(--purple) 0%,var(--purple2) 100%);
+    color:white; padding:36px 30px 28px; text-align:center;
+  }
+  .header h1 { font-size:2.2rem; font-weight:700; margin-bottom:6px; }
+  .header .subtitle { opacity:.85; font-size:.95rem; }
+  .summary-strip {
+    display:flex; flex-wrap:wrap; gap:16px;
+    padding:24px 30px; background:#f8f9fa; border-bottom:1px solid #dee2e6;
+  }
+  .stat-box {
+    flex:1 1 140px; background:white; border-radius:10px;
+    padding:16px 20px; text-align:center;
+    box-shadow:0 2px 8px rgba(0,0,0,.07); border-top:4px solid var(--purple);
+  }
+  .stat-box .stat-val { font-size:2rem; font-weight:700; color:var(--dark); }
+  .stat-box .stat-lbl { font-size:.78rem; color:#888; margin-top:4px; text-transform:uppercase; letter-spacing:.5px; }
+  .section { padding:28px 30px; }
+  .section-title {
+    font-size:1.25rem; font-weight:700; color:var(--dark);
+    padding:10px 16px; border-left:5px solid var(--purple);
+    background:linear-gradient(90deg,#f0f0ff 0%,#fff 100%);
+    border-radius:4px; margin-bottom:20px;
+  }
+  .sector-grid {
+    display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr));
+    gap:14px; margin-bottom:10px;
+  }
+  .sector-card {
+    border:1px solid #dee2e6; border-radius:10px; padding:14px;
+    background:white; box-shadow:0 2px 6px rgba(0,0,0,.05); transition:transform .2s;
+  }
+  .sector-card:hover { transform:translateY(-3px); }
+  .bullish-card { border-color:var(--green); background:linear-gradient(135deg,#f0fff4 0%,#fff 100%); }
+  .sector-name { font-weight:700; font-size:.9rem; color:var(--dark); margin-bottom:6px; }
+  .sector-badge { display:inline-block; color:white; font-size:.72rem; font-weight:700; padding:3px 9px; border-radius:20px; margin-bottom:8px; }
+  .sector-metrics { font-size:.8rem; color:#555; display:flex; flex-direction:column; gap:3px; }
+  .table-wrap { overflow-x:auto; margin-bottom:20px; }
+  table { width:100%; border-collapse:collapse; font-size:.83rem; }
+  thead tr { background:linear-gradient(135deg,var(--purple) 0%,var(--purple2) 100%); }
+  thead th {
+    color:white; padding:11px 10px; text-align:left;
+    font-weight:600; font-size:.75rem; text-transform:uppercase;
+    letter-spacing:.4px; white-space:nowrap;
+  }
+  tbody td { padding:10px; border-bottom:1px solid #f0f0f0; vertical-align:middle; }
+  tbody tr:hover { background:#fafafa; }
+  .top-row { background:linear-gradient(90deg,#fffbe6 0%,#fff 100%) !important; border-left:3px solid #ffc107; }
+  .tag { display:inline-block; padding:4px 10px; border-radius:5px; font-size:.72rem; font-weight:700; white-space:nowrap; }
+  .strong-buy { background:var(--green); color:white; }
+  .buy        { background:#3498db;     color:white; }
+  .watch      { background:#95a5a6;     color:white; }
+  .sig-pill {
+    display:inline-block;
+    background:linear-gradient(135deg,var(--purple) 0%,var(--purple2) 100%);
+    color:white; font-size:.65rem; padding:2px 7px; border-radius:12px; margin:1px; white-space:nowrap;
+  }
+  .sector-detail-block { margin-bottom:40px; border:1px solid #dee2e6; border-radius:12px; overflow:hidden; }
+  .sector-detail-header {
+    background:linear-gradient(135deg,var(--purple) 0%,var(--purple2) 100%);
+    color:white; padding:16px 20px;
+  }
+  .sector-detail-header h3 { font-size:1.1rem; margin-bottom:6px; }
+  .sector-meta { font-size:.85rem; opacity:.9; }
+  .industry-title { font-size:.9rem; color:#16a085; padding:10px 16px 4px; border-bottom:2px solid #ecf0f1; margin-bottom:4px; }
+  .disclaimer {
+    background:#fff8f8; border-left:4px solid var(--red);
+    border-radius:6px; padding:14px 18px; font-size:.8rem; color:#666; margin:10px 0 0;
+  }
+  .footer {
+    text-align:center; padding:20px; background:#f8f9fa;
+    font-size:.8rem; color:#888; border-top:1px solid #dee2e6;
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <div class="header">
+    <h1>🎯 Nifty Indices Market Intelligence Report</h1>
+    <div class="subtitle">Generated: 2026-02-12 22:42 IST</div>
+  </div>
+
+  <div class="summary-strip">
+    <div class="stat-box">
+      <div class="stat-val">9</div>
+      <div class="stat-lbl">Sectors Analyzed</div>
+    </div>
+    <div class="stat-box" style="border-color:var(--green)">
+      <div class="stat-val" style="color:var(--green)">2</div>
+      <div class="stat-lbl">Bullish Sectors</div>
+    </div>
+    <div class="stat-box" style="border-color:#3498db">
+      <div class="stat-val" style="color:#3498db">16</div>
+      <div class="stat-lbl">Buy Opportunities</div>
+    </div>
+    <div class="stat-box" style="border-color:#ffc107">
+      <div class="stat-val" style="color:#ffc107">6</div>
+      <div class="stat-lbl">Strong Buys</div>
+    </div>
+    <div class="stat-box" style="border-color:var(--purple)">
+      <div class="stat-val" style="color:var(--purple);font-size:1.1rem;padding-top:8px">COFORGE</div>
+      <div class="stat-lbl">Top Pick</div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">🏆 Sector Overview</div>
+    <div class="sector-grid">
+        <div class="sector-card ">
+            <div class="sector-name">Nifty Bank</div>
+            <div class="sector-badge" style="background:#f39c12">🟡 NEUTRAL</div>
+            <div class="sector-metrics">
+                <span>RSI <strong>62.6</strong></span>
+                <span>Week <strong style="color:#27ae60">+1.13%</strong></span>
+                <span>Score <strong>20/100</strong></span>
+            </div>
+        </div>
+        <div class="sector-card bullish-card">
+            <div class="sector-name">Nifty IT</div>
+            <div class="sector-badge" style="background:#27ae60">🟢 BULLISH</div>
+            <div class="sector-metrics">
+                <span>RSI <strong>15.7</strong></span>
+                <span>Week <strong style="color:#e74c3c">-8.25%</strong></span>
+                <span>Score <strong>45/100</strong></span>
+            </div>
+        </div>
+        <div class="sector-card ">
+            <div class="sector-name">Nifty Private Bank</div>
+            <div class="sector-badge" style="background:#f39c12">🟡 NEUTRAL</div>
+            <div class="sector-metrics">
+                <span>RSI <strong>62.0</strong></span>
+                <span>Week <strong style="color:#27ae60">+0.78%</strong></span>
+                <span>Score <strong>10/100</strong></span>
+            </div>
+        </div>
+        <div class="sector-card ">
+            <div class="sector-name">Nifty Pharma</div>
+            <div class="sector-badge" style="background:#f39c12">🟡 NEUTRAL</div>
+            <div class="sector-metrics">
+                <span>RSI <strong>59.6</strong></span>
+                <span>Week <strong style="color:#27ae60">+1.20%</strong></span>
+                <span>Score <strong>20/100</strong></span>
+            </div>
+        </div>
+        <div class="sector-card ">
+            <div class="sector-name">Nifty Realty</div>
+            <div class="sector-badge" style="background:#f39c12">🟡 NEUTRAL</div>
+            <div class="sector-metrics">
+                <span>RSI <strong>69.1</strong></span>
+                <span>Week <strong style="color:#27ae60">+2.76%</strong></span>
+                <span>Score <strong>20/100</strong></span>
+            </div>
+        </div>
+        <div class="sector-card bullish-card">
+            <div class="sector-name">Nifty FMCG</div>
+            <div class="sector-badge" style="background:#27ae60">🟢 BULLISH</div>
+            <div class="sector-metrics">
+                <span>RSI <strong>49.1</strong></span>
+                <span>Week <strong style="color:#27ae60">+2.27%</strong></span>
+                <span>Score <strong>35/100</strong></span>
+            </div>
+        </div>
+        <div class="sector-card ">
+            <div class="sector-name">Nifty Metal</div>
+            <div class="sector-badge" style="background:#f39c12">🟡 NEUTRAL</div>
+            <div class="sector-metrics">
+                <span>RSI <strong>61.9</strong></span>
+                <span>Week <strong style="color:#27ae60">+3.00%</strong></span>
+                <span>Score <strong>25/100</strong></span>
+            </div>
+        </div>
+        <div class="sector-card ">
+            <div class="sector-name">Nifty Auto</div>
+            <div class="sector-badge" style="background:#f39c12">🟡 NEUTRAL</div>
+            <div class="sector-metrics">
+                <span>RSI <strong>69.6</strong></span>
+                <span>Week <strong style="color:#27ae60">+3.03%</strong></span>
+                <span>Score <strong>25/100</strong></span>
+            </div>
+        </div>
+        <div class="sector-card ">
+            <div class="sector-name">Nifty Energy</div>
+            <div class="sector-badge" style="background:#e74c3c">🔴 BEARISH</div>
+            <div class="sector-metrics">
+                <span>RSI <strong>71.9</strong></span>
+                <span>Week <strong style="color:#27ae60">+0.61%</strong></span>
+                <span>Score <strong>10/100</strong></span>
+            </div>
+        </div></div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">🟢 Top Buy Recommendations</div>
+    <div class="table-wrap">
+    <table>
+      <thead><tr>
+        <th>#</th><th>Stock</th><th>LTP</th><th>Day %</th><th>Week %</th>
+        <th>RSI</th><th>Score</th><th>Target</th><th>Stop Loss</th>
+        <th>Upside</th><th>Signals</th><th>Action</th>
+      </tr></thead>
+      <tbody>
+        <tr class="top-row">
+            <td><strong>1</strong></td>
+            <td><strong>COFORGE</strong><br><small style="color:#888">Nifty IT</small></td>
+            <td>₹1421.50</td>
+            <td style="color:#e74c3c">-6.50%</td>
+            <td style="color:#e74c3c">-11.15%</td>
+            <td style="color:#c0392b"><strong>24.0</strong></td>
+            <td style="color:#27ae60"><strong>75/100</strong></td>
+            <td style="color:#27ae60">₹1563.65</td>
+            <td style="color:#e74c3c">₹1350.42</td>
+            <td style="color:#27ae60">+39.6%</td>
+            <td><span class="sig-pill">🔥 Extreme Oversold</span> <span class="sig-pill">💥 High Volume</span></td>
+            <td><span class="tag strong-buy">🔥 STRONG BUY</span></td>
+        </tr>
+        <tr class="">
+            <td><strong>2</strong></td>
+            <td><strong>INFY</strong><br><small style="color:#888">Nifty IT</small></td>
+            <td>₹1386.00</td>
+            <td style="color:#e74c3c">-5.84%</td>
+            <td style="color:#e74c3c">-8.83%</td>
+            <td style="color:#c0392b"><strong>12.5</strong></td>
+            <td style="color:#27ae60"><strong>70/100</strong></td>
+            <td style="color:#27ae60">₹1524.60</td>
+            <td style="color:#e74c3c">₹1316.70</td>
+            <td style="color:#27ae60">+24.7%</td>
+            <td><span class="sig-pill">🔥 Extreme Oversold</span> <span class="sig-pill">💥 High Volume</span></td>
+            <td><span class="tag strong-buy">🔥 STRONG BUY</span></td>
+        </tr>
+        <tr class="">
+            <td><strong>3</strong></td>
+            <td><strong>TCS</strong><br><small style="color:#888">Nifty IT</small></td>
+            <td>₹2750.10</td>
+            <td style="color:#e74c3c">-5.49%</td>
+            <td style="color:#e74c3c">-8.07%</td>
+            <td style="color:#c0392b"><strong>24.9</strong></td>
+            <td style="color:#27ae60"><strong>70/100</strong></td>
+            <td style="color:#27ae60">₹3025.11</td>
+            <td style="color:#e74c3c">₹2612.60</td>
+            <td style="color:#27ae60">+21.8%</td>
+            <td><span class="sig-pill">🔥 Extreme Oversold</span> <span class="sig-pill">💥 High Volume</span></td>
+            <td><span class="tag strong-buy">🔥 STRONG BUY</span></td>
+        </tr>
+        <tr class="">
+            <td><strong>4</strong></td>
+            <td><strong>HCLTECH</strong><br><small style="color:#888">Nifty IT</small></td>
+            <td>₹1476.10</td>
+            <td style="color:#e74c3c">-4.87%</td>
+            <td style="color:#e74c3c">-8.32%</td>
+            <td style="color:#c0392b"><strong>16.0</strong></td>
+            <td style="color:#27ae60"><strong>70/100</strong></td>
+            <td style="color:#27ae60">₹1623.71</td>
+            <td style="color:#e74c3c">₹1402.29</td>
+            <td style="color:#27ae60">+20.6%</td>
+            <td><span class="sig-pill">🔥 Extreme Oversold</span> <span class="sig-pill">💥 High Volume</span></td>
+            <td><span class="tag strong-buy">🔥 STRONG BUY</span></td>
+        </tr>
+        <tr class="">
+            <td><strong>5</strong></td>
+            <td><strong>LTIM</strong><br><small style="color:#888">Nifty IT</small></td>
+            <td>₹5211.50</td>
+            <td style="color:#e74c3c">-5.51%</td>
+            <td style="color:#e74c3c">-8.30%</td>
+            <td style="color:#c0392b"><strong>22.1</strong></td>
+            <td style="color:#27ae60"><strong>70/100</strong></td>
+            <td style="color:#27ae60">₹5732.65</td>
+            <td style="color:#e74c3c">₹4950.93</td>
+            <td style="color:#27ae60">+23.4%</td>
+            <td><span class="sig-pill">🔥 Extreme Oversold</span> <span class="sig-pill">📊 Volume Surge</span></td>
+            <td><span class="tag strong-buy">🔥 STRONG BUY</span></td>
+        </tr>
+        <tr class="">
+            <td><strong>6</strong></td>
+            <td><strong>PERSISTENT</strong><br><small style="color:#888">Nifty IT</small></td>
+            <td>₹5452.00</td>
+            <td style="color:#e74c3c">-4.75%</td>
+            <td style="color:#e74c3c">-8.84%</td>
+            <td style="color:#c0392b"><strong>22.6</strong></td>
+            <td style="color:#27ae60"><strong>70/100</strong></td>
+            <td style="color:#27ae60">₹5997.20</td>
+            <td style="color:#e74c3c">₹5179.40</td>
+            <td style="color:#27ae60">+20.6%</td>
+            <td><span class="sig-pill">🔥 Extreme Oversold</span> <span class="sig-pill">💥 High Volume</span></td>
+            <td><span class="tag strong-buy">🔥 STRONG BUY</span></td>
+        </tr>
+        <tr class="">
+            <td><strong>7</strong></td>
+            <td><strong>TECHM</strong><br><small style="color:#888">Nifty IT</small></td>
+            <td>₹1536.60</td>
+            <td style="color:#e74c3c">-5.98%</td>
+            <td style="color:#e74c3c">-6.66%</td>
+            <td style="color:#e74c3c"><strong>29.3</strong></td>
+            <td style="color:#f39c12"><strong>65/100</strong></td>
+            <td style="color:#27ae60">₹1690.26</td>
+            <td style="color:#e74c3c">₹1459.77</td>
+            <td style="color:#27ae60">+20.7%</td>
+            <td><span class="sig-pill">🔥 RSI Oversold</span> <span class="sig-pill">💥 High Volume</span></td>
+            <td><span class="tag buy">📊 BUY</span></td>
+        </tr>
+        <tr class="">
+            <td><strong>8</strong></td>
+            <td><strong>WIPRO</strong><br><small style="color:#888">Nifty IT</small></td>
+            <td>₹219.08</td>
+            <td style="color:#e74c3c">-4.67%</td>
+            <td style="color:#e74c3c">-6.13%</td>
+            <td style="color:#e74c3c"><strong>32.7</strong></td>
+            <td style="color:#f39c12"><strong>60/100</strong></td>
+            <td style="color:#27ae60">₹240.99</td>
+            <td style="color:#e74c3c">₹208.13</td>
+            <td style="color:#27ae60">+21.5%</td>
+            <td><span class="sig-pill">📊 RSI Buy Zone</span> <span class="sig-pill">💥 High Volume</span></td>
+            <td><span class="tag buy">📊 BUY</span></td>
+        </tr>
+        <tr class="">
+            <td><strong>9</strong></td>
+            <td><strong>ITC</strong><br><small style="color:#888">Nifty FMCG</small></td>
+            <td>₹317.45</td>
+            <td style="color:#e74c3c">-0.25%</td>
+            <td style="color:#27ae60">+2.34%</td>
+            <td style="color:#f39c12"><strong>49.3</strong></td>
+            <td style="color:#f39c12"><strong>60/100</strong></td>
+            <td style="color:#27ae60">₹349.20</td>
+            <td style="color:#e74c3c">₹301.58</td>
+            <td style="color:#27ae60">+27.1%</td>
+            <td></td>
+            <td><span class="tag buy">📊 BUY</span></td>
+        </tr>
+        <tr class="">
+            <td><strong>10</strong></td>
+            <td><strong>HINDUNILVR</strong><br><small style="color:#888">Nifty FMCG</small></td>
+            <td>₹2409.70</td>
+            <td style="color:#e74c3c">-2.16%</td>
+            <td style="color:#27ae60">+2.35%</td>
+            <td style="color:#f39c12"><strong>53.1</strong></td>
+            <td style="color:#95a5a6"><strong>25/100</strong></td>
+            <td style="color:#27ae60">₹2650.67</td>
+            <td style="color:#e74c3c">₹2289.21</td>
+            <td style="color:#27ae60">+3.2%</td>
+            <td><span class="sig-pill">💥 High Volume</span></td>
+            <td><span class="tag watch">👀 WATCH</span></td>
+        </tr>
+        <tr class="">
+            <td><strong>11</strong></td>
+            <td><strong>NESTLEIND</strong><br><small style="color:#888">Nifty FMCG</small></td>
+            <td>₹1305.50</td>
+            <td style="color:#27ae60">+0.02%</td>
+            <td style="color:#27ae60">+0.69%</td>
+            <td style="color:#f39c12"><strong>52.3</strong></td>
+            <td style="color:#95a5a6"><strong>25/100</strong></td>
+            <td style="color:#27ae60">₹1436.05</td>
+            <td style="color:#e74c3c">₹1240.22</td>
+            <td style="color:#27ae60">+2.1%</td>
+            <td><span class="sig-pill">✅ Golden Cross</span></td>
+            <td><span class="tag watch">👀 WATCH</span></td>
+        </tr>
+        <tr class="">
+            <td><strong>12</strong></td>
+            <td><strong>TATACONSUM</strong><br><small style="color:#888">Nifty FMCG</small></td>
+            <td>₹1149.30</td>
+            <td style="color:#e74c3c">-0.29%</td>
+            <td style="color:#e74c3c">-0.57%</td>
+            <td style="color:#f39c12"><strong>44.5</strong></td>
+            <td style="color:#95a5a6"><strong>25/100</strong></td>
+            <td style="color:#27ae60">₹1264.23</td>
+            <td style="color:#e74c3c">₹1091.84</td>
+            <td style="color:#27ae60">+6.2%</td>
+            <td></td>
+            <td><span class="tag watch">👀 WATCH</span></td>
+        </tr>
+        <tr class="">
+            <td><strong>13</strong></td>
+            <td><strong>BRITANNIA</strong><br><small style="color:#888">Nifty FMCG</small></td>
+            <td>₹6102.00</td>
+            <td style="color:#27ae60">+1.38%</td>
+            <td style="color:#27ae60">+3.94%</td>
+            <td style="color:#f39c12"><strong>59.9</strong></td>
+            <td style="color:#95a5a6"><strong>25/100</strong></td>
+            <td style="color:#27ae60">₹6712.20</td>
+            <td style="color:#e74c3c">₹5796.90</td>
+            <td style="color:#27ae60">+2.8%</td>
+            <td><span class="sig-pill">✅ Golden Cross</span></td>
+            <td><span class="tag watch">👀 WATCH</span></td>
+        </tr>
+        <tr class="">
+            <td><strong>14</strong></td>
+            <td><strong>DABUR</strong><br><small style="color:#888">Nifty FMCG</small></td>
+            <td>₹519.55</td>
+            <td style="color:#e74c3c">-0.54%</td>
+            <td style="color:#27ae60">+3.02%</td>
+            <td style="color:#f39c12"><strong>44.9</strong></td>
+            <td style="color:#95a5a6"><strong>25/100</strong></td>
+            <td style="color:#27ae60">₹571.50</td>
+            <td style="color:#e74c3c">₹493.57</td>
+            <td style="color:#27ae60">+2.8%</td>
+            <td><span class="sig-pill">✅ Golden Cross</span></td>
+            <td><span class="tag watch">👀 WATCH</span></td>
+        </tr>
+        <tr class="">
+            <td><strong>15</strong></td>
+            <td><strong>MARICO</strong><br><small style="color:#888">Nifty FMCG</small></td>
+            <td>₹770.65</td>
+            <td style="color:#27ae60">+0.03%</td>
+            <td style="color:#27ae60">+2.99%</td>
+            <td style="color:#27ae60"><strong>60.8</strong></td>
+            <td style="color:#95a5a6"><strong>25/100</strong></td>
+            <td style="color:#27ae60">₹847.72</td>
+            <td style="color:#e74c3c">₹732.12</td>
+            <td style="color:#27ae60">+1.2%</td>
+            <td><span class="sig-pill">✅ Golden Cross</span></td>
+            <td><span class="tag watch">👀 WATCH</span></td>
+        </tr>
+        <tr class="">
+            <td><strong>16</strong></td>
+            <td><strong>GODREJCP</strong><br><small style="color:#888">Nifty FMCG</small></td>
+            <td>₹1204.30</td>
+            <td style="color:#e74c3c">-0.36%</td>
+            <td style="color:#27ae60">+2.91%</td>
+            <td style="color:#f39c12"><strong>40.9</strong></td>
+            <td style="color:#95a5a6"><strong>25/100</strong></td>
+            <td style="color:#27ae60">₹1324.73</td>
+            <td style="color:#e74c3c">₹1144.09</td>
+            <td style="color:#27ae60">+5.3%</td>
+            <td><span class="sig-pill">📈 Above EMA9</span></td>
+            <td><span class="tag watch">👀 WATCH</span></td>
+        </tr></tbody>
+    </table>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">📊 Detailed Sector Breakdown (Bullish Only)</div>
+    
+        <div class="sector-detail-block">
+            <div class="sector-detail-header">
+                <h3>📊 NIFTY IT — Bullish Setup</h3>
+                <div class="sector-meta">
+                    RSI: <strong>15.7</strong> &nbsp;|&nbsp;
+                    Week: <strong style="color:#e74c3c">-8.25%</strong> &nbsp;|&nbsp;
+                    LTP: <strong>₹33160.20</strong> &nbsp;|&nbsp;
+                    Score: <strong>45/100</strong>
+                </div>
+            </div>
+            
+            <h4 class="industry-title">🏭 IT Consulting</h4>
+            <div class="table-wrap">
+            <table>
+                <thead><tr>
+                    <th>Stock</th><th>Weight</th><th>LTP</th>
+                    <th>Day %</th><th>Week %</th><th>RSI</th>
+                    <th>Score</th><th>Target</th><th>Stop Loss</th>
+                    <th>Upside</th><th>Signals</th><th>Action</th>
+                </tr></thead>
+                <tbody>
+                <tr class="top-row">
+                    <td><strong>COFORGE</strong></td>
+                    <td>3.0%</td>
+                    <td>₹1421.50</td>
+                    <td style="color:#e74c3c">-6.50%</td>
+                    <td style="color:#e74c3c">-11.15%</td>
+                    <td style="color:#c0392b"><strong>24.0</strong></td>
+                    <td style="color:#27ae60"><strong>75/100</strong></td>
+                    <td style="color:#27ae60">₹1563.65</td>
+                    <td style="color:#e74c3c">₹1350.42</td>
+                    <td style="color:#27ae60">+39.6%</td>
+                    <td><span class="sig-pill">🔥 Extreme Oversold</span> <span class="sig-pill">💥 High Volume</span></td>
+                    <td><span class="tag strong-buy">🔥 STRONG BUY</span></td>
+                </tr></tbody>
+            </table></div>
+            <h4 class="industry-title">🏭 IT Services</h4>
+            <div class="table-wrap">
+            <table>
+                <thead><tr>
+                    <th>Stock</th><th>Weight</th><th>LTP</th>
+                    <th>Day %</th><th>Week %</th><th>RSI</th>
+                    <th>Score</th><th>Target</th><th>Stop Loss</th>
+                    <th>Upside</th><th>Signals</th><th>Action</th>
+                </tr></thead>
+                <tbody>
+                <tr class="">
+                    <td><strong>INFY</strong></td>
+                    <td>27.0%</td>
+                    <td>₹1386.00</td>
+                    <td style="color:#e74c3c">-5.84%</td>
+                    <td style="color:#e74c3c">-8.83%</td>
+                    <td style="color:#c0392b"><strong>12.5</strong></td>
+                    <td style="color:#27ae60"><strong>70/100</strong></td>
+                    <td style="color:#27ae60">₹1524.60</td>
+                    <td style="color:#e74c3c">₹1316.70</td>
+                    <td style="color:#27ae60">+24.7%</td>
+                    <td><span class="sig-pill">🔥 Extreme Oversold</span> <span class="sig-pill">💥 High Volume</span></td>
+                    <td><span class="tag strong-buy">🔥 STRONG BUY</span></td>
+                </tr>
+                <tr class="">
+                    <td><strong>TCS</strong></td>
+                    <td>22.0%</td>
+                    <td>₹2750.10</td>
+                    <td style="color:#e74c3c">-5.49%</td>
+                    <td style="color:#e74c3c">-8.07%</td>
+                    <td style="color:#c0392b"><strong>24.9</strong></td>
+                    <td style="color:#27ae60"><strong>70/100</strong></td>
+                    <td style="color:#27ae60">₹3025.11</td>
+                    <td style="color:#e74c3c">₹2612.60</td>
+                    <td style="color:#27ae60">+21.8%</td>
+                    <td><span class="sig-pill">🔥 Extreme Oversold</span> <span class="sig-pill">💥 High Volume</span></td>
+                    <td><span class="tag strong-buy">🔥 STRONG BUY</span></td>
+                </tr>
+                <tr class="">
+                    <td><strong>HCLTECH</strong></td>
+                    <td>11.0%</td>
+                    <td>₹1476.10</td>
+                    <td style="color:#e74c3c">-4.87%</td>
+                    <td style="color:#e74c3c">-8.32%</td>
+                    <td style="color:#c0392b"><strong>16.0</strong></td>
+                    <td style="color:#27ae60"><strong>70/100</strong></td>
+                    <td style="color:#27ae60">₹1623.71</td>
+                    <td style="color:#e74c3c">₹1402.29</td>
+                    <td style="color:#27ae60">+20.6%</td>
+                    <td><span class="sig-pill">🔥 Extreme Oversold</span> <span class="sig-pill">💥 High Volume</span></td>
+                    <td><span class="tag strong-buy">🔥 STRONG BUY</span></td>
+                </tr>
+                <tr class="">
+                    <td><strong>LTIM</strong></td>
+                    <td>6.0%</td>
+                    <td>₹5211.50</td>
+                    <td style="color:#e74c3c">-5.51%</td>
+                    <td style="color:#e74c3c">-8.30%</td>
+                    <td style="color:#c0392b"><strong>22.1</strong></td>
+                    <td style="color:#27ae60"><strong>70/100</strong></td>
+                    <td style="color:#27ae60">₹5732.65</td>
+                    <td style="color:#e74c3c">₹4950.93</td>
+                    <td style="color:#27ae60">+23.4%</td>
+                    <td><span class="sig-pill">🔥 Extreme Oversold</span> <span class="sig-pill">📊 Volume Surge</span></td>
+                    <td><span class="tag strong-buy">🔥 STRONG BUY</span></td>
+                </tr>
+                <tr class="">
+                    <td><strong>TECHM</strong></td>
+                    <td>10.0%</td>
+                    <td>₹1536.60</td>
+                    <td style="color:#e74c3c">-5.98%</td>
+                    <td style="color:#e74c3c">-6.66%</td>
+                    <td style="color:#e74c3c"><strong>29.3</strong></td>
+                    <td style="color:#f39c12"><strong>65/100</strong></td>
+                    <td style="color:#27ae60">₹1690.26</td>
+                    <td style="color:#e74c3c">₹1459.77</td>
+                    <td style="color:#27ae60">+20.7%</td>
+                    <td><span class="sig-pill">🔥 RSI Oversold</span> <span class="sig-pill">💥 High Volume</span></td>
+                    <td><span class="tag buy">📊 BUY</span></td>
+                </tr>
+                <tr class="">
+                    <td><strong>WIPRO</strong></td>
+                    <td>7.0%</td>
+                    <td>₹219.08</td>
+                    <td style="color:#e74c3c">-4.67%</td>
+                    <td style="color:#e74c3c">-6.13%</td>
+                    <td style="color:#e74c3c"><strong>32.7</strong></td>
+                    <td style="color:#f39c12"><strong>60/100</strong></td>
+                    <td style="color:#27ae60">₹240.99</td>
+                    <td style="color:#e74c3c">₹208.13</td>
+                    <td style="color:#27ae60">+21.5%</td>
+                    <td><span class="sig-pill">📊 RSI Buy Zone</span> <span class="sig-pill">💥 High Volume</span></td>
+                    <td><span class="tag buy">📊 BUY</span></td>
+                </tr></tbody>
+            </table></div>
+            <h4 class="industry-title">🏭 Product Engineering</h4>
+            <div class="table-wrap">
+            <table>
+                <thead><tr>
+                    <th>Stock</th><th>Weight</th><th>LTP</th>
+                    <th>Day %</th><th>Week %</th><th>RSI</th>
+                    <th>Score</th><th>Target</th><th>Stop Loss</th>
+                    <th>Upside</th><th>Signals</th><th>Action</th>
+                </tr></thead>
+                <tbody>
+                <tr class="">
+                    <td><strong>PERSISTENT</strong></td>
+                    <td>4.0%</td>
+                    <td>₹5452.00</td>
+                    <td style="color:#e74c3c">-4.75%</td>
+                    <td style="color:#e74c3c">-8.84%</td>
+                    <td style="color:#c0392b"><strong>22.6</strong></td>
+                    <td style="color:#27ae60"><strong>70/100</strong></td>
+                    <td style="color:#27ae60">₹5997.20</td>
+                    <td style="color:#e74c3c">₹5179.40</td>
+                    <td style="color:#27ae60">+20.6%</td>
+                    <td><span class="sig-pill">🔥 Extreme Oversold</span> <span class="sig-pill">💥 High Volume</span></td>
+                    <td><span class="tag strong-buy">🔥 STRONG BUY</span></td>
+                </tr></tbody>
+            </table></div>
+        </div>
+        <div class="sector-detail-block">
+            <div class="sector-detail-header">
+                <h3>📊 NIFTY FMCG — Bullish Setup</h3>
+                <div class="sector-meta">
+                    RSI: <strong>49.1</strong> &nbsp;|&nbsp;
+                    Week: <strong style="color:#27ae60">+2.27%</strong> &nbsp;|&nbsp;
+                    LTP: <strong>₹51885.75</strong> &nbsp;|&nbsp;
+                    Score: <strong>35/100</strong>
+                </div>
+            </div>
+            
+            <h4 class="industry-title">🏭 Ayurvedic Products</h4>
+            <div class="table-wrap">
+            <table>
+                <thead><tr>
+                    <th>Stock</th><th>Weight</th><th>LTP</th>
+                    <th>Day %</th><th>Week %</th><th>RSI</th>
+                    <th>Score</th><th>Target</th><th>Stop Loss</th>
+                    <th>Upside</th><th>Signals</th><th>Action</th>
+                </tr></thead>
+                <tbody>
+                <tr class="">
+                    <td><strong>DABUR</strong></td>
+                    <td>5.5%</td>
+                    <td>₹519.55</td>
+                    <td style="color:#e74c3c">-0.54%</td>
+                    <td style="color:#27ae60">+3.02%</td>
+                    <td style="color:#f39c12"><strong>44.9</strong></td>
+                    <td style="color:#95a5a6"><strong>25/100</strong></td>
+                    <td style="color:#27ae60">₹571.50</td>
+                    <td style="color:#e74c3c">₹493.57</td>
+                    <td style="color:#27ae60">+2.8%</td>
+                    <td><span class="sig-pill">✅ Golden Cross</span></td>
+                    <td><span class="tag watch">👀 WATCH</span></td>
+                </tr></tbody>
+            </table></div>
+            <h4 class="industry-title">🏭 Beverages</h4>
+            <div class="table-wrap">
+            <table>
+                <thead><tr>
+                    <th>Stock</th><th>Weight</th><th>LTP</th>
+                    <th>Day %</th><th>Week %</th><th>RSI</th>
+                    <th>Score</th><th>Target</th><th>Stop Loss</th>
+                    <th>Upside</th><th>Signals</th><th>Action</th>
+                </tr></thead>
+                <tbody>
+                <tr class="">
+                    <td><strong>TATACONSUM</strong></td>
+                    <td>7.0%</td>
+                    <td>₹1149.30</td>
+                    <td style="color:#e74c3c">-0.29%</td>
+                    <td style="color:#e74c3c">-0.57%</td>
+                    <td style="color:#f39c12"><strong>44.5</strong></td>
+                    <td style="color:#95a5a6"><strong>25/100</strong></td>
+                    <td style="color:#27ae60">₹1264.23</td>
+                    <td style="color:#e74c3c">₹1091.84</td>
+                    <td style="color:#27ae60">+6.2%</td>
+                    <td></td>
+                    <td><span class="tag watch">👀 WATCH</span></td>
+                </tr></tbody>
+            </table></div>
+            <h4 class="industry-title">🏭 Biscuits</h4>
+            <div class="table-wrap">
+            <table>
+                <thead><tr>
+                    <th>Stock</th><th>Weight</th><th>LTP</th>
+                    <th>Day %</th><th>Week %</th><th>RSI</th>
+                    <th>Score</th><th>Target</th><th>Stop Loss</th>
+                    <th>Upside</th><th>Signals</th><th>Action</th>
+                </tr></thead>
+                <tbody>
+                <tr class="">
+                    <td><strong>BRITANNIA</strong></td>
+                    <td>6.0%</td>
+                    <td>₹6102.00</td>
+                    <td style="color:#27ae60">+1.38%</td>
+                    <td style="color:#27ae60">+3.94%</td>
+                    <td style="color:#f39c12"><strong>59.9</strong></td>
+                    <td style="color:#95a5a6"><strong>25/100</strong></td>
+                    <td style="color:#27ae60">₹6712.20</td>
+                    <td style="color:#e74c3c">₹5796.90</td>
+                    <td style="color:#27ae60">+2.8%</td>
+                    <td><span class="sig-pill">✅ Golden Cross</span></td>
+                    <td><span class="tag watch">👀 WATCH</span></td>
+                </tr></tbody>
+            </table></div>
+            <h4 class="industry-title">🏭 Diversified FMCG</h4>
+            <div class="table-wrap">
+            <table>
+                <thead><tr>
+                    <th>Stock</th><th>Weight</th><th>LTP</th>
+                    <th>Day %</th><th>Week %</th><th>RSI</th>
+                    <th>Score</th><th>Target</th><th>Stop Loss</th>
+                    <th>Upside</th><th>Signals</th><th>Action</th>
+                </tr></thead>
+                <tbody>
+                <tr class="">
+                    <td><strong>ITC</strong></td>
+                    <td>33.0%</td>
+                    <td>₹317.45</td>
+                    <td style="color:#e74c3c">-0.25%</td>
+                    <td style="color:#27ae60">+2.34%</td>
+                    <td style="color:#f39c12"><strong>49.3</strong></td>
+                    <td style="color:#f39c12"><strong>60/100</strong></td>
+                    <td style="color:#27ae60">₹349.20</td>
+                    <td style="color:#e74c3c">₹301.58</td>
+                    <td style="color:#27ae60">+27.1%</td>
+                    <td></td>
+                    <td><span class="tag buy">📊 BUY</span></td>
+                </tr></tbody>
+            </table></div>
+            <h4 class="industry-title">🏭 Hair & Skin Care</h4>
+            <div class="table-wrap">
+            <table>
+                <thead><tr>
+                    <th>Stock</th><th>Weight</th><th>LTP</th>
+                    <th>Day %</th><th>Week %</th><th>RSI</th>
+                    <th>Score</th><th>Target</th><th>Stop Loss</th>
+                    <th>Upside</th><th>Signals</th><th>Action</th>
+                </tr></thead>
+                <tbody>
+                <tr class="">
+                    <td><strong>MARICO</strong></td>
+                    <td>4.5%</td>
+                    <td>₹770.65</td>
+                    <td style="color:#27ae60">+0.03%</td>
+                    <td style="color:#27ae60">+2.99%</td>
+                    <td style="color:#27ae60"><strong>60.8</strong></td>
+                    <td style="color:#95a5a6"><strong>25/100</strong></td>
+                    <td style="color:#27ae60">₹847.72</td>
+                    <td style="color:#e74c3c">₹732.12</td>
+                    <td style="color:#27ae60">+1.2%</td>
+                    <td><span class="sig-pill">✅ Golden Cross</span></td>
+                    <td><span class="tag watch">👀 WATCH</span></td>
+                </tr></tbody>
+            </table></div>
+            <h4 class="industry-title">🏭 Home Care</h4>
+            <div class="table-wrap">
+            <table>
+                <thead><tr>
+                    <th>Stock</th><th>Weight</th><th>LTP</th>
+                    <th>Day %</th><th>Week %</th><th>RSI</th>
+                    <th>Score</th><th>Target</th><th>Stop Loss</th>
+                    <th>Upside</th><th>Signals</th><th>Action</th>
+                </tr></thead>
+                <tbody>
+                <tr class="">
+                    <td><strong>GODREJCP</strong></td>
+                    <td>4.0%</td>
+                    <td>₹1204.30</td>
+                    <td style="color:#e74c3c">-0.36%</td>
+                    <td style="color:#27ae60">+2.91%</td>
+                    <td style="color:#f39c12"><strong>40.9</strong></td>
+                    <td style="color:#95a5a6"><strong>25/100</strong></td>
+                    <td style="color:#27ae60">₹1324.73</td>
+                    <td style="color:#e74c3c">₹1144.09</td>
+                    <td style="color:#27ae60">+5.3%</td>
+                    <td><span class="sig-pill">📈 Above EMA9</span></td>
+                    <td><span class="tag watch">👀 WATCH</span></td>
+                </tr></tbody>
+            </table></div>
+            <h4 class="industry-title">🏭 Packaged Foods</h4>
+            <div class="table-wrap">
+            <table>
+                <thead><tr>
+                    <th>Stock</th><th>Weight</th><th>LTP</th>
+                    <th>Day %</th><th>Week %</th><th>RSI</th>
+                    <th>Score</th><th>Target</th><th>Stop Loss</th>
+                    <th>Upside</th><th>Signals</th><th>Action</th>
+                </tr></thead>
+                <tbody>
+                <tr class="">
+                    <td><strong>NESTLEIND</strong></td>
+                    <td>8.0%</td>
+                    <td>₹1305.50</td>
+                    <td style="color:#27ae60">+0.02%</td>
+                    <td style="color:#27ae60">+0.69%</td>
+                    <td style="color:#f39c12"><strong>52.3</strong></td>
+                    <td style="color:#95a5a6"><strong>25/100</strong></td>
+                    <td style="color:#27ae60">₹1436.05</td>
+                    <td style="color:#e74c3c">₹1240.22</td>
+                    <td style="color:#27ae60">+2.1%</td>
+                    <td><span class="sig-pill">✅ Golden Cross</span></td>
+                    <td><span class="tag watch">👀 WATCH</span></td>
+                </tr></tbody>
+            </table></div>
+            <h4 class="industry-title">🏭 Personal Care</h4>
+            <div class="table-wrap">
+            <table>
+                <thead><tr>
+                    <th>Stock</th><th>Weight</th><th>LTP</th>
+                    <th>Day %</th><th>Week %</th><th>RSI</th>
+                    <th>Score</th><th>Target</th><th>Stop Loss</th>
+                    <th>Upside</th><th>Signals</th><th>Action</th>
+                </tr></thead>
+                <tbody>
+                <tr class="">
+                    <td><strong>HINDUNILVR</strong></td>
+                    <td>18.0%</td>
+                    <td>₹2409.70</td>
+                    <td style="color:#e74c3c">-2.16%</td>
+                    <td style="color:#27ae60">+2.35%</td>
+                    <td style="color:#f39c12"><strong>53.1</strong></td>
+                    <td style="color:#95a5a6"><strong>25/100</strong></td>
+                    <td style="color:#27ae60">₹2650.67</td>
+                    <td style="color:#e74c3c">₹2289.21</td>
+                    <td style="color:#27ae60">+3.2%</td>
+                    <td><span class="sig-pill">💥 High Volume</span></td>
+                    <td><span class="tag watch">👀 WATCH</span></td>
+                </tr></tbody>
+            </table></div>
+        </div>
+  </div>
+
+  <div class="section">
+    <div class="disclaimer">
+      <strong>⚠️ Risk Disclaimer:</strong> This report is for informational and educational purposes only.
+      Past performance does not guarantee future results. All trading involves risk.
+      Please conduct your own research and consult with a certified financial advisor before making any investment decisions.
+      The profit scores and targets are algorithmic calculations and should not be considered as guaranteed outcomes.
+    </div>
+  </div>
+
+  <div class="footer">© 2026 Nifty Indices Scanner &nbsp;|&nbsp; Automated Market Intelligence &nbsp;|&nbsp; For Educational Purposes Only</div>
+</div>
+</body>
+</html>
