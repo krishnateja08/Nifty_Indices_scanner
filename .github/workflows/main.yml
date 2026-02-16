@@ -43,7 +43,7 @@ jobs:
         TWILIO_FROM: ${{ secrets.TWILIO_FROM }}
         TWILIO_TO: ${{ secrets.TWILIO_TO }}
       run: |
-        python sector_analyzer_neon_cyan.py
+        python Nifty_indices_scanner.py
         
     - name: Verify index.html was generated
       run: |
