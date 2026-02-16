@@ -327,10 +327,10 @@ def fetch_market_data(ticker, period="3mo"):
         return None
 
 # ─────────────────────────────────────────────────────────────
-#  NEW: GitHub Pages index.html generator
+#  THEME 7: NEON CYAN - GitHub Pages HTML Generator
 # ─────────────────────────────────────────────────────────────
 def generate_github_pages_html(sector_analysis, bullish_sectors, ist_time):
-    """Generate a polished self-contained index.html for GitHub Pages."""
+    """Generate Neon Cyan themed index.html for GitHub Pages."""
 
     total_sectors = len(sector_analysis)
     bullish_count = len(bullish_sectors)
@@ -348,9 +348,9 @@ def generate_github_pages_html(sector_analysis, bullish_sectors, ist_time):
         idx  = analysis['index_data']
         sc   = analysis['strength_score']
         bull = sn in bullish_sectors
-        badge_color = "#27ae60" if bull else ("#e74c3c" if idx['rsi'] > 70 else "#f39c12")
+        badge_color = "#00ff95" if bull else ("#ff6b9d" if idx['rsi'] > 70 else "#ffa502")
         badge_text  = "🟢 BULLISH" if bull else ("🔴 BEARISH" if idx['rsi'] > 70 else "🟡 NEUTRAL")
-        wk_color    = "#27ae60" if idx['week_chg_pct'] and idx['week_chg_pct'] > 0 else "#e74c3c"
+        wk_color    = "#00ff95" if idx['week_chg_pct'] and idx['week_chg_pct'] > 0 else "#ff6b9d"
         wk_sign     = "+" if idx['week_chg_pct'] and idx['week_chg_pct'] > 0 else ""
         sector_cards += f"""
         <div class="sector-card {'bullish-card' if bull else ''}">
@@ -368,10 +368,10 @@ def generate_github_pages_html(sector_analysis, bullish_sectors, ist_time):
     for i, s in enumerate(top_picks, 1):
         ps  = s['profit_score']
         rsi = s['rsi']
-        pc  = "#27ae60" if ps >= 70 else "#f39c12" if ps >= 50 else "#95a5a6"
-        rc  = "#c0392b" if rsi < 25 else "#e74c3c" if rsi < 40 else "#f39c12" if rsi < 60 else "#27ae60"
-        dc  = "#27ae60" if s['day_chg_pct'] > 0 else "#e74c3c"
-        wc  = "#27ae60" if s['week_chg_pct'] and s['week_chg_pct'] > 0 else "#e74c3c"
+        pc  = "#00ff95" if ps >= 70 else "#ffa502" if ps >= 50 else "#888"
+        rc  = "#ff6b9d" if rsi < 25 else "#ff6b9d" if rsi < 40 else "#ffa502" if rsi < 60 else "#00ff95"
+        dc  = "#00ff95" if s['day_chg_pct'] > 0 else "#ff6b9d"
+        wc  = "#00ff95" if s['week_chg_pct'] and s['week_chg_pct'] > 0 else "#ff6b9d"
         if ps >= 70 and rsi < 30:
             action = '<span class="tag strong-buy">🔥 STRONG BUY</span>'
         elif ps >= 60 or rsi < 35:
@@ -388,9 +388,9 @@ def generate_github_pages_html(sector_analysis, bullish_sectors, ist_time):
             <td style="color:{wc}">{s['week_chg_pct']:+.2f}%</td>
             <td style="color:{rc}"><strong>{rsi:.1f}</strong></td>
             <td style="color:{pc}"><strong>{ps}/100</strong></td>
-            <td style="color:#27ae60">₹{s['target_2']:.2f}</td>
-            <td style="color:#e74c3c">₹{s['stop_loss']:.2f}</td>
-            <td style="color:#27ae60">+{s['upside_potential']:.1f}%</td>
+            <td style="color:#00ff95">₹{s['target_2']:.2f}</td>
+            <td style="color:#ff6b9d">₹{s['stop_loss']:.2f}</td>
+            <td style="color:#00ff95">+{s['upside_potential']:.1f}%</td>
             <td>{sigs}</td>
             <td>{action}</td>
         </tr>"""
@@ -400,7 +400,7 @@ def generate_github_pages_html(sector_analysis, bullish_sectors, ist_time):
     for sn in bullish_sectors:
         analysis = sector_analysis[sn]
         idx      = analysis['index_data']
-        wk_color = "#27ae60" if idx['week_chg_pct'] > 0 else "#e74c3c"
+        wk_color = "#00ff95" if idx['week_chg_pct'] > 0 else "#ff6b9d"
         wk_sign  = "+" if idx['week_chg_pct'] > 0 else ""
         industries: dict = {}
         for st in analysis['stocks']:
@@ -412,10 +412,10 @@ def generate_github_pages_html(sector_analysis, bullish_sectors, ist_time):
             for st in stocks_s:
                 ps  = st['profit_score']
                 rsi = st['rsi']
-                pc  = "#27ae60" if ps >= 70 else "#f39c12" if ps >= 50 else "#95a5a6"
-                rc  = "#c0392b" if rsi < 25 else "#e74c3c" if rsi < 40 else "#f39c12" if rsi < 60 else "#27ae60"
-                dc  = "#27ae60" if st['day_chg_pct'] > 0 else "#e74c3c"
-                wc  = "#27ae60" if st['week_chg_pct'] and st['week_chg_pct'] > 0 else "#e74c3c"
+                pc  = "#00ff95" if ps >= 70 else "#ffa502" if ps >= 50 else "#888"
+                rc  = "#ff6b9d" if rsi < 25 else "#ff6b9d" if rsi < 40 else "#ffa502" if rsi < 60 else "#00ff95"
+                dc  = "#00ff95" if st['day_chg_pct'] > 0 else "#ff6b9d"
+                wc  = "#00ff95" if st['week_chg_pct'] and st['week_chg_pct'] > 0 else "#ff6b9d"
                 if ps >= 70 and rsi < 30:
                     act = '<span class="tag strong-buy">🔥 STRONG BUY</span>'
                 elif ps >= 60 or rsi < 35:
@@ -432,9 +432,9 @@ def generate_github_pages_html(sector_analysis, bullish_sectors, ist_time):
                     <td style="color:{wc}">{st['week_chg_pct']:+.2f}%</td>
                     <td style="color:{rc}"><strong>{rsi:.1f}</strong></td>
                     <td style="color:{pc}"><strong>{ps}/100</strong></td>
-                    <td style="color:#27ae60">₹{st['target_2']:.2f}</td>
-                    <td style="color:#e74c3c">₹{st['stop_loss']:.2f}</td>
-                    <td style="color:#27ae60">+{st['upside_potential']:.1f}%</td>
+                    <td style="color:#00ff95">₹{st['target_2']:.2f}</td>
+                    <td style="color:#ff6b9d">₹{st['stop_loss']:.2f}</td>
+                    <td style="color:#00ff95">+{st['upside_potential']:.1f}%</td>
                     <td>{sigs}</td>
                     <td>{act}</td>
                 </tr>"""
@@ -471,95 +471,142 @@ def generate_github_pages_html(sector_analysis, bullish_sectors, ist_time):
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>🎯 Nifty Indices Market Intelligence Report</title>
+<title>🎯 Nifty Indices - Neon Cyan Theme</title>
 <style>
   :root {{
-    --purple:#667eea; --purple2:#764ba2;
-    --green:#27ae60;  --red:#e74c3c;
-    --yellow:#f39c12; --dark:#2c3e50;
+    --neon-cyan:#00d9ff;
+    --neon-green:#00ff95;
+    --neon-pink:#ff6b9d;
+    --neon-orange:#ffa502;
+    --dark-bg:#000814;
+    --darker:#001f3f;
   }}
   * {{ box-sizing:border-box; margin:0; padding:0; }}
   body {{
     font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;
-    background:linear-gradient(135deg,var(--purple) 0%,var(--purple2) 100%);
-    min-height:100vh; padding:20px;
+    background:linear-gradient(135deg, var(--darker) 0%, var(--dark-bg) 100%);
+    min-height:100vh; padding:20px; color:#cfd8dc;
   }}
   .container {{
-    max-width:1400px; margin:auto; background:#fff;
-    border-radius:16px; box-shadow:0 12px 48px rgba(0,0,0,.3); overflow:hidden;
+    max-width:1400px; margin:auto; background:rgba(0, 8, 20, 0.95);
+    border-radius:16px; box-shadow:0 0 40px rgba(0, 217, 255, 0.4);
+    overflow:hidden; border:1px solid rgba(0, 217, 255, 0.3);
   }}
   .header {{
-    background:linear-gradient(135deg,var(--purple) 0%,var(--purple2) 100%);
-    color:white; padding:36px 30px 28px; text-align:center;
+    background:linear-gradient(135deg, var(--darker) 0%, #003d7a 100%);
+    color:var(--neon-cyan); padding:36px 30px 28px; text-align:center;
+    text-shadow:0 0 20px rgba(0, 217, 255, 0.8);
+    border-bottom:3px solid var(--neon-cyan);
   }}
   .header h1 {{ font-size:2.2rem; font-weight:700; margin-bottom:6px; }}
-  .header .subtitle {{ opacity:.85; font-size:.95rem; }}
+  .header .subtitle {{ opacity:.85; font-size:.95rem; color:#80deea; }}
   .summary-strip {{
     display:flex; flex-wrap:wrap; gap:16px;
-    padding:24px 30px; background:#f8f9fa; border-bottom:1px solid #dee2e6;
+    padding:24px 30px; background:rgba(0, 31, 63, 0.5);
+    border-bottom:1px solid rgba(0, 217, 255, 0.2);
   }}
   .stat-box {{
-    flex:1 1 140px; background:white; border-radius:10px;
-    padding:16px 20px; text-align:center;
-    box-shadow:0 2px 8px rgba(0,0,0,.07); border-top:4px solid var(--purple);
+    flex:1 1 140px; background:rgba(0, 217, 255, 0.1);
+    border-radius:10px; padding:16px 20px; text-align:center;
+    box-shadow:0 0 15px rgba(0, 217, 255, 0.2);
+    border-left:4px solid var(--neon-cyan);
+    transition:all 0.3s;
   }}
-  .stat-box .stat-val {{ font-size:2rem; font-weight:700; color:var(--dark); }}
-  .stat-box .stat-lbl {{ font-size:.78rem; color:#888; margin-top:4px; text-transform:uppercase; letter-spacing:.5px; }}
+  .stat-box:hover {{
+    transform:translateY(-3px);
+    box-shadow:0 0 25px rgba(0, 217, 255, 0.4);
+  }}
+  .stat-box .stat-val {{ font-size:2rem; font-weight:700; color:var(--neon-cyan); }}
+  .stat-box .stat-lbl {{ font-size:.78rem; color:#80deea; margin-top:4px; text-transform:uppercase; letter-spacing:.5px; }}
   .section {{ padding:28px 30px; }}
   .section-title {{
-    font-size:1.25rem; font-weight:700; color:var(--dark);
-    padding:10px 16px; border-left:5px solid var(--purple);
-    background:linear-gradient(90deg,#f0f0ff 0%,#fff 100%);
+    font-size:1.25rem; font-weight:700; color:var(--neon-cyan);
+    padding:10px 16px; border-left:5px solid var(--neon-cyan);
+    background:linear-gradient(90deg,rgba(0, 217, 255, 0.1) 0%, transparent 100%);
     border-radius:4px; margin-bottom:20px;
+    text-shadow:0 0 10px rgba(0, 217, 255, 0.5);
   }}
   .sector-grid {{
     display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr));
     gap:14px; margin-bottom:10px;
   }}
   .sector-card {{
-    border:1px solid #dee2e6; border-radius:10px; padding:14px;
-    background:white; box-shadow:0 2px 6px rgba(0,0,0,.05); transition:transform .2s;
+    border:1px solid rgba(0, 217, 255, 0.3);
+    border-radius:10px; padding:14px;
+    background:rgba(0, 217, 255, 0.05);
+    box-shadow:0 0 10px rgba(0, 217, 255, 0.15);
+    transition:all 0.3s;
   }}
-  .sector-card:hover {{ transform:translateY(-3px); }}
-  .bullish-card {{ border-color:var(--green); background:linear-gradient(135deg,#f0fff4 0%,#fff 100%); }}
-  .sector-name {{ font-weight:700; font-size:.9rem; color:var(--dark); margin-bottom:6px; }}
-  .sector-badge {{ display:inline-block; color:white; font-size:.72rem; font-weight:700; padding:3px 9px; border-radius:20px; margin-bottom:8px; }}
-  .sector-metrics {{ font-size:.8rem; color:#555; display:flex; flex-direction:column; gap:3px; }}
+  .sector-card:hover {{
+    transform:translateY(-3px);
+    box-shadow:0 0 20px rgba(0, 217, 255, 0.3);
+  }}
+  .bullish-card {{
+    border-color:var(--neon-green);
+    background:linear-gradient(135deg,rgba(0, 255, 149, 0.1) 0%, transparent 100%);
+    box-shadow:0 0 15px rgba(0, 255, 149, 0.2);
+  }}
+  .sector-name {{ font-weight:700; font-size:.9rem; color:var(--neon-cyan); margin-bottom:6px; }}
+  .sector-badge {{ display:inline-block; color:#000; font-size:.72rem; font-weight:700; padding:3px 9px; border-radius:20px; margin-bottom:8px; }}
+  .sector-metrics {{ font-size:.8rem; color:#cfd8dc; display:flex; flex-direction:column; gap:3px; }}
   .table-wrap {{ overflow-x:auto; margin-bottom:20px; }}
   table {{ width:100%; border-collapse:collapse; font-size:.83rem; }}
-  thead tr {{ background:linear-gradient(135deg,var(--purple) 0%,var(--purple2) 100%); }}
+  thead tr {{ background:linear-gradient(135deg, var(--darker) 0%, #003d7a 100%); }}
   thead th {{
-    color:white; padding:11px 10px; text-align:left;
+    color:var(--neon-cyan); padding:11px 10px; text-align:left;
     font-weight:600; font-size:.75rem; text-transform:uppercase;
     letter-spacing:.4px; white-space:nowrap;
+    text-shadow:0 0 5px rgba(0, 217, 255, 0.5);
   }}
-  tbody td {{ padding:10px; border-bottom:1px solid #f0f0f0; vertical-align:middle; }}
-  tbody tr:hover {{ background:#fafafa; }}
-  .top-row {{ background:linear-gradient(90deg,#fffbe6 0%,#fff 100%) !important; border-left:3px solid #ffc107; }}
+  tbody td {{ padding:10px; border-bottom:1px solid rgba(0, 217, 255, 0.1); vertical-align:middle; color:#cfd8dc; }}
+  tbody tr:hover {{ background:rgba(0, 217, 255, 0.05); }}
+  .top-row {{ background:linear-gradient(90deg,rgba(0, 217, 255, 0.1) 0%, transparent 100%) !important; border-left:3px solid var(--neon-cyan); }}
   .tag {{ display:inline-block; padding:4px 10px; border-radius:5px; font-size:.72rem; font-weight:700; white-space:nowrap; }}
-  .strong-buy {{ background:var(--green); color:white; }}
-  .buy        {{ background:#3498db;     color:white; }}
-  .watch      {{ background:#95a5a6;     color:white; }}
+  .strong-buy {{ background:var(--neon-green); color:#000; }}
+  .buy        {{ background:var(--neon-cyan); color:#000; }}
+  .watch      {{ background:#888;           color:#fff; }}
   .sig-pill {{
     display:inline-block;
-    background:linear-gradient(135deg,var(--purple) 0%,var(--purple2) 100%);
-    color:white; font-size:.65rem; padding:2px 7px; border-radius:12px; margin:1px; white-space:nowrap;
+    background:linear-gradient(135deg, var(--neon-cyan) 0%, #0099cc 100%);
+    color:#000; font-size:.65rem; padding:2px 7px; border-radius:12px;
+    margin:1px; white-space:nowrap; font-weight:700;
+    box-shadow:0 0 5px rgba(0, 217, 255, 0.5);
   }}
-  .sector-detail-block {{ margin-bottom:40px; border:1px solid #dee2e6; border-radius:12px; overflow:hidden; }}
+  .sector-detail-block {{
+    margin-bottom:40px;
+    border:1px solid rgba(0, 217, 255, 0.3);
+    border-radius:12px; overflow:hidden;
+    box-shadow:0 0 20px rgba(0, 217, 255, 0.2);
+  }}
   .sector-detail-header {{
-    background:linear-gradient(135deg,var(--purple) 0%,var(--purple2) 100%);
-    color:white; padding:16px 20px;
+    background:linear-gradient(135deg, var(--darker) 0%, #003d7a 100%);
+    color:var(--neon-cyan); padding:16px 20px;
+    border-bottom:2px solid var(--neon-cyan);
   }}
-  .sector-detail-header h3 {{ font-size:1.1rem; margin-bottom:6px; }}
-  .sector-meta {{ font-size:.85rem; opacity:.9; }}
-  .industry-title {{ font-size:.9rem; color:#16a085; padding:10px 16px 4px; border-bottom:2px solid #ecf0f1; margin-bottom:4px; }}
+  .sector-detail-header h3 {{
+    font-size:1.1rem; margin-bottom:6px;
+    text-shadow:0 0 10px rgba(0, 217, 255, 0.8);
+  }}
+  .sector-meta {{ font-size:.85rem; opacity:.9; color:#80deea; }}
+  .industry-title {{
+    font-size:.9rem; color:var(--neon-green);
+    padding:10px 16px 4px;
+    border-bottom:2px solid rgba(0, 255, 149, 0.3);
+    margin-bottom:4px;
+    text-shadow:0 0 8px rgba(0, 255, 149, 0.5);
+  }}
   .disclaimer {{
-    background:#fff8f8; border-left:4px solid var(--red);
-    border-radius:6px; padding:14px 18px; font-size:.8rem; color:#666; margin:10px 0 0;
+    background:rgba(255, 107, 157, 0.1);
+    border-left:4px solid var(--neon-pink);
+    border-radius:6px; padding:14px 18px; font-size:.8rem;
+    color:#ffb3d9; margin:10px 0 0;
+    box-shadow:0 0 10px rgba(255, 107, 157, 0.2);
   }}
   .footer {{
-    text-align:center; padding:20px; background:#f8f9fa;
-    font-size:.8rem; color:#888; border-top:1px solid #dee2e6;
+    text-align:center; padding:20px;
+    background:rgba(0, 31, 63, 0.5);
+    font-size:.8rem; color:#80deea;
+    border-top:1px solid rgba(0, 217, 255, 0.2);
   }}
 </style>
 </head>
@@ -567,7 +614,7 @@ def generate_github_pages_html(sector_analysis, bullish_sectors, ist_time):
 <div class="container">
 
   <div class="header">
-    <h1>🎯 Nifty Indices Market Intelligence Report</h1>
+    <h1>🎯 Nifty Indices Market Intelligence</h1>
     <div class="subtitle">Generated: {ist_time}</div>
   </div>
 
@@ -576,20 +623,20 @@ def generate_github_pages_html(sector_analysis, bullish_sectors, ist_time):
       <div class="stat-val">{total_sectors}</div>
       <div class="stat-lbl">Sectors Analyzed</div>
     </div>
-    <div class="stat-box" style="border-color:var(--green)">
-      <div class="stat-val" style="color:var(--green)">{bullish_count}</div>
+    <div class="stat-box" style="border-color:var(--neon-green)">
+      <div class="stat-val" style="color:var(--neon-green)">{bullish_count}</div>
       <div class="stat-lbl">Bullish Sectors</div>
     </div>
-    <div class="stat-box" style="border-color:#3498db">
-      <div class="stat-val" style="color:#3498db">{len(top_picks)}</div>
+    <div class="stat-box" style="border-color:var(--neon-cyan)">
+      <div class="stat-val" style="color:var(--neon-cyan)">{len(top_picks)}</div>
       <div class="stat-lbl">Buy Opportunities</div>
     </div>
-    <div class="stat-box" style="border-color:#ffc107">
-      <div class="stat-val" style="color:#ffc107">{len(strong_buys)}</div>
+    <div class="stat-box" style="border-color:var(--neon-orange)">
+      <div class="stat-val" style="color:var(--neon-orange)">{len(strong_buys)}</div>
       <div class="stat-lbl">Strong Buys</div>
     </div>
-    <div class="stat-box" style="border-color:var(--purple)">
-      <div class="stat-val" style="color:var(--purple);font-size:1.1rem;padding-top:8px">{top_symbol}</div>
+    <div class="stat-box" style="border-color:var(--neon-cyan)">
+      <div class="stat-val" style="color:var(--neon-cyan);font-size:1.1rem;padding-top:8px">{top_symbol}</div>
       <div class="stat-lbl">Top Pick</div>
     </div>
   </div>
@@ -627,7 +674,7 @@ def generate_github_pages_html(sector_analysis, bullish_sectors, ist_time):
     </div>
   </div>
 
-  <div class="footer">© 2026 Nifty Indices Scanner &nbsp;|&nbsp; Automated Market Intelligence &nbsp;|&nbsp; For Educational Purposes Only</div>
+  <div class="footer">© 2026 Nifty Indices Scanner | Neon Cyan Theme | For Educational Purposes Only</div>
 </div>
 </body>
 </html>"""
@@ -635,45 +682,45 @@ def generate_github_pages_html(sector_analysis, bullish_sectors, ist_time):
 
 
 def generate_executive_html_report(sector_analysis, bullish_sectors, ist_time):
-    """Generate executive-level HTML report with advanced styling (for email — unchanged)"""
+    """Generate executive-level HTML report with Neon Cyan theme (for email)"""
 
     html = f"""
     <!DOCTYPE html>
     <html>
     <head>
         <style>
-            body {{ font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 20px; margin: 0; }}
-            .container {{ max-width: 1400px; margin: auto; background: white; padding: 30px; border-radius: 15px; box-shadow: 0 10px 40px rgba(0,0,0,0.3); }}
-            .header {{ background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 25px; border-radius: 10px; margin-bottom: 30px; text-align: center; }}
-            h1 {{ color: white; margin: 0; font-size: 32px; font-weight: 600; }}
-            .timestamp {{ color: rgba(255,255,255,0.9); font-size: 14px; margin-top: 8px; }}
-            h2 {{ color: #2c3e50; margin-top: 35px; padding: 12px 15px; background: linear-gradient(90deg, #ecf0f1 0%, #ffffff 100%); border-left: 5px solid #3498db; border-radius: 5px; font-size: 22px; }}
-            h3 {{ color: #16a085; margin-top: 25px; font-size: 18px; padding-bottom: 8px; border-bottom: 2px solid #ecf0f1; }}
-            table {{ width: 100%; border-collapse: collapse; margin: 20px 0; box-shadow: 0 4px 6px rgba(0,0,0,0.1); border-radius: 8px; overflow: hidden; }}
-            th {{ background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 14px 10px; text-align: left; font-weight: 600; font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px; }}
-            td {{ padding: 12px 10px; border-bottom: 1px solid #ecf0f1; font-size: 13px; }}
-            tr:hover {{ background-color: #f8f9fa; }}
-            .rsi-extreme {{ color: #c0392b; font-weight: bold; }}
-            .rsi-low {{ color: #e74c3c; font-weight: bold; }}
-            .rsi-medium {{ color: #f39c12; font-weight: bold; }}
-            .rsi-high {{ color: #27ae60; font-weight: bold; }}
-            .positive {{ color: #27ae60; font-weight: 600; }}
-            .negative {{ color: #e74c3c; font-weight: 600; }}
-            .signal-badge {{ display: inline-block; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 4px 10px; border-radius: 15px; font-size: 10px; margin: 2px; font-weight: 600; }}
-            .bullish-sector {{ background: linear-gradient(90deg, #d4edda 0%, #ffffff 100%); border-left: 5px solid #28a745; }}
-            .summary-box {{ background: linear-gradient(135deg, #e8f4f8 0%, #f0f8ff 100%); padding: 20px; border-radius: 10px; margin: 25px 0; border-left: 5px solid #3498db; box-shadow: 0 3px 10px rgba(0,0,0,0.1); }}
-            .metric {{ display: inline-block; margin: 8px 15px; font-size: 15px; }}
-            .metric strong {{ color: #2c3e50; }}
-            .sector-header {{ background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 18px; border-radius: 10px; margin-top: 35px; box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4); }}
-            .sector-header h2 {{ color: white; margin: 0; background: none; border: none; padding: 0; font-size: 24px; }}
-            .profit-high {{ color: #27ae60; font-weight: bold; }}
-            .profit-medium {{ color: #f39c12; font-weight: bold; }}
-            .profit-low {{ color: #95a5a6; }}
-            .action-strong-buy {{ background: #27ae60; color: white; padding: 6px 12px; border-radius: 5px; font-weight: bold; display: inline-block; }}
-            .action-buy {{ background: #3498db; color: white; padding: 6px 12px; border-radius: 5px; font-weight: bold; display: inline-block; }}
-            .action-watch {{ background: #95a5a6; color: white; padding: 6px 12px; border-radius: 5px; font-weight: bold; display: inline-block; }}
-            .top-pick {{ background: linear-gradient(90deg, #fff3cd 0%, #ffffff 100%); border-left: 5px solid #ffc107; }}
-            .disclaimer {{ background: #f8f9fa; padding: 15px; border-radius: 8px; margin-top: 40px; border-left: 4px solid #e74c3c; font-size: 12px; color: #6c757d; }}
+            body {{ font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(135deg, #001f3f 0%, #003d7a 100%); padding: 20px; margin: 0; }}
+            .container {{ max-width: 1400px; margin: auto; background: #000814; padding: 30px; border-radius: 15px; box-shadow: 0 0 40px rgba(0, 217, 255, 0.5); border: 2px solid rgba(0, 217, 255, 0.3); }}
+            .header {{ background: linear-gradient(135deg, #001f3f 0%, #003d7a 100%); color: #00d9ff; padding: 25px; border-radius: 10px; margin-bottom: 30px; text-align: center; text-shadow: 0 0 20px rgba(0, 217, 255, 0.8); border: 2px solid #00d9ff; }}
+            h1 {{ color: #00d9ff; margin: 0; font-size: 32px; font-weight: 600; }}
+            .timestamp {{ color: #80deea; font-size: 14px; margin-top: 8px; }}
+            h2 {{ color: #00d9ff; margin-top: 35px; padding: 12px 15px; background: linear-gradient(90deg, rgba(0, 217, 255, 0.2) 0%, transparent 100%); border-left: 5px solid #00d9ff; border-radius: 5px; font-size: 22px; text-shadow: 0 0 10px rgba(0, 217, 255, 0.5); }}
+            h3 {{ color: #00ff95; margin-top: 25px; font-size: 18px; padding-bottom: 8px; border-bottom: 2px solid rgba(0, 255, 149, 0.3); text-shadow: 0 0 8px rgba(0, 255, 149, 0.5); }}
+            table {{ width: 100%; border-collapse: collapse; margin: 20px 0; box-shadow: 0 0 20px rgba(0, 217, 255, 0.3); border-radius: 8px; overflow: hidden; }}
+            th {{ background: linear-gradient(135deg, #001f3f 0%, #003d7a 100%); color: #00d9ff; padding: 14px 10px; text-align: left; font-weight: 600; font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px; text-shadow: 0 0 5px rgba(0, 217, 255, 0.5); }}
+            td {{ padding: 12px 10px; border-bottom: 1px solid rgba(0, 217, 255, 0.1); font-size: 13px; background: rgba(0, 8, 20, 0.8); color: #cfd8dc; }}
+            tr:hover {{ background-color: rgba(0, 217, 255, 0.05); }}
+            .rsi-extreme {{ color: #ff6b9d; font-weight: bold; }}
+            .rsi-low {{ color: #ff6b9d; font-weight: bold; }}
+            .rsi-medium {{ color: #ffa502; font-weight: bold; }}
+            .rsi-high {{ color: #00ff95; font-weight: bold; }}
+            .positive {{ color: #00ff95; font-weight: 600; }}
+            .negative {{ color: #ff6b9d; font-weight: 600; }}
+            .signal-badge {{ display: inline-block; background: linear-gradient(135deg, #00d9ff 0%, #0099cc 100%); color: #000; padding: 4px 10px; border-radius: 15px; font-size: 10px; margin: 2px; font-weight: 700; box-shadow: 0 0 5px rgba(0, 217, 255, 0.5); }}
+            .bullish-sector {{ background: linear-gradient(90deg, rgba(0, 255, 149, 0.1) 0%, transparent 100%); border-left: 5px solid #00ff95; }}
+            .summary-box {{ background: linear-gradient(135deg, rgba(0, 217, 255, 0.15) 0%, rgba(0, 217, 255, 0.05) 100%); padding: 20px; border-radius: 10px; margin: 25px 0; border-left: 5px solid #00d9ff; box-shadow: 0 0 15px rgba(0, 217, 255, 0.3); }}
+            .metric {{ display: inline-block; margin: 8px 15px; font-size: 15px; color: #cfd8dc; }}
+            .metric strong {{ color: #00d9ff; }}
+            .sector-header {{ background: linear-gradient(135deg, #001f3f 0%, #003d7a 100%); color: #00d9ff; padding: 18px; border-radius: 10px; margin-top: 35px; box-shadow: 0 0 20px rgba(0, 217, 255, 0.4); border: 2px solid #00d9ff; }}
+            .sector-header h2 {{ color: #00d9ff; margin: 0; background: none; border: none; padding: 0; font-size: 24px; text-shadow: 0 0 15px rgba(0, 217, 255, 0.8); }}
+            .profit-high {{ color: #00ff95; font-weight: bold; }}
+            .profit-medium {{ color: #ffa502; font-weight: bold; }}
+            .profit-low {{ color: #888; }}
+            .action-strong-buy {{ background: #00ff95; color: #000; padding: 6px 12px; border-radius: 5px; font-weight: bold; display: inline-block; box-shadow: 0 0 10px rgba(0, 255, 149, 0.5); }}
+            .action-buy {{ background: #00d9ff; color: #000; padding: 6px 12px; border-radius: 5px; font-weight: bold; display: inline-block; box-shadow: 0 0 10px rgba(0, 217, 255, 0.5); }}
+            .action-watch {{ background: #888; color: #fff; padding: 6px 12px; border-radius: 5px; font-weight: bold; display: inline-block; }}
+            .top-pick {{ background: linear-gradient(90deg, rgba(0, 217, 255, 0.15) 0%, transparent 100%); border-left: 5px solid #00d9ff; }}
+            .disclaimer {{ background: rgba(255, 107, 157, 0.1); padding: 15px; border-radius: 8px; margin-top: 40px; border-left: 4px solid #ff6b9d; font-size: 12px; color: #ffb3d9; box-shadow: 0 0 10px rgba(255, 107, 157, 0.2); }}
         </style>
     </head>
     <body>
@@ -683,7 +730,7 @@ def generate_executive_html_report(sector_analysis, bullish_sectors, ist_time):
                 <div class="timestamp">Generated: {ist_time}</div>
             </div>
             <div class="summary-box">
-                <h3 style="margin-top: 0; border: none; color: #2c3e50;">📊 Executive Summary</h3>
+                <h3 style="margin-top: 0; border: none; color: #00d9ff;">📊 Executive Summary</h3>
                 <div class="metric">🎯 <strong>Bullish Sectors:</strong> {len(bullish_sectors)}</div>
                 <div class="metric">📈 <strong>Total Sectors Analyzed:</strong> {len(sector_analysis)}</div>
                 <div class="metric">💡 <strong>Top Opportunities:</strong> {', '.join(bullish_sectors[:3]) if bullish_sectors else 'None'}</div>
@@ -715,10 +762,10 @@ def generate_executive_html_report(sector_analysis, bullish_sectors, ist_time):
         html += f"""
         <div class="sector-header">
             <h2>📊 {sector_name.upper()} - Bullish Setup</h2>
-            <div style="margin-top: 10px; font-size: 14px;">
-                Index RSI: <strong>{idx_data['rsi']:.1f}</strong> |
+            <div style="margin-top: 10px; font-size: 14px; color: #80deea;">
+                Index RSI: <strong style="color: #00d9ff;">{idx_data['rsi']:.1f}</strong> |
                 Week: <strong class="{'positive' if idx_data['week_chg_pct'] > 0 else 'negative'}">{idx_data['week_chg_pct']:+.2f}%</strong> |
-                LTP: <strong>₹{idx_data['ltp']:.2f}</strong>
+                LTP: <strong style="color: #00d9ff;">₹{idx_data['ltp']:.2f}</strong>
             </div>
         </div>"""
         industries = {}
@@ -812,7 +859,7 @@ def send_whatsapp_alert(bullish_sectors, top_picks, ist_time):
 
 def main():
     print(f"{CYAN}{'='*80}{RESET}")
-    print(f"{CYAN}🎯 MARKET INTELLIGENCE SCANNER - Executive Edition{RESET}")
+    print(f"{CYAN}🎯 NEON CYAN THEME - Market Intelligence Scanner{RESET}")
     print(f"{CYAN}{'='*80}{RESET}\n")
 
     ist = pytz.timezone("Asia/Kolkata")
@@ -877,9 +924,9 @@ def main():
     pages_html = generate_github_pages_html(sector_analysis, bullish_sectors, ist_time_str)
     with open("index.html", "w", encoding="utf-8") as f:
         f.write(pages_html)
-    print(f"{GREEN}✅ index.html saved for GitHub Pages{RESET}")
+    print(f"{GREEN}✅ index.html saved for GitHub Pages (Neon Cyan Theme){RESET}")
 
-    # ── Send email (logic completely unchanged) ─────────────────
+    # ── Send email ─────────────────────────────────────────────
     html_report = generate_executive_html_report(sector_analysis, bullish_sectors, ist_time_str)
     if bullish_sectors:
         subject = f"🎯 {len(bullish_sectors)} Bullish Sectors | Top Pick: {top_picks[0]['symbol']} | {ist_time_str}"
@@ -890,7 +937,7 @@ def main():
     whatsapp_sent = send_whatsapp_alert(bullish_sectors, top_picks, ist_time_str)
 
     print(f"\n{CYAN}{'='*80}{RESET}")
-    print(f"{GREEN}🎯 Report Generation Complete{RESET}")
+    print(f"{GREEN}🎯 Report Generation Complete (Neon Cyan Theme){RESET}")
     print(f"   Email:      {'✅ Sent' if email_sent else '❌ Failed'}")
     print(f"   WhatsApp:   {'✅ Sent' if whatsapp_sent else '⚠️ Skipped'}")
     print(f"   Pages HTML: ✅ index.html written")
