@@ -13,26 +13,26 @@ jobs:
     timeout-minutes: 15
     permissions:
       contents: write
-      
+
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
-      
+
     - name: Set up Python
       uses: actions/setup-python@v5
       with:
         python-version: '3.11'
-        
+
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
         pip install yfinance pandas numpy pytz twilio tabulate
-        
+
     - name: Display IST Time
       run: |
         echo "🕒 Current UTC Time: $(date -u)"
         echo "🕒 Current IST Time: $(TZ='Asia/Kolkata' date)"
-        
+
     - name: Run Market Intelligence Scanner (Neon Cyan Theme)
       env:
         GMAIL_USER: ${{ secrets.GMAIL_USER }}
@@ -44,7 +44,7 @@ jobs:
         TWILIO_TO: ${{ secrets.TWILIO_TO }}
       run: |
         python Nifty_indices_scanner.py
-        
+
     - name: Verify index.html was generated
       run: |
         if [ -f "index.html" ]; then
@@ -54,44 +54,45 @@ jobs:
           echo "❌ ERROR: index.html not found!"
           exit 1
         fi
-        
+
     - name: Deploy index.html to GitHub Pages
       run: |
-        # Save the generated index.html safely outside the repo
+        # ── Step 1: Save generated file before any branch operations ──
         cp index.html /tmp/index.html
-        
-        # Configure git
+        echo "✅ index.html backed up to /tmp/"
+
+        # ── Step 2: Configure git ──
         git config user.name "github-actions[bot]"
         git config user.email "github-actions[bot]@users.noreply.github.com"
-        
-        # Fetch all remote branches
+
+        # ── Step 3: Fetch all remote branches ──
         git fetch origin
-        
-        # Checkout or create gh-pages branch
+
+        # ── Step 4: Switch to gh-pages (stash working tree first to avoid conflicts) ──
+        git stash --include-untracked 2>/dev/null || true
+
         if git ls-remote --heads origin gh-pages | grep -q gh-pages; then
           echo "📄 Checking out existing gh-pages branch"
-          git checkout gh-pages
-          # Remove old index.html to ensure clean overwrite
-          git rm -f index.html 2>/dev/null || true
+          git checkout -B gh-pages origin/gh-pages
         else
-          echo "🆕 Creating new gh-pages branch"
+          echo "🆕 Creating new orphan gh-pages branch"
           git checkout --orphan gh-pages
           git rm -rf . --quiet 2>/dev/null || true
         fi
-        
-        # Copy the new index.html into gh-pages branch
+
+        # ── Step 5: Copy the fresh index.html into gh-pages ──
         cp /tmp/index.html ./index.html
-        
-        # Commit and push
+
+        # ── Step 6: Commit and push ──
         git add index.html
         if git diff --staged --quiet; then
-          echo "ℹ️ No changes to commit"
+          echo "ℹ️ No changes to commit — report is identical to last run"
         else
           git commit -m "🌊 Neon Cyan Theme Update - $(TZ='Asia/Kolkata' date '+%Y-%m-%d %H:%M IST')"
           git push origin gh-pages --force
           echo "✅ Successfully deployed to GitHub Pages"
         fi
-        
+
     - name: Upload execution logs (if failed)
       if: failure()
       uses: actions/upload-artifact@v4
