@@ -492,14 +492,37 @@ def generate_github_pages_html(sector_analysis, bullish_sectors, ist_time):
     border-radius:16px; box-shadow:0 0 40px rgba(0, 217, 255, 0.4);
     overflow:hidden; border:1px solid rgba(0, 217, 255, 0.3);
   }}
+  /* ── Header: title left, clock right ── */
   .header {{
     background:linear-gradient(135deg, var(--darker) 0%, #003d7a 100%);
-    color:var(--neon-cyan); padding:36px 30px 28px; text-align:center;
+    color:var(--neon-cyan);
+    padding:36px 30px 28px;
     text-shadow:0 0 20px rgba(0, 217, 255, 0.8);
     border-bottom:3px solid var(--neon-cyan);
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    flex-wrap:wrap;
+    gap:16px;
   }}
+  .header-left {{ flex:1; min-width:0; }}
   .header h1 {{ font-size:2.2rem; font-weight:700; margin-bottom:6px; }}
-  .header .subtitle {{ opacity:.85; font-size:.95rem; color:#80deea; }}
+  .header .subtitle {{ opacity:.85; font-size:.95rem; color:#80deea; margin-top:4px; }}
+  /* ── Live IST Clock pill (top-right) ── */
+  #live-clock {{
+    flex-shrink:0;
+    font-size:0.85rem;
+    font-weight:700;
+    color:#000814;
+    background:var(--neon-cyan);
+    border:2px solid rgba(0,217,255,0.5);
+    border-radius:30px;
+    padding:10px 22px;
+    white-space:nowrap;
+    box-shadow:0 0 18px rgba(0,217,255,0.6);
+    letter-spacing:0.3px;
+    align-self:center;
+  }}
   .summary-strip {{
     display:flex; flex-wrap:wrap; gap:16px;
     padding:24px 30px; background:rgba(0, 31, 63, 0.5);
@@ -608,14 +631,24 @@ def generate_github_pages_html(sector_analysis, bullish_sectors, ist_time):
     font-size:.8rem; color:#80deea;
     border-top:1px solid rgba(0, 217, 255, 0.2);
   }}
+  @media (max-width:640px) {{
+    .header {{ flex-direction:column; align-items:flex-start; }}
+    #live-clock {{ align-self:flex-start; }}
+    .header h1 {{ font-size:1.5rem; }}
+  }}
 </style>
 </head>
 <body>
 <div class="container">
 
   <div class="header">
-    <h1>🎯 Nifty Indices Market Intelligence</h1>
-    <div class="subtitle">Generated: {ist_time}</div>
+    <!-- Left: title + subtitle -->
+    <div class="header-left">
+      <h1>🎯 Nifty Indices Market Intelligence</h1>
+      <div class="subtitle">Report Generated on: {ist_time}</div>
+    </div>
+    <!-- Right: live IST clock pill -->
+    <div id="live-clock">🕐 Loading...</div>
   </div>
 
   <div class="summary-strip">
@@ -676,6 +709,28 @@ def generate_github_pages_html(sector_analysis, bullish_sectors, ist_time):
 
   <div class="footer">© 2026 Nifty Indices Scanner | Neon Cyan Theme | For Educational Purposes Only</div>
 </div>
+
+<!-- Live IST Clock — ticks every second -->
+<script>
+  function updateISTClock() {{
+    var now = new Date();
+    var opts = {{
+      timeZone: 'Asia/Kolkata',
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: true
+    }};
+    var el = document.getElementById('live-clock');
+    if (el) el.textContent = '🕐 ' + now.toLocaleString('en-IN', opts) + ' IST';
+  }}
+  updateISTClock();
+  setInterval(updateISTClock, 1000);
+</script>
+
 </body>
 </html>"""
     return html
@@ -727,7 +782,7 @@ def generate_executive_html_report(sector_analysis, bullish_sectors, ist_time):
         <div class="container">
             <div class="header">
                 <h1>🎯 Market Intelligence Report</h1>
-                <div class="timestamp">Generated: {ist_time}</div>
+                <div class="timestamp">Report Generated on: {ist_time}</div>
             </div>
             <div class="summary-box">
                 <h3 style="margin-top: 0; border: none; color: #00d9ff;">📊 Executive Summary</h3>
