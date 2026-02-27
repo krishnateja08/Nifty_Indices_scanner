@@ -1,14 +1,10 @@
 """
-NIFTY SECTOR SCANNER v3 — Falling-Knife Filter + Sample 5 Progress Ring UI
+NIFTY SECTOR SCANNER — Falling-Knife Filter + Progress Ring UI
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-WHAT'S NEW vs v2:
-  ✅ Sample 5 Progress Ring Cards for Sector Scorecard
-  ✅ Sample 5 dual-panel Explain Box (danger chips + reversal chips)
-  ✅ Explain box moved BELOW summary strip (not crowding the top)
-  ✅ RSI ring animates in on page load
-  ✅ Sector icon per sector (auto-assigned)
-  ✅ Cleaner buy table with verdict colour coding
-  ✅ Avoided table with inline danger badge pills
+CHANGES vs v3:
+  ✅ Removed "v3" from title
+  ✅ Explain box moved BELOW Sector Scorecard
+  ✅ Email now uses dark background (no more white email)
 
 REQUIREMENTS:
     pip install yfinance pandas numpy pytz
@@ -215,40 +211,36 @@ def falling_knife_checks(data):
     checks = {}
     flags  = []
 
-    # 1. MA bearish alignment
     if len(close) >= 200:
         sma20  = close.rolling(20).mean().iloc[-1]
         sma50  = close.rolling(50).mean().iloc[-1]
         sma200 = close.rolling(200).mean().iloc[-1]
         ma_bear = (sma20 < sma50) and (sma50 < sma200)
         checks['ma_bearish'] = ma_bear
-        if ma_bear: flags.append("⛔ MA Bearish (20<50<200)")
+        if ma_bear: flags.append("MA Bearish (20<50<200)")
     else:
         checks['ma_bearish'] = False
 
-    # 2. Price below SMA20 & SMA50
     if len(close) >= 50:
         sma20 = close.rolling(20).mean().iloc[-1]
         sma50 = close.rolling(50).mean().iloc[-1]
         ltp   = close.iloc[-1]
         below = (ltp < sma20) and (ltp < sma50)
         checks['price_below_mas'] = below
-        if below: flags.append("⛔ Price Below SMA20 & SMA50")
+        if below: flags.append("Price Below SMA20 & SMA50")
     else:
         checks['price_below_mas'] = False
 
-    # 3. RSI still falling
     if len(close) >= 20:
         rsi_s   = calculate_rsi(close)
         rsi_now = rsi_s.iloc[-1]
         rsi_5ag = rsi_s.iloc[-6]
         falling = (rsi_now < rsi_5ag - 3)
         checks['rsi_falling'] = falling
-        if falling: flags.append(f"⛔ RSI Falling ({rsi_5ag:.0f}→{rsi_now:.0f})")
+        if falling: flags.append(f"RSI Falling ({rsi_5ag:.0f}→{rsi_now:.0f})")
     else:
         checks['rsi_falling'] = False
 
-    # 4. Distribution (down-vol > up-vol)
     if len(data) >= 10:
         recent    = data.tail(10)
         up_days   = recent[recent['Close'] >= recent['Open']]
@@ -257,27 +249,25 @@ def falling_knife_checks(data):
         avg_dn    = dn_days['Volume'].mean()   if len(dn_days)  > 0 else 0
         dist_bear = avg_dn > avg_up * 1.2
         checks['distribution'] = dist_bear
-        if dist_bear: flags.append("⛔ Institutions Selling")
+        if dist_bear: flags.append("Institutions Selling")
     else:
         checks['distribution'] = False
 
-    # 5. Consecutive red days
     if len(data) >= 5:
         last5     = data.tail(5)
         red_days  = (last5['Close'] < last5['Open']).sum()
         consec    = red_days >= 4
         checks['consecutive_red'] = consec
-        if consec: flags.append(f"⛔ {red_days}/5 Days Red")
+        if consec: flags.append(f"{red_days}/5 Days Red")
     else:
         checks['consecutive_red'] = False
 
-    # 6. MACD bearish & worsening
     if len(close) >= 35:
         macd_v, sig_v, hist_v      = calculate_macd(close)
         _,      _,     hist_prev   = calculate_macd(close.iloc[:-1])
         macd_bear = (macd_v < sig_v) and (hist_v < 0) and (hist_v <= hist_prev)
         checks['macd_bearish'] = macd_bear
-        if macd_bear: flags.append("⛔ MACD Bearish & Worsening")
+        if macd_bear: flags.append("MACD Bearish & Worsening")
     else:
         checks['macd_bearish'] = False
 
@@ -293,49 +283,43 @@ def reversal_confirmations(data):
     close    = data['Close']
     volume   = data['Volume']
 
-    # RSI turning up from oversold
     if len(close) >= 20:
         rsi_s   = calculate_rsi(close)
         rsi_now = rsi_s.iloc[-1]
         rsi_2ag = rsi_s.iloc[-3]
         if rsi_now < 40 and rsi_now > rsi_2ag + 1.5:
-            confirms.append("✅ RSI Turning Up")
+            confirms.append("RSI Turning Up")
 
-    # Volume climax
     if len(data) >= 20:
         avg_vol  = volume.tail(20).mean()
         last_vol = volume.iloc[-1]
         last_red = data['Close'].iloc[-1] < data['Open'].iloc[-1]
         if last_red and last_vol > avg_vol * 2.0:
-            confirms.append("✅ Volume Climax")
+            confirms.append("Volume Climax")
 
-    # Bullish engulfing
     if len(data) >= 3:
         c1o, c1c = data['Open'].iloc[-3], data['Close'].iloc[-3]
         c0o, c0c = data['Open'].iloc[-1], data['Close'].iloc[-1]
         if c1c < c1o and c0c > c0o and c0c > c1o:
-            confirms.append("✅ Bullish Engulfing")
+            confirms.append("Bullish Engulfing")
 
-    # 52W low bounce
     if len(close) >= 252:
         low_52w = close.tail(252).min()
         if close.iloc[-1] <= low_52w * 1.03 and close.iloc[-1] > close.iloc[-2]:
-            confirms.append("✅ 52W Low Bounce")
+            confirms.append("52W Low Bounce")
 
-    # MACD histogram improving
     if len(close) >= 35:
         _, _, h0 = calculate_macd(close)
         _, _, h1 = calculate_macd(close.iloc[:-1])
         _, _, h2 = calculate_macd(close.iloc[:-2])
         if h0 < 0 and h0 > h1 > h2:
-            confirms.append("✅ MACD Hist Improving")
+            confirms.append("MACD Hist Improving")
 
-    # SMA20 stabilizing
     if len(close) >= 25:
         sma_now  = close.rolling(20).mean().iloc[-1]
         sma_3ago = close.rolling(20).mean().iloc[-4]
         if sma_now >= sma_3ago * 0.999:
-            confirms.append("✅ SMA20 Stabilizing")
+            confirms.append("SMA20 Stabilizing")
 
     return confirms, len(confirms)
 
@@ -377,7 +361,6 @@ def fetch_and_analyze(ticker, period="6mo"):
         fk_checks, fk_flags, danger_score = falling_knife_checks(data)
         rev_confirms, rev_count           = reversal_confirmations(data)
 
-        # ── Verdict ───────────────────────────────────────────────
         is_falling_knife = danger_score >= 3
         has_reversal     = rev_count >= 1
 
@@ -392,7 +375,6 @@ def fetch_and_analyze(ticker, period="6mo"):
         else:
             verdict = "WATCH"
 
-        # ── Score (only if not knife) ──────────────────────────────
         score = 0
         if not is_falling_knife:
             if rsi_now < 25:    score += 20
@@ -407,7 +389,6 @@ def fetch_and_analyze(ticker, period="6mo"):
             elif dist_from_high > 15: score += 5
         score = min(score, 100)
 
-        # ── ATR stop & targets ─────────────────────────────────────
         stop_loss   = ltp - (atr * 1.5)
         target_1    = ltp + (atr * 2.0)
         target_2    = ltp + (atr * 3.5)
@@ -482,16 +463,10 @@ def is_sector_bullish(idx_data):
 #  SVG RING HELPER
 # =============================================================================
 def rsi_ring_svg(rsi_val, is_bull):
-    """
-    Returns an inline SVG progress ring sized 100×100.
-    Circumference of r=40 circle = 2π×40 ≈ 251.3
-    stroke-dashoffset = circumference × (1 - rsi/100)
-    """
     circ   = 251.3
     offset = circ * (1 - min(max(rsi_val, 0), 100) / 100)
     color  = "#00ff95" if is_bull else "#ff6b9d"
     glow   = "0 0 8px #00ff95" if is_bull else "0 0 8px #ff6b9d"
-    slope_color = "#00ff95"
     return f"""<svg width="100" height="100" viewBox="0 0 100 100" class="rsi-svg">
   <circle cx="50" cy="50" r="40" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="8"/>
   <circle cx="50" cy="50" r="40" fill="none"
@@ -504,11 +479,28 @@ def rsi_ring_svg(rsi_val, is_bull):
 
 
 # =============================================================================
-#  HTML GENERATOR  — Sample 5 Progress Ring UI
+#  EMAIL-SAFE SVG RING (no filter, inline style for email clients)
+# =============================================================================
+def rsi_ring_svg_email(rsi_val, is_bull):
+    circ   = 251.3
+    offset = circ * (1 - min(max(rsi_val, 0), 100) / 100)
+    color  = "#00ff95" if is_bull else "#ff6b9d"
+    return f"""<svg width="80" height="80" viewBox="0 0 100 100">
+  <circle cx="50" cy="50" r="40" fill="none" stroke="#1a2a3a" stroke-width="8"/>
+  <circle cx="50" cy="50" r="40" fill="none"
+    stroke="{color}" stroke-width="8" stroke-linecap="round"
+    stroke-dasharray="{circ:.1f}" stroke-dashoffset="{offset:.1f}"
+    transform="rotate(-90 50 50)"/>
+  <text x="50" y="54" text-anchor="middle" fill="{color}"
+    font-size="18" font-weight="bold" font-family="monospace">{rsi_val:.0f}</text>
+</svg>"""
+
+
+# =============================================================================
+#  HTML GENERATOR  (web version — unchanged layout)
 # =============================================================================
 def generate_html(sector_analysis, bullish_sectors, ist_time):
 
-    # ── Collect stocks ────────────────────────────────────────
     all_valid   = []
     all_avoided = []
     for sn, analysis in sector_analysis.items():
@@ -526,7 +518,7 @@ def generate_html(sector_analysis, bullish_sectors, ist_time):
     total_sectors = len(sector_analysis)
     bullish_count = len(bullish_sectors)
 
-    # ── Sample 5 Sector Cards ─────────────────────────────────
+    # ── Sector Cards ──────────────────────────────────────────
     sector_cards_html = ""
     for sn, analysis in sector_analysis.items():
         idx    = analysis['index_data']
@@ -534,7 +526,6 @@ def generate_html(sector_analysis, bullish_sectors, ist_time):
         icon   = SECTOR_ICONS.get(sn, "📊")
         ring   = rsi_ring_svg(idx['rsi'], is_bull)
 
-        # danger bar width
         danger_pct   = (idx['danger_score'] / 6) * 100
         danger_color = "#00ff95" if idx['danger_score'] == 0 else \
                        "#ffa502" if idx['danger_score'] <= 2 else "#ff6b9d"
@@ -547,7 +538,6 @@ def generate_html(sector_analysis, bullish_sectors, ist_time):
         badge_text = "🟢 BULLISH" if is_bull else "🔴 BLOCKED"
         card_cls   = "s5-card bull" if is_bull else "s5-card bear"
 
-        # top reversal / reason to show
         rev_short = idx['rev_confirms'][0] if idx['rev_confirms'] else \
                     (f"week {idx['week_chg_pct']:+.1f}%" if idx['week_chg_pct'] else "—")
 
@@ -604,16 +594,12 @@ def generate_html(sector_analysis, bullish_sectors, ist_time):
     def danger_chips(flags):
         if not flags:
             return '<span style="color:#00ff95;font-size:.68rem;font-weight:700">✅ No Flags</span>'
-        return "".join([
-            f'<span class="warn-chip">{f}</span>' for f in flags[:3]
-        ])
+        return "".join([f'<span class="warn-chip">⛔ {f}</span>' for f in flags[:3]])
 
     def rev_chips(confirms):
         if not confirms:
             return '<span style="color:#555;font-size:.68rem">—</span>'
-        return "".join([
-            f'<span class="rev-chip">{c}</span>' for c in confirms[:2]
-        ])
+        return "".join([f'<span class="rev-chip">✅ {c}</span>' for c in confirms[:2]])
 
     # ── Buy table rows ────────────────────────────────────────
     buy_rows = ""
@@ -651,7 +637,7 @@ def generate_html(sector_analysis, bullish_sectors, ist_time):
           <td>{verdict_tag(s['verdict'])}</td>
         </tr>"""
 
-    # ── Avoided table rows ────────────────────────────────────
+    # ── Avoided rows ──────────────────────────────────────────
     avoided_rows = ""
     for s in sorted(all_avoided, key=lambda x: x['danger_score'], reverse=True)[:15]:
         dc = "#00ff95" if s['day_chg_pct'] > 0 else "#ff6b9d"
@@ -680,9 +666,9 @@ def generate_html(sector_analysis, bullish_sectors, ist_time):
         stocks_sorted = sorted(analysis['stocks'], key=lambda x: x['score'], reverse=True)
         rows = ""
         for st in stocks_sorted:
-            dc  = "#00ff95" if st['day_chg_pct']  > 0 else "#ff6b9d"
-            wc  = "#00ff95" if st['week_chg_pct'] > 0 else "#ff6b9d"
-            rc  = "#ff6b9d" if st['rsi'] < 30 else ("#ffa502" if st['rsi'] < 50 else "#00ff95")
+            dc   = "#00ff95" if st['day_chg_pct']  > 0 else "#ff6b9d"
+            wc   = "#00ff95" if st['week_chg_pct'] > 0 else "#ff6b9d"
+            rc   = "#ff6b9d" if st['rsi'] < 30 else ("#ffa502" if st['rsi'] < 50 else "#00ff95")
             sc_c = "#00ff95" if st['score'] >= 60 else ("#ffa502" if st['score'] >= 40 else "#888")
             rows += f"""
             <tr class="{'top-row' if st['score']>=60 else ''}">
@@ -728,17 +714,17 @@ def generate_html(sector_analysis, bullish_sectors, ist_time):
         </div>"""
 
     # ══════════════════════════════════════════════════════════
-    #  FULL HTML
+    #  FULL HTML  — "v3" removed from title
+    #              explain box moved BELOW scorecard
     # ══════════════════════════════════════════════════════════
     html = f"""<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>🎯 Nifty Sector Scanner v3</title>
+<title>🎯 Nifty Sector Scanner</title>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
-/* ── RESET & BASE ─────────────────────────────────────────── */
 *{{box-sizing:border-box;margin:0;padding:0}}
 :root{{
   --nc:#00d9ff;--ng:#00ff95;--nr:#ff6b9d;
@@ -756,8 +742,6 @@ body::before{{
   background:radial-gradient(circle,rgba(0,217,255,.06),transparent 70%);
   pointer-events:none;z-index:0;
 }}
-
-/* ── CONTAINER ────────────────────────────────────────────── */
 .container{{
   max-width:1500px;margin:auto;
   background:rgba(0,8,20,.97);
@@ -767,8 +751,6 @@ body::before{{
   border:1px solid var(--border);
   position:relative;z-index:1;
 }}
-
-/* ── HEADER ───────────────────────────────────────────────── */
 .header{{
   background:linear-gradient(135deg,var(--bg2) 0%,#003d7a 100%);
   color:var(--nc);padding:28px 28px 24px;
@@ -788,8 +770,6 @@ body::before{{
   box-shadow:0 0 20px rgba(0,217,255,.5);
   flex-shrink:0;
 }}
-
-/* ── SUMMARY STRIP ────────────────────────────────────────── */
 .summary{{
   display:flex;flex-wrap:wrap;gap:12px;
   padding:20px 28px;
@@ -808,15 +788,11 @@ body::before{{
 .stat .num{{font-size:1.9rem;font-weight:800;color:var(--nc);line-height:1}}
 .stat .lbl{{font-size:.65rem;color:#4a7a78;text-transform:uppercase;
   letter-spacing:.8px;margin-top:5px}}
-
-/* ── EXPLAIN BOX (Sample 5 dual-panel) ────────────────────── */
 .explain-wrap{{
   display:flex;gap:14px;flex-wrap:wrap;
   padding:20px 28px 4px;
 }}
-.explain-panel{{
-  flex:1 1 300px;border-radius:12px;overflow:hidden;
-}}
+.explain-panel{{flex:1 1 300px;border-radius:12px;overflow:hidden;}}
 .ep-head{{
   display:flex;align-items:center;gap:10px;
   padding:12px 16px;font-size:.82rem;font-weight:800;
@@ -841,10 +817,7 @@ body::before{{
   background:rgba(0,217,255,.03);
   border:1px solid rgba(0,217,255,.15);border-top:none;
 }}
-.ep-chip{{
-  padding:5px 12px;border-radius:20px;
-  font-size:.7rem;font-weight:700;
-}}
+.ep-chip{{padding:5px 12px;border-radius:20px;font-size:.7rem;font-weight:700;}}
 .ep-chip.danger{{
   background:rgba(255,107,157,.12);color:#ff9ab0;
   border:1px solid rgba(255,107,157,.28);
@@ -853,8 +826,6 @@ body::before{{
   background:rgba(0,217,255,.1);color:#80deea;
   border:1px solid rgba(0,217,255,.22);
 }}
-
-/* ── SECTION ──────────────────────────────────────────────── */
 .section{{padding:24px 28px}}
 .section-title{{
   font-size:1rem;font-weight:800;color:var(--nc);
@@ -864,8 +835,6 @@ body::before{{
   border-radius:4px;margin-bottom:18px;
   text-shadow:0 0 8px rgba(0,217,255,.3);
 }}
-
-/* ── SAMPLE 5 SECTOR CARDS ─────────────────────────────────── */
 .s5-grid{{
   display:grid;
   grid-template-columns:repeat(auto-fill,minmax(195px,1fr));
@@ -878,109 +847,47 @@ body::before{{
   transition:transform .25s,box-shadow .25s;
   border:1px solid rgba(0,217,255,.1);
 }}
-.s5-card:hover{{
-  transform:translateY(-4px);
-  box-shadow:0 10px 30px rgba(0,217,255,.15);
-}}
+.s5-card:hover{{transform:translateY(-4px);box-shadow:0 10px 30px rgba(0,217,255,.15);}}
 .s5-card.bull{{border-color:rgba(0,255,149,.2);}}
 .s5-card.bear{{border-color:rgba(255,107,157,.18);}}
-.s5-header{{
-  display:flex;align-items:center;justify-content:center;gap:6px;
-  margin-bottom:12px;
-}}
+.s5-header{{display:flex;align-items:center;justify-content:center;gap:6px;margin-bottom:12px;}}
 .s5-icon{{font-size:1.1rem}}
-.s5-name{{
-  font-size:.72rem;font-weight:800;
-  letter-spacing:.8px;text-transform:uppercase;color:#80deea;
-}}
-.s5-ring-wrap{{
-  position:relative;width:100px;height:100px;
-  margin:0 auto 12px;
-}}
+.s5-name{{font-size:.72rem;font-weight:800;letter-spacing:.8px;text-transform:uppercase;color:#80deea;}}
+.s5-ring-wrap{{position:relative;width:100px;height:100px;margin:0 auto 12px;}}
 .rsi-svg{{display:block}}
 .s5-ring-label{{
   position:absolute;top:50%;left:50%;
-  transform:translate(-50%,-50%);
-  text-align:center;line-height:1.2;
+  transform:translate(-50%,-50%);text-align:center;line-height:1.2;
 }}
-.s5-rsi-num{{
-  font-family:'JetBrains Mono',monospace;
-  font-size:1.2rem;font-weight:800;
-}}
-.s5-rsi-sub{{
-  font-size:.55rem;color:#2a5070;
-  letter-spacing:2px;text-transform:uppercase;
-}}
+.s5-rsi-num{{font-family:'JetBrains Mono',monospace;font-size:1.2rem;font-weight:800;}}
+.s5-rsi-sub{{font-size:.55rem;color:#2a5070;letter-spacing:2px;text-transform:uppercase;}}
 .badge-bull{{
   display:inline-block;padding:4px 14px;border-radius:30px;
   font-size:.68rem;font-weight:800;margin-bottom:12px;
-  background:rgba(0,255,149,.12);color:#00ff95;
-  border:1px solid rgba(0,255,149,.28);
+  background:rgba(0,255,149,.12);color:#00ff95;border:1px solid rgba(0,255,149,.28);
 }}
 .badge-bear{{
   display:inline-block;padding:4px 14px;border-radius:30px;
   font-size:.68rem;font-weight:800;margin-bottom:12px;
-  background:rgba(255,107,157,.1);color:#ff6b9d;
-  border:1px solid rgba(255,107,157,.25);
+  background:rgba(255,107,157,.1);color:#ff6b9d;border:1px solid rgba(255,107,157,.25);
 }}
-.s5-stats{{
-  display:grid;grid-template-columns:1fr 1fr;
-  gap:8px;margin-bottom:12px;text-align:left;
-}}
-.s5-stat{{
-  background:rgba(255,255,255,.03);border-radius:6px;
-  padding:7px 9px;
-}}
-.s5-sl{{
-  font-size:.57rem;color:#2a5070;
-  letter-spacing:1px;text-transform:uppercase;margin-bottom:2px;
-}}
-.s5-sv{{
-  font-family:'JetBrains Mono',monospace;
-  font-size:.82rem;font-weight:600;color:#e0f2f1;
-}}
+.s5-stats{{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px;text-align:left;}}
+.s5-stat{{background:rgba(255,255,255,.03);border-radius:6px;padding:7px 9px;}}
+.s5-sl{{font-size:.57rem;color:#2a5070;letter-spacing:1px;text-transform:uppercase;margin-bottom:2px;}}
+.s5-sv{{font-family:'JetBrains Mono',monospace;font-size:.82rem;font-weight:600;color:#e0f2f1;}}
 .s5-danger-bar{{margin-top:4px}}
-.s5-db-label{{
-  font-size:.62rem;color:#2a5070;
-  display:flex;justify-content:space-between;margin-bottom:4px;
-}}
-.s5-db-track{{
-  height:5px;background:rgba(255,255,255,.06);
-  border-radius:3px;overflow:hidden;
-}}
+.s5-db-label{{font-size:.62rem;color:#2a5070;display:flex;justify-content:space-between;margin-bottom:4px;}}
+.s5-db-track{{height:5px;background:rgba(255,255,255,.06);border-radius:3px;overflow:hidden;}}
 .s5-db-fill{{height:100%;border-radius:3px;transition:width .8s ease}}
-
-/* ── TABLES ───────────────────────────────────────────────── */
-.tbl-wrap{{
-  overflow-x:auto;border-radius:8px;
-  border:1px solid rgba(0,217,255,.12);
-  margin-bottom:8px;
-}}
+.tbl-wrap{{overflow-x:auto;border-radius:8px;border:1px solid rgba(0,217,255,.12);margin-bottom:8px;}}
 table{{width:100%;border-collapse:collapse;min-width:900px}}
 thead tr{{background:linear-gradient(135deg,var(--bg2),#003d7a)}}
-th{{
-  color:var(--nc);padding:10px 10px;text-align:left;
-  font-size:.68rem;font-weight:700;text-transform:uppercase;
-  letter-spacing:.6px;white-space:nowrap;
-}}
-td{{
-  padding:9px 10px;border-bottom:1px solid rgba(0,217,255,.07);
-  color:#cfd8dc;vertical-align:middle;
-}}
+th{{color:var(--nc);padding:10px 10px;text-align:left;font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.6px;white-space:nowrap;}}
+td{{padding:9px 10px;border-bottom:1px solid rgba(0,217,255,.07);color:#cfd8dc;vertical-align:middle;}}
 tbody tr:hover{{background:rgba(0,217,255,.04)}}
-.top-row{{
-  background:linear-gradient(90deg,rgba(0,217,255,.07),transparent)!important;
-  border-left:3px solid var(--nc);
-}}
+.top-row{{background:linear-gradient(90deg,rgba(0,217,255,.07),transparent)!important;border-left:3px solid var(--nc);}}
 tbody tr:last-child td{{border-bottom:none}}
-
-/* ── VERDICT TAG ─────────────────────────────────────────── */
-.vtag{{
-  display:inline-block;padding:4px 10px;border-radius:5px;
-  font-size:.68rem;font-weight:800;white-space:nowrap;
-}}
-
-/* ── CHIP PILLS ──────────────────────────────────────────── */
+.vtag{{display:inline-block;padding:4px 10px;border-radius:5px;font-size:.68rem;font-weight:800;white-space:nowrap;}}
 .warn-chip{{
   display:inline-block;
   background:rgba(255,107,157,.12);border:1px solid rgba(255,107,157,.28);
@@ -993,26 +900,15 @@ tbody tr:last-child td{{border-bottom:none}}
   color:#80deea;padding:2px 7px;border-radius:10px;
   font-size:.62rem;font-weight:700;margin:1px;white-space:nowrap;
 }}
-
-/* ── SECTOR DETAIL ───────────────────────────────────────── */
-.detail-block{{
-  margin-bottom:24px;
-  border:1px solid rgba(0,217,255,.15);
-  border-radius:12px;overflow:hidden;
-}}
+.detail-block{{margin-bottom:24px;border:1px solid rgba(0,217,255,.15);border-radius:12px;overflow:hidden;}}
 .detail-header{{
   background:linear-gradient(135deg,var(--bg2),#003d7a);
   padding:14px 18px;border-bottom:2px solid var(--nc);
   display:flex;align-items:center;gap:10px;flex-wrap:wrap;
 }}
 .detail-icon{{font-size:1.2rem}}
-.detail-header h3{{
-  font-size:.95rem;font-weight:800;color:var(--nc);
-  text-shadow:0 0 8px rgba(0,217,255,.5);flex:1;
-}}
+.detail-header h3{{font-size:.95rem;font-weight:800;color:var(--nc);text-shadow:0 0 8px rgba(0,217,255,.5);flex:1;}}
 .detail-meta{{font-size:.78rem;color:#80deea;width:100%}}
-
-/* ── AVOIDED SECTION ─────────────────────────────────────── */
 .avoided-section{{
   padding:24px 28px;
   background:rgba(255,107,157,.03);
@@ -1025,8 +921,6 @@ tbody tr:last-child td{{border-bottom:none}}
   background:linear-gradient(90deg,rgba(255,107,157,.08),transparent);
   border-radius:4px;margin-bottom:10px;
 }}
-
-/* ── DISCLAIMER + FOOTER ─────────────────────────────────── */
 .disclaimer{{
   margin:10px 28px 24px;padding:14px 18px;
   background:rgba(255,107,157,.06);
@@ -1039,8 +933,6 @@ tbody tr:last-child td{{border-bottom:none}}
   border-top:1px solid rgba(0,217,255,.1);
   font-size:.75rem;color:#4a7a78;
 }}
-
-/* ── MOBILE ──────────────────────────────────────────────── */
 @media(max-width:640px){{
   .header{{flex-direction:column;align-items:flex-start}}
   .s5-grid{{grid-template-columns:repeat(2,1fr)}}
@@ -1054,10 +946,10 @@ tbody tr:last-child td{{border-bottom:none}}
 <body>
 <div class="container">
 
-<!-- ── HEADER ─────────────────────────────────────────────── -->
+<!-- ── HEADER  (no "v3") ────────────────────────────────────── -->
 <div class="header">
   <div>
-    <h1>🎯 Nifty Sector Scanner <span style="color:var(--ng)">v3</span></h1>
+    <h1>🎯 Nifty Sector Scanner</h1>
     <div class="sub">
       Falling-Knife Filter · 6-Point Danger Check · Reversal Confirmation<br>
       Report generated: {ist_time}
@@ -1066,7 +958,7 @@ tbody tr:last-child td{{border-bottom:none}}
   <div id="live-clock">🕐 Loading...</div>
 </div>
 
-<!-- ── SUMMARY STRIP ──────────────────────────────────────── -->
+<!-- ── SUMMARY STRIP ──────────────────────────────────────────── -->
 <div class="summary">
   <div class="stat">
     <div class="num">{total_sectors}</div>
@@ -1094,17 +986,23 @@ tbody tr:last-child td{{border-bottom:none}}
   </div>
 </div>
 
-<!-- ── EXPLAIN BOX (below summary, Sample 5 dual-panel) ───── -->
+<!-- ── SECTOR SCORECARD ────────────────────────────────────────── -->
+<div class="section">
+  <div class="section-title">🏆 Sector Scorecard</div>
+  <div class="s5-grid">{sector_cards_html}</div>
+</div>
+
+<!-- ── EXPLAIN BOX — now BELOW scorecard ──────────────────────── -->
 <div class="explain-wrap">
   <div class="explain-panel">
     <div class="ep-head danger">⛔ 6 Danger Signals — Any 3 or more = BLOCKED</div>
     <div class="ep-body danger">
       <span class="ep-chip danger">⛔ MA Bearish (20&lt;50&lt;200)</span>
-      <span class="ep-chip danger">⛔ Price Below SMA20 & SMA50</span>
+      <span class="ep-chip danger">⛔ Price Below SMA20 &amp; SMA50</span>
       <span class="ep-chip danger">⛔ RSI Still Falling</span>
       <span class="ep-chip danger">⛔ Institutions Selling</span>
       <span class="ep-chip danger">⛔ 4+ of 5 Days Red</span>
-      <span class="ep-chip danger">⛔ MACD Bearish & Worsening</span>
+      <span class="ep-chip danger">⛔ MACD Bearish &amp; Worsening</span>
     </div>
   </div>
   <div class="explain-panel">
@@ -1120,13 +1018,7 @@ tbody tr:last-child td{{border-bottom:none}}
   </div>
 </div>
 
-<!-- ── SECTOR SCORECARD (Sample 5 Progress Ring) ──────────── -->
-<div class="section">
-  <div class="section-title">🏆 Sector Scorecard</div>
-  <div class="s5-grid">{sector_cards_html}</div>
-</div>
-
-<!-- ── BUY TABLE ──────────────────────────────────────────── -->
+<!-- ── BUY TABLE ──────────────────────────────────────────────── -->
 <div class="section">
   <div class="section-title">🟢 Top Valid Buy Recommendations — Knife-Filtered</div>
   <div class="tbl-wrap">
@@ -1143,14 +1035,14 @@ tbody tr:last-child td{{border-bottom:none}}
   </div>
 </div>
 
-<!-- ── SECTOR DETAIL ──────────────────────────────────────── -->
+<!-- ── SECTOR DETAIL ──────────────────────────────────────────── -->
 <div class="section">
   <div class="section-title">📊 Bullish Sector Detail</div>
   {sector_detail_html if sector_detail_html else
    '<p style="color:#2a5070;padding:12px">No bullish sectors with clean setups detected.</p>'}
 </div>
 
-<!-- ── AVOIDED TABLE ──────────────────────────────────────── -->
+<!-- ── AVOIDED TABLE ──────────────────────────────────────────── -->
 <div class="avoided-section">
   <div class="avoided-title">🚫 Stocks Avoided — Falling Knife Detected</div>
   <p style="color:rgba(255,107,157,.6);font-size:.75rem;margin-bottom:14px">
@@ -1170,7 +1062,7 @@ tbody tr:last-child td{{border-bottom:none}}
   </div>
 </div>
 
-<!-- ── DISCLAIMER ─────────────────────────────────────────── -->
+<!-- ── DISCLAIMER ─────────────────────────────────────────────── -->
 <div class="disclaimer">
   <strong>⚠️ Risk Disclaimer:</strong> This report is for informational and educational purposes only.
   Past performance does not guarantee future results. Falling-knife filters reduce but do not eliminate loss risk.
@@ -1178,17 +1070,15 @@ tbody tr:last-child td{{border-bottom:none}}
 </div>
 
 <div class="footer">
-  © 2026 Nifty Sector Scanner v3 · Falling-Knife Filter Edition · For Educational Purposes Only
+  © 2026 Nifty Sector Scanner · Falling-Knife Filter Edition · For Educational Purposes Only
 </div>
-</div><!-- /container -->
+</div>
 
 <script>
-/* Live IST clock */
 function updateClock() {{
   var now  = new Date();
   var opts = {{
-    timeZone:'Asia/Kolkata',
-    day:'2-digit',month:'short',year:'numeric',
+    timeZone:'Asia/Kolkata',day:'2-digit',month:'short',year:'numeric',
     hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:true
   }};
   var el = document.getElementById('live-clock');
@@ -1196,8 +1086,6 @@ function updateClock() {{
 }}
 updateClock();
 setInterval(updateClock, 1000);
-
-/* Animate ring on load */
 window.addEventListener('load', function() {{
   document.querySelectorAll('.rsi-svg circle:last-child').forEach(function(c) {{
     var final = c.getAttribute('stroke-dashoffset');
@@ -1211,15 +1099,268 @@ window.addEventListener('load', function() {{
 
 
 # =============================================================================
-#  EMAIL
+#  EMAIL HTML  — DARK THEME (fixes the "too white" problem)
 # =============================================================================
-def send_email_report(html_content, subject):
+def generate_email_html(sector_analysis, bullish_sectors, ist_time, top_picks, all_avoided):
+    """
+    A self-contained dark-themed email that renders well in Gmail/Outlook.
+    Uses inline styles only (no <style> tags — many email clients strip them).
+    Background: #000814  Text: #cfd8dc  Accent: #00d9ff
+    """
+
+    total   = len(sector_analysis)
+    bull_n  = len(bullish_sectors)
+    top_sym = top_picks[0]['symbol'] if top_picks else '—'
+    avoid_n = len(all_avoided)
+
+    # ── Summary stats row ─────────────────────────────────────
+    def stat_cell(num, label, color="#00d9ff"):
+        return f"""<td style="width:16%;text-align:center;padding:16px 8px;
+          background:#001328;border-radius:8px;border-left:3px solid {color}">
+          <div style="font-size:28px;font-weight:800;color:{color};
+            font-family:'Courier New',monospace;line-height:1">{num}</div>
+          <div style="font-size:10px;color:#4a7a78;text-transform:uppercase;
+            letter-spacing:1px;margin-top:6px">{label}</div>
+        </td>"""
+
+    stats_row = f"""
+    <table width="100%" cellpadding="0" cellspacing="6" style="margin-bottom:24px">
+      <tr>
+        {stat_cell(total,   'Sectors Scanned', '#00d9ff')}
+        <td style="width:1%"></td>
+        {stat_cell(bull_n,  'Bullish',          '#00ff95')}
+        <td style="width:1%"></td>
+        {stat_cell(len(top_picks), 'Valid Buys', '#00d9ff')}
+        <td style="width:1%"></td>
+        {stat_cell(avoid_n, 'Avoided (Knife)',  '#ff6b9d')}
+        <td style="width:1%"></td>
+        {stat_cell(top_sym, 'Top Pick',         '#ffa502')}
+      </tr>
+    </table>"""
+
+    # ── Sector scorecard rows ──────────────────────────────────
+    sector_rows = ""
+    for sn, analysis in sector_analysis.items():
+        idx     = analysis['index_data']
+        is_bull = sn in bullish_sectors
+        icon    = SECTOR_ICONS.get(sn, "📊")
+        ring    = rsi_ring_svg_email(idx['rsi'], is_bull)
+
+        badge_bg  = "rgba(0,255,149,.15)"  if is_bull else "rgba(255,107,157,.15)"
+        badge_col = "#00ff95"              if is_bull else "#ff6b9d"
+        badge_txt = "🟢 BULLISH"           if is_bull else "🔴 BLOCKED"
+        sl_col    = "#00ff95" if idx['rsi_slope']   > 0 else "#ff6b9d"
+        wk_col    = "#00ff95" if idx['week_chg_pct']> 0 else "#ff6b9d"
+        dn_col    = "#00ff95" if idx['danger_score']<= 1 else ("#ffa502" if idx['danger_score']<= 2 else "#ff6b9d")
+        rev_short = idx['rev_confirms'][0] if idx['rev_confirms'] else \
+                    (f"week {idx['week_chg_pct']:+.1f}%" if idx['week_chg_pct'] else "—")
+
+        sector_rows += f"""
+        <tr>
+          <td style="padding:10px;background:#030f1c;border-radius:8px;
+            border-left:3px solid {'#00ff95' if is_bull else '#ff6b9d'};
+            border-bottom:8px solid #000814">
+            <table width="100%" cellpadding="0" cellspacing="0">
+              <tr>
+                <td style="width:90px;vertical-align:middle;text-align:center">{ring}</td>
+                <td style="padding-left:14px;vertical-align:middle">
+                  <div style="font-size:11px;font-weight:800;color:#80deea;
+                    text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">
+                    {icon} {sn}</div>
+                  <div style="display:inline-block;padding:3px 12px;border-radius:20px;
+                    background:{badge_bg};color:{badge_col};font-size:10px;
+                    font-weight:800;margin-bottom:8px">{badge_txt}</div>
+                  <table cellpadding="0" cellspacing="0">
+                    <tr>
+                      <td style="padding-right:20px">
+                        <div style="font-size:9px;color:#2a5070;text-transform:uppercase">Slope</div>
+                        <div style="color:{sl_col};font-weight:700;font-size:13px;
+                          font-family:'Courier New',monospace">
+                          {idx['rsi_slope']:+.1f} {'↑' if idx['rsi_slope']>0 else '↓'}</div>
+                      </td>
+                      <td style="padding-right:20px">
+                        <div style="font-size:9px;color:#2a5070;text-transform:uppercase">Week</div>
+                        <div style="color:{wk_col};font-weight:700;font-size:13px;
+                          font-family:'Courier New',monospace">{idx['week_chg_pct']:+.2f}%</div>
+                      </td>
+                      <td style="padding-right:20px">
+                        <div style="font-size:9px;color:#2a5070;text-transform:uppercase">Danger</div>
+                        <div style="color:{dn_col};font-weight:700;font-size:13px;
+                          font-family:'Courier New',monospace">{idx['danger_score']}/6</div>
+                      </td>
+                      <td>
+                        <div style="font-size:9px;color:#2a5070;text-transform:uppercase">Key Signal</div>
+                        <div style="color:#80deea;font-size:11px">{'✅ ' if idx['rev_confirms'] else ''}{rev_short}</div>
+                      </td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+        <tr><td style="height:6px"></td></tr>"""
+
+    # ── Top picks table ────────────────────────────────────────
+    pick_rows = ""
+    for i, s in enumerate(top_picks[:10], 1):
+        dc  = "#00ff95" if s['day_chg_pct']  > 0 else "#ff6b9d"
+        wc  = "#00ff95" if s['week_chg_pct'] > 0 else "#ff6b9d"
+        rc  = "#ff6b9d" if s['rsi'] < 30 else ("#ffa502" if s['rsi'] < 50 else "#00ff95")
+        sc  = "#00ff95" if s['score'] >= 60 else ("#ffa502" if s['score'] >= 40 else "#888")
+        rr  = s['risk_reward']
+        rrc = "#00ff95" if rr >= 2 else ("#ffa502" if rr >= 1 else "#ff6b9d")
+        vmap = {
+            'VALID':        ('#00ff95','#000','✅ VALID'),
+            'STRONG WATCH': ('#00d9ff','#000','🔥 STRONG'),
+            'CAUTION':      ('#ffa502','#000','⚠ CAUTION'),
+        }
+        vbg, vfg, vlbl = vmap.get(s['verdict'], ('#555','#fff', s['verdict']))
+        row_bg = "#031420" if i % 2 == 0 else "#020e18"
+        pick_rows += f"""
+        <tr style="background:{row_bg}">
+          <td style="padding:8px 6px;color:#2a5070;font-weight:700;
+            font-family:'Courier New',monospace;border-bottom:1px solid #0a1f35">{i}</td>
+          <td style="padding:8px 6px;border-bottom:1px solid #0a1f35">
+            <div style="font-weight:800;color:#e0f2f1;font-size:12px">{s['symbol']}</div>
+            <div style="font-size:10px;color:#4a7a78">{s.get('sector','')}</div>
+          </td>
+          <td style="padding:8px 6px;color:#f59e0b;font-weight:700;
+            font-family:'Courier New',monospace;border-bottom:1px solid #0a1f35">₹{s['ltp']:.2f}</td>
+          <td style="padding:8px 6px;color:{dc};font-weight:600;
+            border-bottom:1px solid #0a1f35">{s['day_chg_pct']:+.2f}%</td>
+          <td style="padding:8px 6px;color:{wc};font-weight:600;
+            border-bottom:1px solid #0a1f35">{s['week_chg_pct']:+.2f}%</td>
+          <td style="padding:8px 6px;border-bottom:1px solid #0a1f35">
+            <span style="color:{rc};font-weight:800;font-family:'Courier New',monospace">{s['rsi']:.1f}</span>
+          </td>
+          <td style="padding:8px 6px;color:{sc};font-weight:800;
+            font-family:'Courier New',monospace;border-bottom:1px solid #0a1f35">{s['score']}/100</td>
+          <td style="padding:8px 6px;color:#00ff95;font-weight:700;
+            font-family:'Courier New',monospace;border-bottom:1px solid #0a1f35">₹{s['target_1']:.2f}</td>
+          <td style="padding:8px 6px;color:#ff6b9d;font-weight:700;
+            font-family:'Courier New',monospace;border-bottom:1px solid #0a1f35">₹{s['stop_loss']:.2f}</td>
+          <td style="padding:8px 6px;color:{rrc};font-weight:800;
+            font-family:'Courier New',monospace;border-bottom:1px solid #0a1f35">{rr:.1f}×</td>
+          <td style="padding:8px 6px;border-bottom:1px solid #0a1f35">
+            <span style="background:{vbg};color:{vfg};padding:3px 8px;border-radius:4px;
+              font-size:10px;font-weight:800;white-space:nowrap">{vlbl}</span>
+          </td>
+        </tr>"""
+
+    def th(txt):
+        return f'<th style="padding:10px 6px;text-align:left;color:#00d9ff;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;background:#001328;white-space:nowrap">{txt}</th>'
+
+    email_html = f"""<!DOCTYPE html>
+<html>
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Nifty Sector Scanner</title></head>
+<body style="margin:0;padding:0;background-color:#000814;font-family:Arial,sans-serif;color:#cfd8dc">
+
+<table width="100%" cellpadding="0" cellspacing="0" style="background:#000814;min-height:100vh">
+<tr><td align="center" style="padding:20px">
+
+<table width="700" cellpadding="0" cellspacing="0" style="max-width:700px;width:100%;
+  background:#000814;border-radius:12px;overflow:hidden;
+  border:1px solid rgba(0,217,255,.2);
+  box-shadow:0 0 40px rgba(0,217,255,.15)">
+
+  <!-- HEADER -->
+  <tr>
+    <td style="background:linear-gradient(135deg,#001328,#003d7a);
+      padding:24px 28px;border-bottom:2px solid #00d9ff">
+      <div style="font-size:22px;font-weight:800;color:#00d9ff;margin-bottom:4px">
+        🎯 Nifty Sector Scanner
+      </div>
+      <div style="font-size:12px;color:#80deea;line-height:1.5">
+        Falling-Knife Filter · 6-Point Danger Check · Reversal Confirmation<br>
+        <span style="color:#4a9a78">{ist_time}</span>
+      </div>
+    </td>
+  </tr>
+
+  <!-- BODY -->
+  <tr><td style="padding:24px 28px;background:#000814">
+
+    <!-- SUMMARY STATS -->
+    {stats_row}
+
+    <!-- SECTOR SCORECARD -->
+    <div style="font-size:14px;font-weight:800;color:#00d9ff;
+      padding:10px 14px;border-left:4px solid #00d9ff;
+      background:rgba(0,217,255,.06);border-radius:4px;margin-bottom:16px">
+      🏆 Sector Scorecard
+    </div>
+    <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:28px">
+      {sector_rows}
+    </table>
+
+    <!-- TOP PICKS TABLE -->
+    <div style="font-size:14px;font-weight:800;color:#00d9ff;
+      padding:10px 14px;border-left:4px solid #00ff95;
+      background:rgba(0,255,149,.05);border-radius:4px;margin-bottom:16px">
+      🟢 Top Valid Buys — Knife-Filtered
+    </div>
+    <div style="overflow-x:auto;border-radius:8px;
+      border:1px solid rgba(0,217,255,.15);margin-bottom:28px">
+      <table width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;min-width:600px">
+        <thead>
+          <tr>
+            {th('#')}{th('Stock')}{th('LTP')}{th('Day%')}{th('Week%')}
+            {th('RSI')}{th('Score')}{th('Target')}{th('Stop')}{th('R:R')}{th('Verdict')}
+          </tr>
+        </thead>
+        <tbody>
+          {pick_rows if pick_rows else
+            '<tr><td colspan="11" style="text-align:center;color:#2a5070;padding:20px;background:#020e18">No valid buys this session.</td></tr>'}
+        </tbody>
+      </table>
+    </div>
+
+    <!-- DISCLAIMER -->
+    <div style="background:rgba(255,107,157,.08);border-left:3px solid #ff6b9d;
+      border-radius:6px;padding:14px 16px;font-size:11px;color:#ffb3d9;line-height:1.6">
+      <strong>⚠️ Risk Disclaimer:</strong> This report is for informational and educational
+      purposes only. Past performance does not guarantee future results. Falling-knife filters
+      reduce but do not eliminate loss risk. Always use strict stop losses and consult a
+      SEBI-registered financial advisor before making any investment decision.
+    </div>
+
+  </td></tr>
+
+  <!-- FOOTER -->
+  <tr>
+    <td style="background:#001328;padding:16px 28px;text-align:center;
+      border-top:1px solid rgba(0,217,255,.1);
+      font-size:11px;color:#4a7a78">
+      © 2026 Nifty Sector Scanner · Falling-Knife Filter Edition · For Educational Purposes Only
+    </td>
+  </tr>
+
+</table>
+</td></tr>
+</table>
+</body></html>"""
+    return email_html
+
+
+# =============================================================================
+#  EMAIL SENDER
+# =============================================================================
+def send_email_report(web_html, email_html, subject):
+    """Send multipart email: plain fallback + dark HTML version."""
     try:
-        msg = MIMEMultipart()
+        msg = MIMEMultipart('alternative')
         msg['Subject'] = subject
         msg['From']    = GMAIL_USER
         msg['To']      = RECEIVER_EMAIL
-        msg.attach(MIMEText(html_content, 'html'))
+
+        plain = MIMEText("Nifty Sector Scanner report attached. Please view in an HTML-capable email client.", 'plain')
+        html  = MIMEText(email_html, 'html')   # ← dark email HTML, not the web HTML
+
+        msg.attach(plain)
+        msg.attach(html)   # last part wins in email clients
+
         with smtplib.SMTP('smtp.gmail.com', 587) as server:
             server.starttls()
             server.login(GMAIL_USER, GMAIL_APP_PASS)
@@ -1236,7 +1377,7 @@ def send_email_report(html_content, subject):
 # =============================================================================
 def main():
     print(f"{CYAN}{'='*70}{RESET}")
-    print(f"{CYAN}🎯 NIFTY SECTOR SCANNER v3 — Progress Ring UI + Knife Filter{RESET}")
+    print(f"{CYAN}🎯 NIFTY SECTOR SCANNER — Progress Ring UI + Knife Filter{RESET}")
     print(f"{CYAN}{'='*70}{RESET}\n")
 
     ist          = pytz.timezone("Asia/Kolkata")
@@ -1288,10 +1429,12 @@ def main():
         }
 
     # ── Summary ───────────────────────────────────────────────
-    all_valid = [st for sn in bullish_sectors
-                 for st in sector_analysis[sn]['stocks']
-                 if st['verdict'] in ('VALID', 'STRONG WATCH')]
-    top_picks = sorted(all_valid, key=lambda x: x['score'], reverse=True)[:10]
+    all_valid   = [st for sn in bullish_sectors
+                   for st in sector_analysis[sn]['stocks']
+                   if st['verdict'] in ('VALID', 'STRONG WATCH')]
+    all_avoided = [st for sn_data in sector_analysis.values()
+                   for st in sn_data['stocks'] if st['verdict'] == 'AVOID']
+    top_picks   = sorted(all_valid, key=lambda x: x['score'], reverse=True)[:10]
 
     print(f"\n{CYAN}{'='*70}{RESET}")
     print(f"{GREEN}✅ Done!  Bullish sectors: {len(bullish_sectors)}{RESET}")
@@ -1303,17 +1446,20 @@ def main():
               f"Danger:{p['danger_score']}/6  Verdict:{p['verdict']}{RESET}")
     print(f"{CYAN}{'='*70}{RESET}\n")
 
-    # ── Save HTML ──────────────────────────────────────────────
-    html = generate_html(sector_analysis, bullish_sectors, ist_time_str)
+    # ── Save web HTML ──────────────────────────────────────────
+    web_html = generate_html(sector_analysis, bullish_sectors, ist_time_str)
     with open("index.html", "w", encoding="utf-8") as f:
-        f.write(html)
+        f.write(web_html)
     print(f"{GREEN}✅ index.html saved{RESET}")
 
-    # ── Email ──────────────────────────────────────────────────
+    # ── Send dark-themed email ─────────────────────────────────
     if GMAIL_USER and GMAIL_APP_PASS:
+        email_html = generate_email_html(
+            sector_analysis, bullish_sectors, ist_time_str, top_picks, all_avoided
+        )
         top_sym = top_picks[0]['symbol'] if top_picks else 'None'
         subject = f"🎯 {len(bullish_sectors)} Bullish | Top: {top_sym} | {ist_time_str}"
-        send_email_report(html, subject)
+        send_email_report(web_html, email_html, subject)
 
     print(f"\n{CYAN}{'='*70}{RESET}")
     print(f"{GREEN}🎯 Report Complete — index.html ready{RESET}")
