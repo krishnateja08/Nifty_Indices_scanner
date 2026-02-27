@@ -3,170 +3,80 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>🎯 Nifty Indices - Neon Cyan Theme</title>
+<title>🎯 Nifty Sector Scanner v2 — Knife Filter</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
 <style>
   :root {
-    --neon-cyan:#00d9ff;
-    --neon-green:#00ff95;
-    --neon-pink:#ff6b9d;
-    --neon-orange:#ffa502;
-    --dark-bg:#000814;
-    --darker:#001f3f;
+    --nc:#00d9ff; --ng:#00ff95; --nr:#ff6b9d;
+    --no:#ffa502; --bg:#000814; --bg2:#001328;
   }
-  * { box-sizing:border-box; margin:0; padding:0; }
-  body {
-    font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;
-    background:linear-gradient(135deg, var(--darker) 0%, var(--dark-bg) 100%);
-    min-height:100vh; padding:20px; color:#cfd8dc;
-  }
-  .container {
-    max-width:1400px; margin:auto; background:rgba(0, 8, 20, 0.95);
-    border-radius:16px; box-shadow:0 0 40px rgba(0, 217, 255, 0.4);
-    overflow:hidden; border:1px solid rgba(0, 217, 255, 0.3);
-  }
-  /* ── Header: title left, clock right ── */
-  .header {
-    background:linear-gradient(135deg, var(--darker) 0%, #003d7a 100%);
-    color:var(--neon-cyan);
-    padding:36px 30px 28px;
-    text-shadow:0 0 20px rgba(0, 217, 255, 0.8);
-    border-bottom:3px solid var(--neon-cyan);
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    flex-wrap:wrap;
-    gap:16px;
-  }
-  .header-left { flex:1; min-width:0; }
-  .header h1 { font-size:2.2rem; font-weight:700; margin-bottom:6px; }
-  .header .subtitle { opacity:.85; font-size:.95rem; color:#80deea; margin-top:4px; }
-  /* ── Live IST Clock pill (top-right) ── */
-  #live-clock {
-    flex-shrink:0;
-    font-size:0.85rem;
-    font-weight:700;
-    color:#000814;
-    background:var(--neon-cyan);
-    border:2px solid rgba(0,217,255,0.5);
-    border-radius:30px;
-    padding:10px 22px;
-    white-space:nowrap;
-    box-shadow:0 0 18px rgba(0,217,255,0.6);
-    letter-spacing:0.3px;
-    align-self:center;
-  }
-  .summary-strip {
-    display:flex; flex-wrap:wrap; gap:16px;
-    padding:24px 30px; background:rgba(0, 31, 63, 0.5);
-    border-bottom:1px solid rgba(0, 217, 255, 0.2);
-  }
-  .stat-box {
-    flex:1 1 140px; background:rgba(0, 217, 255, 0.1);
-    border-radius:10px; padding:16px 20px; text-align:center;
-    box-shadow:0 0 15px rgba(0, 217, 255, 0.2);
-    border-left:4px solid var(--neon-cyan);
-    transition:all 0.3s;
-  }
-  .stat-box:hover {
-    transform:translateY(-3px);
-    box-shadow:0 0 25px rgba(0, 217, 255, 0.4);
-  }
-  .stat-box .stat-val { font-size:2rem; font-weight:700; color:var(--neon-cyan); }
-  .stat-box .stat-lbl { font-size:.78rem; color:#80deea; margin-top:4px; text-transform:uppercase; letter-spacing:.5px; }
-  .section { padding:28px 30px; }
-  .section-title {
-    font-size:1.25rem; font-weight:700; color:var(--neon-cyan);
-    padding:10px 16px; border-left:5px solid var(--neon-cyan);
-    background:linear-gradient(90deg,rgba(0, 217, 255, 0.1) 0%, transparent 100%);
-    border-radius:4px; margin-bottom:20px;
-    text-shadow:0 0 10px rgba(0, 217, 255, 0.5);
-  }
-  .sector-grid {
-    display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr));
-    gap:14px; margin-bottom:10px;
-  }
-  .sector-card {
-    border:1px solid rgba(0, 217, 255, 0.3);
-    border-radius:10px; padding:14px;
-    background:rgba(0, 217, 255, 0.05);
-    box-shadow:0 0 10px rgba(0, 217, 255, 0.15);
-    transition:all 0.3s;
-  }
-  .sector-card:hover {
-    transform:translateY(-3px);
-    box-shadow:0 0 20px rgba(0, 217, 255, 0.3);
-  }
-  .bullish-card {
-    border-color:var(--neon-green);
-    background:linear-gradient(135deg,rgba(0, 255, 149, 0.1) 0%, transparent 100%);
-    box-shadow:0 0 15px rgba(0, 255, 149, 0.2);
-  }
-  .sector-name { font-weight:700; font-size:.9rem; color:var(--neon-cyan); margin-bottom:6px; }
-  .sector-badge { display:inline-block; color:#000; font-size:.72rem; font-weight:700; padding:3px 9px; border-radius:20px; margin-bottom:8px; }
-  .sector-metrics { font-size:.8rem; color:#cfd8dc; display:flex; flex-direction:column; gap:3px; }
-  .table-wrap { overflow-x:auto; margin-bottom:20px; }
-  table { width:100%; border-collapse:collapse; font-size:.83rem; }
-  thead tr { background:linear-gradient(135deg, var(--darker) 0%, #003d7a 100%); }
-  thead th {
-    color:var(--neon-cyan); padding:11px 10px; text-align:left;
-    font-weight:600; font-size:.75rem; text-transform:uppercase;
-    letter-spacing:.4px; white-space:nowrap;
-    text-shadow:0 0 5px rgba(0, 217, 255, 0.5);
-  }
-  tbody td { padding:10px; border-bottom:1px solid rgba(0, 217, 255, 0.1); vertical-align:middle; color:#cfd8dc; }
-  tbody tr:hover { background:rgba(0, 217, 255, 0.05); }
-  .top-row { background:linear-gradient(90deg,rgba(0, 217, 255, 0.1) 0%, transparent 100%) !important; border-left:3px solid var(--neon-cyan); }
-  .tag { display:inline-block; padding:4px 10px; border-radius:5px; font-size:.72rem; font-weight:700; white-space:nowrap; }
-  .strong-buy { background:var(--neon-green); color:#000; }
-  .buy        { background:var(--neon-cyan); color:#000; }
-  .watch      { background:#888;           color:#fff; }
-  .sig-pill {
-    display:inline-block;
-    background:linear-gradient(135deg, var(--neon-cyan) 0%, #0099cc 100%);
-    color:#000; font-size:.65rem; padding:2px 7px; border-radius:12px;
-    margin:1px; white-space:nowrap; font-weight:700;
-    box-shadow:0 0 5px rgba(0, 217, 255, 0.5);
-  }
-  .sector-detail-block {
-    margin-bottom:40px;
-    border:1px solid rgba(0, 217, 255, 0.3);
-    border-radius:12px; overflow:hidden;
-    box-shadow:0 0 20px rgba(0, 217, 255, 0.2);
-  }
-  .sector-detail-header {
-    background:linear-gradient(135deg, var(--darker) 0%, #003d7a 100%);
-    color:var(--neon-cyan); padding:16px 20px;
-    border-bottom:2px solid var(--neon-cyan);
-  }
-  .sector-detail-header h3 {
-    font-size:1.1rem; margin-bottom:6px;
-    text-shadow:0 0 10px rgba(0, 217, 255, 0.8);
-  }
-  .sector-meta { font-size:.85rem; opacity:.9; color:#80deea; }
-  .industry-title {
-    font-size:.9rem; color:var(--neon-green);
-    padding:10px 16px 4px;
-    border-bottom:2px solid rgba(0, 255, 149, 0.3);
-    margin-bottom:4px;
-    text-shadow:0 0 8px rgba(0, 255, 149, 0.5);
-  }
-  .disclaimer {
-    background:rgba(255, 107, 157, 0.1);
-    border-left:4px solid var(--neon-pink);
-    border-radius:6px; padding:14px 18px; font-size:.8rem;
-    color:#ffb3d9; margin:10px 0 0;
-    box-shadow:0 0 10px rgba(255, 107, 157, 0.2);
-  }
-  .footer {
-    text-align:center; padding:20px;
-    background:rgba(0, 31, 63, 0.5);
-    font-size:.8rem; color:#80deea;
-    border-top:1px solid rgba(0, 217, 255, 0.2);
-  }
-  @media (max-width:640px) {
-    .header { flex-direction:column; align-items:flex-start; }
-    #live-clock { align-self:flex-start; }
-    .header h1 { font-size:1.5rem; }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Plus Jakarta Sans',sans-serif;background:linear-gradient(135deg,var(--bg2),var(--bg));min-height:100vh;padding:20px;color:#cfd8dc;font-size:13px}
+  .container{max-width:1500px;margin:auto;background:rgba(0,8,20,.97);border-radius:16px;box-shadow:0 0 50px rgba(0,217,255,.3);overflow:hidden;border:1px solid rgba(0,217,255,.25)}
+
+  /* HEADER */
+  .header{background:linear-gradient(135deg,var(--bg2),#003d7a);color:var(--nc);padding:32px 28px;border-bottom:3px solid var(--nc);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px}
+  .header h1{font-size:1.9rem;font-weight:800;text-shadow:0 0 20px rgba(0,217,255,.8);margin-bottom:6px}
+  .header .sub{font-size:.85rem;color:#80deea;opacity:.85}
+  #live-clock{font-family:'JetBrains Mono',monospace;background:var(--nc);color:#000;border-radius:30px;padding:10px 22px;font-weight:700;font-size:.85rem;white-space:nowrap;box-shadow:0 0 18px rgba(0,217,255,.6)}
+
+  /* SUMMARY STRIP */
+  .summary{display:flex;flex-wrap:wrap;gap:14px;padding:22px 28px;background:rgba(0,31,63,.4);border-bottom:1px solid rgba(0,217,255,.15)}
+  .stat{flex:1 1 130px;background:rgba(0,217,255,.08);border-radius:10px;padding:14px 18px;text-align:center;border-left:4px solid var(--nc)}
+  .stat .num{font-size:2rem;font-weight:800;color:var(--nc)}
+  .stat .lbl{font-size:.7rem;color:#80deea;text-transform:uppercase;letter-spacing:.5px;margin-top:4px}
+
+  /* EXPLANATION BOX */
+  .explain-box{margin:20px 28px;padding:18px 22px;background:rgba(0,255,149,.07);border:1px solid rgba(0,255,149,.25);border-left:5px solid var(--ng);border-radius:8px}
+  .explain-box h3{color:var(--ng);font-size:.95rem;margin-bottom:10px}
+  .explain-box .checks{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+  .check-pill{background:rgba(0,255,149,.12);border:1px solid rgba(0,255,149,.3);color:var(--ng);padding:4px 12px;border-radius:20px;font-size:.75rem;font-weight:600}
+  .warn-pill{display:inline-block;background:rgba(255,107,157,.15);border:1px solid rgba(255,107,157,.3);color:var(--nr);padding:2px 7px;border-radius:12px;font-size:.65rem;font-weight:700;margin:1px;white-space:nowrap}
+  .sig-pill{display:inline-block;background:rgba(0,217,255,.15);border:1px solid rgba(0,217,255,.3);color:var(--nc);padding:2px 7px;border-radius:12px;font-size:.65rem;font-weight:700;margin:1px;white-space:nowrap}
+
+  /* SECTIONS */
+  .section{padding:24px 28px}
+  .section-title{font-size:1.1rem;font-weight:800;color:var(--nc);padding:10px 16px;border-left:5px solid var(--nc);background:linear-gradient(90deg,rgba(0,217,255,.1),transparent);border-radius:4px;margin-bottom:18px;text-shadow:0 0 10px rgba(0,217,255,.4)}
+
+  /* SECTOR GRID */
+  .sector-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:14px;margin-bottom:10px}
+  .sector-card{border-radius:10px;padding:14px;transition:all .25s}
+  .bullish-card{border:1px solid rgba(0,255,149,.35);background:rgba(0,255,149,.06);box-shadow:0 0 14px rgba(0,255,149,.15)}
+  .bearish-card{border:1px solid rgba(255,107,157,.25);background:rgba(255,107,157,.04)}
+  .sector-card:hover{transform:translateY(-3px)}
+  .sector-name{font-weight:800;font-size:.88rem;color:var(--nc);margin-bottom:6px}
+  .sector-badge{display:inline-block;color:#000;font-size:.7rem;font-weight:800;padding:3px 10px;border-radius:20px;margin-bottom:8px}
+  .sector-metrics{font-size:.75rem;color:#cfd8dc;display:flex;flex-direction:column;gap:3px}
+  .sector-reasons{margin-top:8px}
+  .reason{font-size:.68rem;color:#80cbc4;line-height:1.4;padding:1px 0}
+
+  /* TABLES */
+  .tbl-wrap{overflow-x:auto;margin-bottom:20px;border-radius:8px;border:1px solid rgba(0,217,255,.15)}
+  table{width:100%;border-collapse:collapse;min-width:900px}
+  thead tr{background:linear-gradient(135deg,var(--bg2),#003d7a)}
+  th{color:var(--nc);padding:10px 9px;text-align:left;font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.4px;white-space:nowrap;text-shadow:0 0 5px rgba(0,217,255,.4)}
+  td{padding:9px;border-bottom:1px solid rgba(0,217,255,.08);color:#cfd8dc;vertical-align:middle}
+  tbody tr:hover{background:rgba(0,217,255,.05)}
+  .top-row{background:linear-gradient(90deg,rgba(0,217,255,.08),transparent)!important;border-left:3px solid var(--nc)}
+  .tag{display:inline-block;padding:4px 10px;border-radius:5px;font-size:.7rem;font-weight:800;white-space:nowrap}
+
+  /* SECTOR DETAIL */
+  .sector-detail-block{margin-bottom:30px;border:1px solid rgba(0,217,255,.2);border-radius:10px;overflow:hidden}
+  .sector-detail-header{background:linear-gradient(135deg,var(--bg2),#003d7a);color:var(--nc);padding:14px 18px;border-bottom:2px solid var(--nc)}
+  .sector-detail-header h3{font-size:1rem;margin-bottom:4px;text-shadow:0 0 10px rgba(0,217,255,.6)}
+  .sector-meta{font-size:.82rem;color:#80deea}
+
+  /* AVOIDED SECTION */
+  .avoided-section{padding:24px 28px;background:rgba(255,107,157,.03);border-top:1px solid rgba(255,107,157,.15)}
+  .avoided-title{font-size:1.1rem;font-weight:800;color:var(--nr);padding:10px 16px;border-left:5px solid var(--nr);background:linear-gradient(90deg,rgba(255,107,157,.1),transparent);border-radius:4px;margin-bottom:18px}
+
+  /* DISCLAIMER */
+  .disclaimer{margin:10px 28px 24px;padding:14px 18px;background:rgba(255,107,157,.08);border-left:4px solid var(--nr);border-radius:6px;font-size:.78rem;color:#ffb3d9}
+  .footer{text-align:center;padding:18px;background:rgba(0,31,63,.4);border-top:1px solid rgba(0,217,255,.15);font-size:.78rem;color:#80deea}
+
+  @media(max-width:640px){
+    .header{flex-direction:column;align-items:flex-start}
+    .header h1{font-size:1.3rem}
   }
 </style>
 </head>
@@ -174,444 +84,1474 @@
 <div class="container">
 
   <div class="header">
-    <!-- Left: title + subtitle -->
-    <div class="header-left">
-      <h1>🎯 Nifty Indices Market Intelligence</h1>
-      <div class="subtitle">Report Generated on: 2026-02-26 17:21 IST</div>
+    <div>
+      <h1>🎯 Nifty Sector Scanner <span style="color:var(--ng)">v2</span></h1>
+      <div class="sub">Falling-Knife Filter · Reversal Confirmation · 6-Point Danger Check</div>
+      <div class="sub" style="margin-top:4px">Report: 27 Feb 2026 05:45 AM IST</div>
     </div>
-    <!-- Right: live IST clock pill -->
     <div id="live-clock">🕐 Loading...</div>
   </div>
 
-  <div class="summary-strip">
-    <div class="stat-box">
-      <div class="stat-val">9</div>
-      <div class="stat-lbl">Sectors Analyzed</div>
+  <div class="summary">
+    <div class="stat"><div class="num">8</div><div class="lbl">Sectors Scanned</div></div>
+    <div class="stat" style="border-color:var(--ng)"><div class="num" style="color:var(--ng)">7</div><div class="lbl">Truly Bullish</div></div>
+    <div class="stat" style="border-color:var(--nc)"><div class="num" style="color:var(--nc)">20</div><div class="lbl">Valid Buys</div></div>
+    <div class="stat" style="border-color:var(--no)"><div class="num" style="color:var(--no)">1</div><div class="lbl">Strong Watch</div></div>
+    <div class="stat" style="border-color:var(--nr)"><div class="num" style="color:var(--nr)">10</div><div class="lbl">Avoided (Knife)</div></div>
+    <div class="stat" style="border-color:var(--nc)"><div class="num" style="color:var(--nc);font-size:1.1rem;padding-top:8px">TCS</div><div class="lbl">Top Pick</div></div>
+  </div>
+
+  <!-- HOW THE FILTER WORKS -->
+  <div class="explain-box">
+    <h3>🛡️ How the Falling-Knife Filter Works (NEW in v2)</h3>
+    <p style="color:#80deea;font-size:.8rem;margin-bottom:8px">
+      Each stock is checked against <strong>6 danger signals</strong>. A stock with 3+ signals is blocked as a falling knife regardless of RSI. Stocks are only recommended when danger is low AND there is at least 1 reversal confirmation.
+    </p>
+    <div class="checks">
+      <span class="check-pill">⛔ MA Bearish Alignment (20&lt;50&lt;200)</span>
+      <span class="check-pill">⛔ Price Below SMA20 & SMA50</span>
+      <span class="check-pill">⛔ RSI Still Falling</span>
+      <span class="check-pill">⛔ Institutions Selling (Down-Vol &gt; Up-Vol)</span>
+      <span class="check-pill">⛔ 4+ of Last 5 Days Red</span>
+      <span class="check-pill">⛔ MACD Bearish & Worsening</span>
     </div>
-    <div class="stat-box" style="border-color:var(--neon-green)">
-      <div class="stat-val" style="color:var(--neon-green)">1</div>
-      <div class="stat-lbl">Bullish Sectors</div>
-    </div>
-    <div class="stat-box" style="border-color:var(--neon-cyan)">
-      <div class="stat-val" style="color:var(--neon-cyan)">8</div>
-      <div class="stat-lbl">Buy Opportunities</div>
-    </div>
-    <div class="stat-box" style="border-color:var(--neon-orange)">
-      <div class="stat-val" style="color:var(--neon-orange)">7</div>
-      <div class="stat-lbl">Strong Buys</div>
-    </div>
-    <div class="stat-box" style="border-color:var(--neon-cyan)">
-      <div class="stat-val" style="color:var(--neon-cyan);font-size:1.1rem;padding-top:8px">INFY</div>
-      <div class="stat-lbl">Top Pick</div>
-    </div>
+    <p style="color:#80deea;font-size:.8rem;margin-top:10px">
+      <strong style="color:var(--ng)">Reversal confirmations required:</strong>
+      RSI turning up · Volume climax · Bullish engulfing · 52W low bounce · MACD histogram improving · SMA20 stabilizing
+    </p>
   </div>
 
   <div class="section">
-    <div class="section-title">🏆 Sector Overview</div>
+    <div class="section-title">🏆 Sector Scorecard</div>
     <div class="sector-grid">
-        <div class="sector-card ">
+        <div class="sector-card bullish-card">
             <div class="sector-name">Nifty Bank</div>
-            <div class="sector-badge" style="background:#ffa502">🟡 NEUTRAL</div>
+            <div class="sector-badge" style="background:#00ff95">🟢 BULLISH</div>
             <div class="sector-metrics">
-                <span>RSI <strong>62.3</strong></span>
+                <span>RSI <strong style="color:#cfd8dc">62.3</strong></span>
+                <span>RSI Slope <strong style="color:#00ff95">+3.3</strong></span>
                 <span>Week <strong style="color:#00ff95">+0.74%</strong></span>
-                <span>Score <strong>10/100</strong></span>
+                <span>Danger <strong style="color:#00ff95">0/6</strong></span>
             </div>
+            <div class="sector-reasons"><div class="reason">❌ RSI 62.3 slope +3.3 — trending down</div><div class="reason">✅ Danger Score 0/6 — acceptable</div><div class="reason">✅ Reversal evidence: ✅ SMA20 Slope Stabilizing</div></div>
         </div>
         <div class="sector-card bullish-card">
             <div class="sector-name">Nifty IT</div>
             <div class="sector-badge" style="background:#00ff95">🟢 BULLISH</div>
             <div class="sector-metrics">
-                <span>RSI <strong>14.2</strong></span>
+                <span>RSI <strong style="color:#ffa502">14.2</strong></span>
+                <span>RSI Slope <strong style="color:#00ff95">+0.5</strong></span>
                 <span>Week <strong style="color:#ff6b9d">-5.46%</strong></span>
-                <span>Score <strong>45/100</strong></span>
+                <span>Danger <strong style="color:#ffa502">2/6</strong></span>
             </div>
+            <div class="sector-reasons"><div class="reason">✅ RSI 14.2 — not overbought & slope OK</div><div class="reason">✅ Danger Score 2/6 — acceptable</div><div class="reason">✅ Reversal evidence: ✅ RSI Turning Up from Oversold, ✅ MACD Histogram Improving</div></div>
         </div>
-        <div class="sector-card ">
-            <div class="sector-name">Nifty Private Bank</div>
-            <div class="sector-badge" style="background:#ffa502">🟡 NEUTRAL</div>
-            <div class="sector-metrics">
-                <span>RSI <strong>51.4</strong></span>
-                <span>Week <strong style="color:#00ff95">+0.83%</strong></span>
-                <span>Score <strong>10/100</strong></span>
-            </div>
-        </div>
-        <div class="sector-card ">
+        <div class="sector-card bullish-card">
             <div class="sector-name">Nifty Pharma</div>
-            <div class="sector-badge" style="background:#ff6b9d">🔴 BEARISH</div>
+            <div class="sector-badge" style="background:#00ff95">🟢 BULLISH</div>
             <div class="sector-metrics">
-                <span>RSI <strong>80.4</strong></span>
+                <span>RSI <strong style="color:#cfd8dc">80.4</strong></span>
+                <span>RSI Slope <strong style="color:#00ff95">+15.4</strong></span>
                 <span>Week <strong style="color:#00ff95">+3.89%</strong></span>
-                <span>Score <strong>25/100</strong></span>
+                <span>Danger <strong style="color:#00ff95">1/6</strong></span>
             </div>
+            <div class="sector-reasons"><div class="reason">❌ RSI 80.4 slope +15.4 — trending down</div><div class="reason">✅ Danger Score 1/6 — acceptable</div><div class="reason">✅ Reversal evidence: ✅ SMA20 Slope Stabilizing</div></div>
         </div>
-        <div class="sector-card ">
+        <div class="sector-card bearish-card">
             <div class="sector-name">Nifty Realty</div>
-            <div class="sector-badge" style="background:#ffa502">🟡 NEUTRAL</div>
+            <div class="sector-badge" style="background:#ff6b9d">🔴 BLOCKED</div>
             <div class="sector-metrics">
-                <span>RSI <strong>40.1</strong></span>
+                <span>RSI <strong style="color:#cfd8dc">40.1</strong></span>
+                <span>RSI Slope <strong style="color:#ff6b9d">-20.5</strong></span>
                 <span>Week <strong style="color:#ff6b9d">-2.35%</strong></span>
-                <span>Score <strong>15/100</strong></span>
+                <span>Danger <strong style="color:#ff6b9d">4/6</strong></span>
             </div>
+            <div class="sector-reasons"><div class="reason">❌ RSI 40.1 slope -20.5 — trending down</div><div class="reason">❌ Danger Score 4/6 — falling knife</div><div class="reason">✅ Reversal evidence: ✅ SMA20 Slope Stabilizing</div></div>
         </div>
-        <div class="sector-card ">
+        <div class="sector-card bullish-card">
             <div class="sector-name">Nifty FMCG</div>
-            <div class="sector-badge" style="background:#ffa502">🟡 NEUTRAL</div>
+            <div class="sector-badge" style="background:#00ff95">🟢 BULLISH</div>
             <div class="sector-metrics">
-                <span>RSI <strong>51.4</strong></span>
+                <span>RSI <strong style="color:#cfd8dc">51.4</strong></span>
+                <span>RSI Slope <strong style="color:#ff6b9d">-0.7</strong></span>
                 <span>Week <strong style="color:#00ff95">+1.05%</strong></span>
-                <span>Score <strong>20/100</strong></span>
+                <span>Danger <strong style="color:#00ff95">0/6</strong></span>
             </div>
+            <div class="sector-reasons"><div class="reason">❌ RSI 51.4 slope -0.7 — trending down</div><div class="reason">✅ Danger Score 0/6 — acceptable</div><div class="reason">✅ Reversal evidence: ✅ SMA20 Slope Stabilizing</div></div>
         </div>
-        <div class="sector-card ">
+        <div class="sector-card bullish-card">
             <div class="sector-name">Nifty Metal</div>
-            <div class="sector-badge" style="background:#ffa502">🟡 NEUTRAL</div>
+            <div class="sector-badge" style="background:#00ff95">🟢 BULLISH</div>
             <div class="sector-metrics">
-                <span>RSI <strong>63.2</strong></span>
+                <span>RSI <strong style="color:#cfd8dc">63.2</strong></span>
+                <span>RSI Slope <strong style="color:#00ff95">+12.9</strong></span>
                 <span>Week <strong style="color:#00ff95">+5.11%</strong></span>
-                <span>Score <strong>30/100</strong></span>
+                <span>Danger <strong style="color:#00ff95">0/6</strong></span>
             </div>
+            <div class="sector-reasons"><div class="reason">❌ RSI 63.2 slope +12.9 — trending down</div><div class="reason">✅ Danger Score 0/6 — acceptable</div><div class="reason">✅ Reversal evidence: ✅ SMA20 Slope Stabilizing</div></div>
         </div>
-        <div class="sector-card ">
+        <div class="sector-card bullish-card">
             <div class="sector-name">Nifty Auto</div>
-            <div class="sector-badge" style="background:#ffa502">🟡 NEUTRAL</div>
+            <div class="sector-badge" style="background:#00ff95">🟢 BULLISH</div>
             <div class="sector-metrics">
-                <span>RSI <strong>66.1</strong></span>
+                <span>RSI <strong style="color:#cfd8dc">66.1</strong></span>
+                <span>RSI Slope <strong style="color:#00ff95">+3.2</strong></span>
                 <span>Week <strong style="color:#00ff95">+3.46%</strong></span>
-                <span>Score <strong>25/100</strong></span>
+                <span>Danger <strong style="color:#00ff95">1/6</strong></span>
             </div>
+            <div class="sector-reasons"><div class="reason">❌ RSI 66.1 slope +3.2 — trending down</div><div class="reason">✅ Danger Score 1/6 — acceptable</div><div class="reason">✅ Reversal evidence: ✅ SMA20 Slope Stabilizing</div></div>
         </div>
-        <div class="sector-card ">
+        <div class="sector-card bullish-card">
             <div class="sector-name">Nifty Energy</div>
-            <div class="sector-badge" style="background:#ffa502">🟡 NEUTRAL</div>
+            <div class="sector-badge" style="background:#00ff95">🟢 BULLISH</div>
             <div class="sector-metrics">
-                <span>RSI <strong>60.4</strong></span>
+                <span>RSI <strong style="color:#cfd8dc">60.4</strong></span>
+                <span>RSI Slope <strong style="color:#00ff95">+1.0</strong></span>
                 <span>Week <strong style="color:#00ff95">+3.03%</strong></span>
-                <span>Score <strong>25/100</strong></span>
+                <span>Danger <strong style="color:#00ff95">1/6</strong></span>
             </div>
+            <div class="sector-reasons"><div class="reason">❌ RSI 60.4 slope +1.0 — trending down</div><div class="reason">✅ Danger Score 1/6 — acceptable</div><div class="reason">✅ Reversal evidence: ✅ SMA20 Slope Stabilizing</div></div>
         </div></div>
   </div>
 
   <div class="section">
-    <div class="section-title">🟢 Top Buy Recommendations</div>
-    <div class="table-wrap">
-    <table>
+    <div class="section-title">🟢 Top Valid Buy Recommendations (Knife-Filtered)</div>
+    <div class="tbl-wrap"><table>
       <thead><tr>
-        <th>#</th><th>Stock</th><th>LTP</th><th>Day %</th><th>Week %</th>
-        <th>RSI</th><th>Score</th><th>Target</th><th>Stop Loss</th>
-        <th>Upside</th><th>Signals</th><th>Action</th>
+        <th>#</th><th>Stock</th><th>LTP</th><th>Day%</th><th>Week%</th>
+        <th>RSI (slope)</th><th>Score</th><th>Danger</th><th>Reversals</th>
+        <th>Target</th><th>Stop Loss</th><th>R:R</th><th>Verdict</th>
       </tr></thead>
       <tbody>
         <tr class="top-row">
             <td><strong>1</strong></td>
-            <td><strong>INFY</strong><br><small style="color:#888">Nifty IT</small></td>
-            <td>₹1289.10</td>
-            <td style="color:#ff6b9d">-0.08%</td>
-            <td style="color:#ff6b9d">-5.94%</td>
-            <td style="color:#ff6b9d"><strong>13.6</strong></td>
-            <td style="color:#00ff95"><strong>75/100</strong></td>
-            <td style="color:#00ff95">₹1418.01</td>
-            <td style="color:#ff6b9d">₹1224.64</td>
-            <td style="color:#00ff95">+34.0%</td>
-            <td><span class="sig-pill">🔥 Extreme Oversold</span></td>
-            <td><span class="tag strong-buy">🔥 STRONG BUY</span></td>
-        </tr>
-        <tr class="top-row">
-            <td><strong>2</strong></td>
-            <td><strong>TECHM</strong><br><small style="color:#888">Nifty IT</small></td>
-            <td>₹1361.80</td>
-            <td style="color:#ff6b9d">+0.00%</td>
-            <td style="color:#ff6b9d">-7.94%</td>
-            <td style="color:#ff6b9d"><strong>14.4</strong></td>
-            <td style="color:#00ff95"><strong>75/100</strong></td>
-            <td style="color:#00ff95">₹1497.98</td>
-            <td style="color:#ff6b9d">₹1293.71</td>
-            <td style="color:#00ff95">+36.1%</td>
-            <td><span class="sig-pill">🔥 Extreme Oversold</span></td>
-            <td><span class="tag strong-buy">🔥 STRONG BUY</span></td>
-        </tr>
-        <tr class="top-row">
-            <td><strong>3</strong></td>
-            <td><strong>WIPRO</strong><br><small style="color:#888">Nifty IT</small></td>
-            <td>₹201.08</td>
-            <td style="color:#ff6b9d">-0.42%</td>
-            <td style="color:#ff6b9d">-4.80%</td>
-            <td style="color:#ff6b9d"><strong>13.7</strong></td>
-            <td style="color:#00ff95"><strong>75/100</strong></td>
-            <td style="color:#00ff95">₹221.19</td>
-            <td style="color:#ff6b9d">₹191.03</td>
-            <td style="color:#00ff95">+32.4%</td>
-            <td><span class="sig-pill">🔥 Extreme Oversold</span></td>
-            <td><span class="tag strong-buy">🔥 STRONG BUY</span></td>
-        </tr>
-        <tr class="top-row">
-            <td><strong>4</strong></td>
-            <td><strong>LTIM</strong><br><small style="color:#888">Nifty IT</small></td>
-            <td>₹4504.00</td>
-            <td style="color:#ff6b9d">-1.21%</td>
-            <td style="color:#ff6b9d">-9.18%</td>
-            <td style="color:#ff6b9d"><strong>14.1</strong></td>
-            <td style="color:#00ff95"><strong>75/100</strong></td>
-            <td style="color:#00ff95">₹4954.40</td>
-            <td style="color:#ff6b9d">₹4278.80</td>
-            <td style="color:#00ff95">+42.8%</td>
-            <td><span class="sig-pill">🔥 Extreme Oversold</span></td>
-            <td><span class="tag strong-buy">🔥 STRONG BUY</span></td>
-        </tr>
-        <tr class="top-row">
-            <td><strong>5</strong></td>
-            <td><strong>PERSISTENT</strong><br><small style="color:#888">Nifty IT</small></td>
-            <td>₹4781.50</td>
-            <td style="color:#00ff95">+1.07%</td>
-            <td style="color:#ff6b9d">-9.20%</td>
-            <td style="color:#ff6b9d"><strong>18.7</strong></td>
-            <td style="color:#00ff95"><strong>75/100</strong></td>
-            <td style="color:#00ff95">₹5259.65</td>
-            <td style="color:#ff6b9d">₹4542.43</td>
-            <td style="color:#00ff95">+37.5%</td>
-            <td><span class="sig-pill">🔥 Extreme Oversold</span></td>
-            <td><span class="tag strong-buy">🔥 STRONG BUY</span></td>
-        </tr>
-        <tr class="top-row">
-            <td><strong>6</strong></td>
-            <td><strong>COFORGE</strong><br><small style="color:#888">Nifty IT</small></td>
-            <td>₹1200.40</td>
-            <td style="color:#ff6b9d">-1.03%</td>
-            <td style="color:#ff6b9d">-11.80%</td>
-            <td style="color:#ff6b9d"><strong>8.7</strong></td>
-            <td style="color:#00ff95"><strong>75/100</strong></td>
-            <td style="color:#00ff95">₹1320.44</td>
-            <td style="color:#ff6b9d">₹1140.38</td>
-            <td style="color:#00ff95">+65.4%</td>
-            <td><span class="sig-pill">🔥 Extreme Oversold</span> <span class="sig-pill">📊 Volume Surge</span></td>
-            <td><span class="tag strong-buy">🔥 STRONG BUY</span></td>
-        </tr>
-        <tr class="">
-            <td><strong>7</strong></td>
-            <td><strong>HCLTECH</strong><br><small style="color:#888">Nifty IT</small></td>
-            <td>₹1373.50</td>
-            <td style="color:#ff6b9d">-0.34%</td>
-            <td style="color:#ff6b9d">-5.30%</td>
-            <td style="color:#ff6b9d"><strong>20.2</strong></td>
-            <td style="color:#00ff95"><strong>70/100</strong></td>
-            <td style="color:#00ff95">₹1510.85</td>
-            <td style="color:#ff6b9d">₹1304.83</td>
-            <td style="color:#00ff95">+29.6%</td>
-            <td><span class="sig-pill">🔥 Extreme Oversold</span></td>
-            <td><span class="tag strong-buy">🔥 STRONG BUY</span></td>
-        </tr>
-        <tr class="">
-            <td><strong>8</strong></td>
-            <td><strong>TCS</strong><br><small style="color:#888">Nifty IT</small></td>
+            <td><strong>TCS</strong><br><small style="color:#888">Nifty IT</small><br><small style="color:#555">IT Services</small></td>
             <td>₹2647.70</td>
             <td style="color:#00ff95">+0.70%</td>
             <td style="color:#ff6b9d">-1.13%</td>
-            <td style="color:#ff6b9d"><strong>25.3</strong></td>
-            <td style="color:#ffa502"><strong>65/100</strong></td>
-            <td style="color:#00ff95">₹2912.47</td>
-            <td style="color:#ff6b9d">₹2515.31</td>
-            <td style="color:#00ff95">+26.5%</td>
-            <td><span class="sig-pill">🔥 RSI Oversold</span></td>
-            <td><span class="tag buy">📊 BUY</span></td>
+            <td style="color:#ff6b9d"><strong>25.3</strong><br><small style="color:#00ff95;font-size:.7rem">+3.7 slope</small></td>
+            <td style="color:#00ff95"><strong>70/100</strong></td>
+            <td><span style="color:#ffa502;font-weight:700">1/6</span><br><small style="font-size:.65rem"><span class="warn-pill">⛔ Price Below SMA20 & SMA50</span></small></td>
+            <td><span class="sig-pill">✅ RSI Turning Up from Oversold</span> <span class="sig-pill">✅ MACD Histogram Improving</span></td>
+            <td style="color:#00ff95">₹2802.90<br><small>T2: ₹2919.30</small></td>
+            <td style="color:#ff6b9d">₹2531.30</td>
+            <td style="color:#00ff95">1.3×</td>
+            <td><span class="tag" style="background:#00d9ff;color:#000">🔥 STRONG WATCH</span></td>
+        </tr>
+        <tr class="">
+            <td><strong>2</strong></td>
+            <td><strong>DRREDDY</strong><br><small style="color:#888">Nifty Pharma</small><br><small style="color:#555">Pharma - Global</small></td>
+            <td>₹1319.30</td>
+            <td style="color:#00ff95">+0.98%</td>
+            <td style="color:#00ff95">+2.89%</td>
+            <td style="color:#00ff95"><strong>74.7</strong><br><small style="color:#00ff95;font-size:.7rem">+9.0 slope</small></td>
+            <td style="color:#ffa502"><strong>50/100</strong></td>
+            <td><span style="color:#00ff95;font-weight:700">0/6</span><br><small style="font-size:.65rem"></small></td>
+            <td><span class="sig-pill">✅ Bullish Engulfing Pattern</span> <span class="sig-pill">✅ SMA20 Slope Stabilizing</span></td>
+            <td style="color:#00ff95">₹1372.85<br><small>T2: ₹1413.01</small></td>
+            <td style="color:#ff6b9d">₹1279.14</td>
+            <td style="color:#00ff95">1.3×</td>
+            <td><span class="tag" style="background:#00ff95;color:#000">✅ VALID BUY</span></td>
+        </tr>
+        <tr class="">
+            <td><strong>3</strong></td>
+            <td><strong>LUPIN</strong><br><small style="color:#888">Nifty Pharma</small><br><small style="color:#555">Pharma - Global</small></td>
+            <td>₹2323.20</td>
+            <td style="color:#00ff95">+1.35%</td>
+            <td style="color:#00ff95">+4.24%</td>
+            <td style="color:#00ff95"><strong>82.0</strong><br><small style="color:#00ff95;font-size:.7rem">+18.4 slope</small></td>
+            <td style="color:#ffa502"><strong>50/100</strong></td>
+            <td><span style="color:#00ff95;font-weight:700">0/6</span><br><small style="font-size:.65rem"></small></td>
+            <td><span class="sig-pill">✅ Bullish Engulfing Pattern</span> <span class="sig-pill">✅ SMA20 Slope Stabilizing</span></td>
+            <td style="color:#00ff95">₹2411.83<br><small>T2: ₹2478.31</small></td>
+            <td style="color:#ff6b9d">₹2256.72</td>
+            <td style="color:#00ff95">1.3×</td>
+            <td><span class="tag" style="background:#00ff95;color:#000">✅ VALID BUY</span></td>
+        </tr>
+        <tr class="">
+            <td><strong>4</strong></td>
+            <td><strong>EICHERMOT</strong><br><small style="color:#888">Nifty Auto</small><br><small style="color:#555">Premium Two Wheelers</small></td>
+            <td>₹8190.00</td>
+            <td style="color:#00ff95">+2.27%</td>
+            <td style="color:#00ff95">+3.71%</td>
+            <td style="color:#00ff95"><strong>81.3</strong><br><small style="color:#00ff95;font-size:.7rem">+7.6 slope</small></td>
+            <td style="color:#ffa502"><strong>50/100</strong></td>
+            <td><span style="color:#00ff95;font-weight:700">0/6</span><br><small style="font-size:.65rem"></small></td>
+            <td><span class="sig-pill">✅ Bullish Engulfing Pattern</span> <span class="sig-pill">✅ SMA20 Slope Stabilizing</span></td>
+            <td style="color:#00ff95">₹8562.93<br><small>T2: ₹8842.63</small></td>
+            <td style="color:#ff6b9d">₹7910.30</td>
+            <td style="color:#00ff95">1.3×</td>
+            <td><span class="tag" style="background:#00ff95;color:#000">✅ VALID BUY</span></td>
+        </tr>
+        <tr class="">
+            <td><strong>5</strong></td>
+            <td><strong>TVSMOTOR</strong><br><small style="color:#888">Nifty Auto</small><br><small style="color:#555">Two Wheelers</small></td>
+            <td>₹3954.20</td>
+            <td style="color:#00ff95">+0.56%</td>
+            <td style="color:#00ff95">+3.24%</td>
+            <td style="color:#00ff95"><strong>69.1</strong><br><small style="color:#00ff95;font-size:.7rem">+4.1 slope</small></td>
+            <td style="color:#ffa502"><strong>50/100</strong></td>
+            <td><span style="color:#00ff95;font-weight:700">0/6</span><br><small style="font-size:.65rem"></small></td>
+            <td><span class="sig-pill">✅ Bullish Engulfing Pattern</span> <span class="sig-pill">✅ SMA20 Slope Stabilizing</span></td>
+            <td style="color:#00ff95">₹4127.77<br><small>T2: ₹4257.95</small></td>
+            <td style="color:#ff6b9d">₹3824.02</td>
+            <td style="color:#00ff95">1.3×</td>
+            <td><span class="tag" style="background:#00ff95;color:#000">✅ VALID BUY</span></td>
+        </tr>
+        <tr class="">
+            <td><strong>6</strong></td>
+            <td><strong>CIPLA</strong><br><small style="color:#888">Nifty Pharma</small><br><small style="color:#555">Pharma - Domestic</small></td>
+            <td>₹1358.10</td>
+            <td style="color:#00ff95">+0.89%</td>
+            <td style="color:#00ff95">+2.20%</td>
+            <td style="color:#00ff95"><strong>58.5</strong><br><small style="color:#00ff95;font-size:.7rem">+6.8 slope</small></td>
+            <td style="color:#ffa502"><strong>45/100</strong></td>
+            <td><span style="color:#00ff95;font-weight:700">0/6</span><br><small style="font-size:.65rem"></small></td>
+            <td><span class="sig-pill">✅ SMA20 Slope Stabilizing</span></td>
+            <td style="color:#00ff95">₹1408.47<br><small>T2: ₹1446.25</small></td>
+            <td style="color:#ff6b9d">₹1320.32</td>
+            <td style="color:#00ff95">1.3×</td>
+            <td><span class="tag" style="background:#00ff95;color:#000">✅ VALID BUY</span></td>
+        </tr>
+        <tr class="">
+            <td><strong>7</strong></td>
+            <td><strong>HINDZINC</strong><br><small style="color:#888">Nifty Metal</small><br><small style="color:#555">Zinc</small></td>
+            <td>₹609.80</td>
+            <td style="color:#ff6b9d">-1.49%</td>
+            <td style="color:#00ff95">+4.40%</td>
+            <td style="color:#00ff95"><strong>50.3</strong><br><small style="color:#00ff95;font-size:.7rem">+12.9 slope</small></td>
+            <td style="color:#ffa502"><strong>45/100</strong></td>
+            <td><span style="color:#00ff95;font-weight:700">0/6</span><br><small style="font-size:.65rem"></small></td>
+            <td><span class="sig-pill">✅ MACD Histogram Improving</span></td>
+            <td style="color:#00ff95">₹654.23<br><small>T2: ₹687.55</small></td>
+            <td style="color:#ff6b9d">₹576.48</td>
+            <td style="color:#00ff95">1.3×</td>
+            <td><span class="tag" style="background:#00ff95;color:#000">✅ VALID BUY</span></td>
+        </tr>
+        <tr class="">
+            <td><strong>8</strong></td>
+            <td><strong>SBIN</strong><br><small style="color:#888">Nifty Bank</small><br><small style="color:#555">PSU Bank</small></td>
+            <td>₹1209.50</td>
+            <td style="color:#00ff95">+0.78%</td>
+            <td style="color:#00ff95">+0.32%</td>
+            <td style="color:#00ff95"><strong>81.3</strong><br><small style="color:#00ff95;font-size:.7rem">+7.5 slope</small></td>
+            <td style="color:#ffa502"><strong>40/100</strong></td>
+            <td><span style="color:#ffa502;font-weight:700">1/6</span><br><small style="font-size:.65rem"><span class="warn-pill">⛔ MACD Bearish & Worsening</span></small></td>
+            <td><span class="sig-pill">✅ SMA20 Slope Stabilizing</span></td>
+            <td style="color:#00ff95">₹1258.24<br><small>T2: ₹1294.79</small></td>
+            <td style="color:#ff6b9d">₹1172.95</td>
+            <td style="color:#00ff95">1.3×</td>
+            <td><span class="tag" style="background:#00ff95;color:#000">✅ VALID BUY</span></td>
+        </tr>
+        <tr class="">
+            <td><strong>9</strong></td>
+            <td><strong>AXISBANK</strong><br><small style="color:#888">Nifty Bank</small><br><small style="color:#555">Private Bank</small></td>
+            <td>₹1395.50</td>
+            <td style="color:#ff6b9d">-0.53%</td>
+            <td style="color:#00ff95">+2.87%</td>
+            <td style="color:#00ff95"><strong>66.7</strong><br><small style="color:#00ff95;font-size:.7rem">+19.5 slope</small></td>
+            <td style="color:#ffa502"><strong>40/100</strong></td>
+            <td><span style="color:#00ff95;font-weight:700">0/6</span><br><small style="font-size:.65rem"></small></td>
+            <td><span class="sig-pill">✅ SMA20 Slope Stabilizing</span></td>
+            <td style="color:#00ff95">₹1450.81<br><small>T2: ₹1492.30</small></td>
+            <td style="color:#ff6b9d">₹1354.02</td>
+            <td style="color:#00ff95">1.3×</td>
+            <td><span class="tag" style="background:#00ff95;color:#000">✅ VALID BUY</span></td>
+        </tr>
+        <tr class="">
+            <td><strong>10</strong></td>
+            <td><strong>INDUSINDBK</strong><br><small style="color:#888">Nifty Bank</small><br><small style="color:#555">Private Bank</small></td>
+            <td>₹964.60</td>
+            <td style="color:#00ff95">+2.91%</td>
+            <td style="color:#00ff95">+4.02%</td>
+            <td style="color:#00ff95"><strong>75.2</strong><br><small style="color:#00ff95;font-size:.7rem">+11.4 slope</small></td>
+            <td style="color:#ffa502"><strong>40/100</strong></td>
+            <td><span style="color:#00ff95;font-weight:700">0/6</span><br><small style="font-size:.65rem"></small></td>
+            <td><span class="sig-pill">✅ SMA20 Slope Stabilizing</span></td>
+            <td style="color:#00ff95">₹1010.80<br><small>T2: ₹1045.45</small></td>
+            <td style="color:#ff6b9d">₹929.95</td>
+            <td style="color:#00ff95">1.3×</td>
+            <td><span class="tag" style="background:#00ff95;color:#000">✅ VALID BUY</span></td>
+        </tr>
+        <tr class="">
+            <td><strong>11</strong></td>
+            <td><strong>BANKBARODA</strong><br><small style="color:#888">Nifty Bank</small><br><small style="color:#555">PSU Bank</small></td>
+            <td>₹324.45</td>
+            <td style="color:#00ff95">+2.72%</td>
+            <td style="color:#00ff95">+6.57%</td>
+            <td style="color:#00ff95"><strong>89.0</strong><br><small style="color:#00ff95;font-size:.7rem">+34.9 slope</small></td>
+            <td style="color:#ffa502"><strong>40/100</strong></td>
+            <td><span style="color:#00ff95;font-weight:700">0/6</span><br><small style="font-size:.65rem"></small></td>
+            <td><span class="sig-pill">✅ SMA20 Slope Stabilizing</span></td>
+            <td style="color:#00ff95">₹339.36<br><small>T2: ₹350.54</small></td>
+            <td style="color:#ff6b9d">₹313.27</td>
+            <td style="color:#00ff95">1.3×</td>
+            <td><span class="tag" style="background:#00ff95;color:#000">✅ VALID BUY</span></td>
+        </tr>
+        <tr class="">
+            <td><strong>12</strong></td>
+            <td><strong>PNB</strong><br><small style="color:#888">Nifty Bank</small><br><small style="color:#555">PSU Bank</small></td>
+            <td>₹130.48</td>
+            <td style="color:#ff6b9d">-0.05%</td>
+            <td style="color:#00ff95">+3.47%</td>
+            <td style="color:#00ff95"><strong>67.2</strong><br><small style="color:#00ff95;font-size:.7rem">+15.2 slope</small></td>
+            <td style="color:#ffa502"><strong>40/100</strong></td>
+            <td><span style="color:#00ff95;font-weight:700">0/6</span><br><small style="font-size:.65rem"></small></td>
+            <td><span class="sig-pill">✅ SMA20 Slope Stabilizing</span></td>
+            <td style="color:#00ff95">₹137.13<br><small>T2: ₹142.12</small></td>
+            <td style="color:#ff6b9d">₹125.49</td>
+            <td style="color:#00ff95">1.3×</td>
+            <td><span class="tag" style="background:#00ff95;color:#000">✅ VALID BUY</span></td>
+        </tr>
+        <tr class="">
+            <td><strong>13</strong></td>
+            <td><strong>DIVISLAB</strong><br><small style="color:#888">Nifty Pharma</small><br><small style="color:#555">Pharma - API</small></td>
+            <td>₹6474.00</td>
+            <td style="color:#00ff95">+1.23%</td>
+            <td style="color:#00ff95">+2.80%</td>
+            <td style="color:#00ff95"><strong>72.2</strong><br><small style="color:#00ff95;font-size:.7rem">+13.8 slope</small></td>
+            <td style="color:#ffa502"><strong>40/100</strong></td>
+            <td><span style="color:#00ff95;font-weight:700">0/6</span><br><small style="font-size:.65rem"></small></td>
+            <td><span class="sig-pill">✅ SMA20 Slope Stabilizing</span></td>
+            <td style="color:#00ff95">₹6808.35<br><small>T2: ₹7059.12</small></td>
+            <td style="color:#ff6b9d">₹6223.24</td>
+            <td style="color:#00ff95">1.3×</td>
+            <td><span class="tag" style="background:#00ff95;color:#000">✅ VALID BUY</span></td>
+        </tr>
+        <tr class="">
+            <td><strong>14</strong></td>
+            <td><strong>AUROPHARMA</strong><br><small style="color:#888">Nifty Pharma</small><br><small style="color:#555">Pharma - Global</small></td>
+            <td>₹1220.70</td>
+            <td style="color:#00ff95">+0.76%</td>
+            <td style="color:#00ff95">+4.21%</td>
+            <td style="color:#00ff95"><strong>54.8</strong><br><small style="color:#00ff95;font-size:.7rem">+9.8 slope</small></td>
+            <td style="color:#ffa502"><strong>40/100</strong></td>
+            <td><span style="color:#00ff95;font-weight:700">0/6</span><br><small style="font-size:.65rem"></small></td>
+            <td><span class="sig-pill">✅ SMA20 Slope Stabilizing</span></td>
+            <td style="color:#00ff95">₹1302.45<br><small>T2: ₹1363.76</small></td>
+            <td style="color:#ff6b9d">₹1159.39</td>
+            <td style="color:#00ff95">1.3×</td>
+            <td><span class="tag" style="background:#00ff95;color:#000">✅ VALID BUY</span></td>
+        </tr>
+        <tr class="">
+            <td><strong>15</strong></td>
+            <td><strong>BIOCON</strong><br><small style="color:#888">Nifty Pharma</small><br><small style="color:#555">Biotech</small></td>
+            <td>₹394.85</td>
+            <td style="color:#ff6b9d">-0.25%</td>
+            <td style="color:#00ff95">+3.19%</td>
+            <td style="color:#00ff95"><strong>86.5</strong><br><small style="color:#00ff95;font-size:.7rem">+15.9 slope</small></td>
+            <td style="color:#ffa502"><strong>40/100</strong></td>
+            <td><span style="color:#00ff95;font-weight:700">0/6</span><br><small style="font-size:.65rem"></small></td>
+            <td><span class="sig-pill">✅ SMA20 Slope Stabilizing</span></td>
+            <td style="color:#00ff95">₹413.18<br><small>T2: ₹426.93</small></td>
+            <td style="color:#ff6b9d">₹381.10</td>
+            <td style="color:#00ff95">1.3×</td>
+            <td><span class="tag" style="background:#00ff95;color:#000">✅ VALID BUY</span></td>
+        </tr>
+        <tr class="">
+            <td><strong>16</strong></td>
+            <td><strong>ALKEM</strong><br><small style="color:#888">Nifty Pharma</small><br><small style="color:#555">Pharma - Domestic</small></td>
+            <td>₹5752.00</td>
+            <td style="color:#00ff95">+2.26%</td>
+            <td style="color:#00ff95">+7.84%</td>
+            <td style="color:#00ff95"><strong>54.4</strong><br><small style="color:#00ff95;font-size:.7rem">+15.9 slope</small></td>
+            <td style="color:#ffa502"><strong>40/100</strong></td>
+            <td><span style="color:#ffa502;font-weight:700">1/6</span><br><small style="font-size:.65rem"><span class="warn-pill">⛔ Institutions Selling (Down-Vol > U</small></td>
+            <td><span class="sig-pill">✅ Bullish Engulfing Pattern</span></td>
+            <td style="color:#00ff95">₹6032.89<br><small>T2: ₹6243.55</small></td>
+            <td style="color:#ff6b9d">₹5541.34</td>
+            <td style="color:#00ff95">1.3×</td>
+            <td><span class="tag" style="background:#00ff95;color:#000">✅ VALID BUY</span></td>
+        </tr>
+        <tr class="">
+            <td><strong>17</strong></td>
+            <td><strong>HINDUNILVR</strong><br><small style="color:#888">Nifty FMCG</small><br><small style="color:#555">Personal Care</small></td>
+            <td>₹2383.30</td>
+            <td style="color:#00ff95">+0.35%</td>
+            <td style="color:#00ff95">+4.56%</td>
+            <td style="color:#ffa502"><strong>44.6</strong><br><small style="color:#00ff95;font-size:.7rem">+6.6 slope</small></td>
+            <td style="color:#ffa502"><strong>40/100</strong></td>
+            <td><span style="color:#ffa502;font-weight:700">1/6</span><br><small style="font-size:.65rem"><span class="warn-pill">⛔ Institutions Selling (Down-Vol > U</small></td>
+            <td><span class="sig-pill">✅ SMA20 Slope Stabilizing</span></td>
+            <td style="color:#00ff95">₹2479.11<br><small>T2: ₹2550.96</small></td>
+            <td style="color:#ff6b9d">₹2311.45</td>
+            <td style="color:#00ff95">1.3×</td>
+            <td><span class="tag" style="background:#00ff95;color:#000">✅ VALID BUY</span></td>
+        </tr>
+        <tr class="">
+            <td><strong>18</strong></td>
+            <td><strong>NESTLEIND</strong><br><small style="color:#888">Nifty FMCG</small><br><small style="color:#555">Packaged Foods</small></td>
+            <td>₹1318.00</td>
+            <td style="color:#ff6b9d">-0.41%</td>
+            <td style="color:#00ff95">+3.09%</td>
+            <td style="color:#00ff95"><strong>55.0</strong><br><small style="color:#00ff95;font-size:.7rem">+22.6 slope</small></td>
+            <td style="color:#ffa502"><strong>40/100</strong></td>
+            <td><span style="color:#00ff95;font-weight:700">0/6</span><br><small style="font-size:.65rem"></small></td>
+            <td><span class="sig-pill">✅ SMA20 Slope Stabilizing</span></td>
+            <td style="color:#00ff95">₹1366.72<br><small>T2: ₹1403.26</small></td>
+            <td style="color:#ff6b9d">₹1281.46</td>
+            <td style="color:#00ff95">1.3×</td>
+            <td><span class="tag" style="background:#00ff95;color:#000">✅ VALID BUY</span></td>
+        </tr>
+        <tr class="">
+            <td><strong>19</strong></td>
+            <td><strong>DABUR</strong><br><small style="color:#888">Nifty FMCG</small><br><small style="color:#555">Ayurvedic Products</small></td>
+            <td>₹524.45</td>
+            <td style="color:#00ff95">+1.12%</td>
+            <td style="color:#00ff95">+4.55%</td>
+            <td style="color:#00ff95"><strong>62.2</strong><br><small style="color:#00ff95;font-size:.7rem">+16.3 slope</small></td>
+            <td style="color:#ffa502"><strong>40/100</strong></td>
+            <td><span style="color:#ffa502;font-weight:700">1/6</span><br><small style="font-size:.65rem"><span class="warn-pill">⛔ Institutions Selling (Down-Vol > U</small></td>
+            <td><span class="sig-pill">✅ SMA20 Slope Stabilizing</span></td>
+            <td style="color:#00ff95">₹545.07<br><small>T2: ₹560.53</small></td>
+            <td style="color:#ff6b9d">₹508.99</td>
+            <td style="color:#00ff95">1.3×</td>
+            <td><span class="tag" style="background:#00ff95;color:#000">✅ VALID BUY</span></td>
+        </tr>
+        <tr class="">
+            <td><strong>20</strong></td>
+            <td><strong>GODREJCP</strong><br><small style="color:#888">Nifty FMCG</small><br><small style="color:#555">Home Care</small></td>
+            <td>₹1239.20</td>
+            <td style="color:#00ff95">+0.15%</td>
+            <td style="color:#00ff95">+4.26%</td>
+            <td style="color:#00ff95"><strong>70.2</strong><br><small style="color:#00ff95;font-size:.7rem">+9.9 slope</small></td>
+            <td style="color:#ffa502"><strong>40/100</strong></td>
+            <td><span style="color:#00ff95;font-weight:700">0/6</span><br><small style="font-size:.65rem"></small></td>
+            <td><span class="sig-pill">✅ SMA20 Slope Stabilizing</span></td>
+            <td style="color:#00ff95">₹1289.11<br><small>T2: ₹1326.53</small></td>
+            <td style="color:#ff6b9d">₹1201.77</td>
+            <td style="color:#00ff95">1.3×</td>
+            <td><span class="tag" style="background:#00ff95;color:#000">✅ VALID BUY</span></td>
         </tr></tbody>
-    </table>
-    </div>
+    </table></div>
   </div>
 
   <div class="section">
-    <div class="section-title">📊 Detailed Sector Breakdown (Bullish Only)</div>
+    <div class="section-title">📊 Bullish Sector Detail</div>
     
         <div class="sector-detail-block">
             <div class="sector-detail-header">
-                <h3>📊 NIFTY IT — Bullish Setup</h3>
+                <h3>📊 NIFTY BANK</h3>
                 <div class="sector-meta">
-                    RSI: <strong>14.2</strong> &nbsp;|&nbsp;
-                    Week: <strong style="color:#ff6b9d">-5.46%</strong> &nbsp;|&nbsp;
-                    LTP: <strong>₹30554.20</strong> &nbsp;|&nbsp;
-                    Score: <strong>45/100</strong>
+                    RSI: <strong>62.3</strong> &nbsp;|&nbsp;
+                    RSI Slope: <strong style="color:#00ff95">+3.3</strong> &nbsp;|&nbsp;
+                    Week: <strong style="color:#00ff95">+0.74%</strong> &nbsp;|&nbsp;
+                    Danger: <strong style="color:#00ff95">0/6</strong>
                 </div>
             </div>
-            
-            <h4 class="industry-title">🏭 IT Consulting</h4>
-            <div class="table-wrap">
-            <table>
+            <div class="table-wrap"><table>
                 <thead><tr>
-                    <th>Stock</th><th>Weight</th><th>LTP</th>
-                    <th>Day %</th><th>Week %</th><th>RSI</th>
-                    <th>Score</th><th>Target</th><th>Stop Loss</th>
-                    <th>Upside</th><th>Signals</th><th>Action</th>
+                    <th>Stock</th><th>Wt%</th><th>LTP</th><th>Day%</th><th>Week%</th>
+                    <th>RSI (slope)</th><th>Score</th><th>⚠ Danger Flags</th>
+                    <th>✅ Reversals</th><th>Target</th><th>Stop</th><th>Verdict</th>
                 </tr></thead>
                 <tbody>
-                <tr class="top-row">
-                    <td><strong>COFORGE</strong></td>
-                    <td>3.0%</td>
-                    <td>₹1200.40</td>
-                    <td style="color:#ff6b9d">-1.03%</td>
-                    <td style="color:#ff6b9d">-11.80%</td>
-                    <td style="color:#ff6b9d"><strong>8.7</strong></td>
-                    <td style="color:#00ff95"><strong>75/100</strong></td>
-                    <td style="color:#00ff95">₹1320.44</td>
-                    <td style="color:#ff6b9d">₹1140.38</td>
-                    <td style="color:#00ff95">+65.4%</td>
-                    <td><span class="sig-pill">🔥 Extreme Oversold</span> <span class="sig-pill">📊 Volume Surge</span></td>
-                    <td><span class="tag strong-buy">🔥 STRONG BUY</span></td>
-                </tr></tbody>
+            <tr class="">
+                <td><strong>SBIN</strong></td>
+                <td>18.9%</td>
+                <td>₹1209.50</td>
+                <td style="color:#00ff95">+0.78%</td>
+                <td style="color:#00ff95">+0.32%</td>
+                <td style="color:#00ff95">81.3 <small style="color:#00ff95">(+7.5)</small></td>
+                <td style="color:#ffa502"><strong>40/100</strong></td>
+                <td style="font-size:.75rem;color:#ff9999">⛔ MACD Bearish & Worsening</td>
+                <td style="font-size:.75rem;color:#99ff99">✅ SMA20 Slope Stabilizing</td>
+                <td style="color:#00ff95">₹1258.24</td>
+                <td style="color:#ff6b9d">₹1172.95</td>
+                <td><span class="tag" style="background:#00ff95;color:#000">✅ VALID BUY</span></td>
+            </tr>
+            <tr class="">
+                <td><strong>AXISBANK</strong></td>
+                <td>10.0%</td>
+                <td>₹1395.50</td>
+                <td style="color:#ff6b9d">-0.53%</td>
+                <td style="color:#00ff95">+2.87%</td>
+                <td style="color:#00ff95">66.7 <small style="color:#00ff95">(+19.5)</small></td>
+                <td style="color:#ffa502"><strong>40/100</strong></td>
+                <td style="font-size:.75rem;color:#ff9999">✅ Clean</td>
+                <td style="font-size:.75rem;color:#99ff99">✅ SMA20 Slope Stabilizing</td>
+                <td style="color:#00ff95">₹1450.81</td>
+                <td style="color:#ff6b9d">₹1354.02</td>
+                <td><span class="tag" style="background:#00ff95;color:#000">✅ VALID BUY</span></td>
+            </tr>
+            <tr class="">
+                <td><strong>INDUSINDBK</strong></td>
+                <td>5.0%</td>
+                <td>₹964.60</td>
+                <td style="color:#00ff95">+2.91%</td>
+                <td style="color:#00ff95">+4.02%</td>
+                <td style="color:#00ff95">75.2 <small style="color:#00ff95">(+11.4)</small></td>
+                <td style="color:#ffa502"><strong>40/100</strong></td>
+                <td style="font-size:.75rem;color:#ff9999">✅ Clean</td>
+                <td style="font-size:.75rem;color:#99ff99">✅ SMA20 Slope Stabilizing</td>
+                <td style="color:#00ff95">₹1010.80</td>
+                <td style="color:#ff6b9d">₹929.95</td>
+                <td><span class="tag" style="background:#00ff95;color:#000">✅ VALID BUY</span></td>
+            </tr>
+            <tr class="">
+                <td><strong>BANKBARODA</strong></td>
+                <td>3.5%</td>
+                <td>₹324.45</td>
+                <td style="color:#00ff95">+2.72%</td>
+                <td style="color:#00ff95">+6.57%</td>
+                <td style="color:#00ff95">89.0 <small style="color:#00ff95">(+34.9)</small></td>
+                <td style="color:#ffa502"><strong>40/100</strong></td>
+                <td style="font-size:.75rem;color:#ff9999">✅ Clean</td>
+                <td style="font-size:.75rem;color:#99ff99">✅ SMA20 Slope Stabilizing</td>
+                <td style="color:#00ff95">₹339.36</td>
+                <td style="color:#ff6b9d">₹313.27</td>
+                <td><span class="tag" style="background:#00ff95;color:#000">✅ VALID BUY</span></td>
+            </tr>
+            <tr class="">
+                <td><strong>PNB</strong></td>
+                <td>2.5%</td>
+                <td>₹130.48</td>
+                <td style="color:#ff6b9d">-0.05%</td>
+                <td style="color:#00ff95">+3.47%</td>
+                <td style="color:#00ff95">67.2 <small style="color:#00ff95">(+15.2)</small></td>
+                <td style="color:#ffa502"><strong>40/100</strong></td>
+                <td style="font-size:.75rem;color:#ff9999">✅ Clean</td>
+                <td style="font-size:.75rem;color:#99ff99">✅ SMA20 Slope Stabilizing</td>
+                <td style="color:#00ff95">₹137.13</td>
+                <td style="color:#ff6b9d">₹125.49</td>
+                <td><span class="tag" style="background:#00ff95;color:#000">✅ VALID BUY</span></td>
+            </tr>
+            <tr class="">
+                <td><strong>ICICIBANK</strong></td>
+                <td>19.3%</td>
+                <td>₹1404.90</td>
+                <td style="color:#00ff95">+0.31%</td>
+                <td style="color:#00ff95">+1.16%</td>
+                <td style="color:#ffa502">49.5 <small style="color:#ff6b9d">(-10.6)</small></td>
+                <td style="color:#888"><strong>30/100</strong></td>
+                <td style="font-size:.75rem;color:#ff9999">⛔ RSI Still Falling (60→50), ⛔ Institutions Selling (Down-Vol > Up-Vol)</td>
+                <td style="font-size:.75rem;color:#99ff99">✅ MACD Histogram Improving, ✅ SMA20 Slope Stabilizing</td>
+                <td style="color:#00ff95">₹1448.53</td>
+                <td style="color:#ff6b9d">₹1372.18</td>
+                <td><span class="tag" style="background:#ffa502;color:#000">⚠️ CAUTION</span></td>
+            </tr>
+            <tr class="">
+                <td><strong>KOTAKBANK</strong></td>
+                <td>8.8%</td>
+                <td>₹424.55</td>
+                <td style="color:#ff6b9d">-0.09%</td>
+                <td style="color:#00ff95">+1.96%</td>
+                <td style="color:#00ff95">52.0 <small style="color:#ff6b9d">(-4.7)</small></td>
+                <td style="color:#888"><strong>20/100</strong></td>
+                <td style="font-size:.75rem;color:#ff9999">⛔ RSI Still Falling (57→52), ⛔ Institutions Selling (Down-Vol > Up-Vol)</td>
+                <td style="font-size:.75rem;color:#99ff99">✅ SMA20 Slope Stabilizing</td>
+                <td style="color:#00ff95">₹441.17</td>
+                <td style="color:#ff6b9d">₹412.08</td>
+                <td><span class="tag" style="background:#ffa502;color:#000">⚠️ CAUTION</span></td>
+            </tr>
+            <tr class="">
+                <td><strong>HDFCBANK</strong></td>
+                <td>28.1%</td>
+                <td>₹898.60</td>
+                <td style="color:#ff6b9d">-0.99%</td>
+                <td style="color:#ff6b9d">-1.86%</td>
+                <td style="color:#ffa502">30.6 <small style="color:#ff6b9d">(-13.0)</small></td>
+                <td style="color:#888"><strong>0/100</strong></td>
+                <td style="font-size:.75rem;color:#ff9999">⛔ Price Below SMA20 & SMA50, ⛔ RSI Still Falling (44→31)</td>
+                <td style="font-size:.75rem;color:#99ff99">—</td>
+                <td style="color:#00ff95">₹929.79</td>
+                <td style="color:#ff6b9d">₹875.21</td>
+                <td><span class="tag" style="background:#ff6b9d;color:#000">🚫 AVOID</span></td>
+            </tr></tbody>
             </table></div>
-            <h4 class="industry-title">🏭 IT Services</h4>
-            <div class="table-wrap">
-            <table>
+        </div>
+        <div class="sector-detail-block">
+            <div class="sector-detail-header">
+                <h3>📊 NIFTY IT</h3>
+                <div class="sector-meta">
+                    RSI: <strong>14.2</strong> &nbsp;|&nbsp;
+                    RSI Slope: <strong style="color:#00ff95">+0.5</strong> &nbsp;|&nbsp;
+                    Week: <strong style="color:#ff6b9d">-5.46%</strong> &nbsp;|&nbsp;
+                    Danger: <strong style="color:#00ff95">2/6</strong>
+                </div>
+            </div>
+            <div class="table-wrap"><table>
                 <thead><tr>
-                    <th>Stock</th><th>Weight</th><th>LTP</th>
-                    <th>Day %</th><th>Week %</th><th>RSI</th>
-                    <th>Score</th><th>Target</th><th>Stop Loss</th>
-                    <th>Upside</th><th>Signals</th><th>Action</th>
+                    <th>Stock</th><th>Wt%</th><th>LTP</th><th>Day%</th><th>Week%</th>
+                    <th>RSI (slope)</th><th>Score</th><th>⚠ Danger Flags</th>
+                    <th>✅ Reversals</th><th>Target</th><th>Stop</th><th>Verdict</th>
                 </tr></thead>
                 <tbody>
-                <tr class="top-row">
-                    <td><strong>INFY</strong></td>
-                    <td>27.0%</td>
-                    <td>₹1289.10</td>
-                    <td style="color:#ff6b9d">-0.08%</td>
-                    <td style="color:#ff6b9d">-5.94%</td>
-                    <td style="color:#ff6b9d"><strong>13.6</strong></td>
-                    <td style="color:#00ff95"><strong>75/100</strong></td>
-                    <td style="color:#00ff95">₹1418.01</td>
-                    <td style="color:#ff6b9d">₹1224.64</td>
-                    <td style="color:#00ff95">+34.0%</td>
-                    <td><span class="sig-pill">🔥 Extreme Oversold</span></td>
-                    <td><span class="tag strong-buy">🔥 STRONG BUY</span></td>
-                </tr>
-                <tr class="top-row">
-                    <td><strong>TECHM</strong></td>
-                    <td>10.0%</td>
-                    <td>₹1361.80</td>
-                    <td style="color:#ff6b9d">+0.00%</td>
-                    <td style="color:#ff6b9d">-7.94%</td>
-                    <td style="color:#ff6b9d"><strong>14.4</strong></td>
-                    <td style="color:#00ff95"><strong>75/100</strong></td>
-                    <td style="color:#00ff95">₹1497.98</td>
-                    <td style="color:#ff6b9d">₹1293.71</td>
-                    <td style="color:#00ff95">+36.1%</td>
-                    <td><span class="sig-pill">🔥 Extreme Oversold</span></td>
-                    <td><span class="tag strong-buy">🔥 STRONG BUY</span></td>
-                </tr>
-                <tr class="top-row">
-                    <td><strong>WIPRO</strong></td>
-                    <td>7.0%</td>
-                    <td>₹201.08</td>
-                    <td style="color:#ff6b9d">-0.42%</td>
-                    <td style="color:#ff6b9d">-4.80%</td>
-                    <td style="color:#ff6b9d"><strong>13.7</strong></td>
-                    <td style="color:#00ff95"><strong>75/100</strong></td>
-                    <td style="color:#00ff95">₹221.19</td>
-                    <td style="color:#ff6b9d">₹191.03</td>
-                    <td style="color:#00ff95">+32.4%</td>
-                    <td><span class="sig-pill">🔥 Extreme Oversold</span></td>
-                    <td><span class="tag strong-buy">🔥 STRONG BUY</span></td>
-                </tr>
-                <tr class="top-row">
-                    <td><strong>LTIM</strong></td>
-                    <td>6.0%</td>
-                    <td>₹4504.00</td>
-                    <td style="color:#ff6b9d">-1.21%</td>
-                    <td style="color:#ff6b9d">-9.18%</td>
-                    <td style="color:#ff6b9d"><strong>14.1</strong></td>
-                    <td style="color:#00ff95"><strong>75/100</strong></td>
-                    <td style="color:#00ff95">₹4954.40</td>
-                    <td style="color:#ff6b9d">₹4278.80</td>
-                    <td style="color:#00ff95">+42.8%</td>
-                    <td><span class="sig-pill">🔥 Extreme Oversold</span></td>
-                    <td><span class="tag strong-buy">🔥 STRONG BUY</span></td>
-                </tr>
-                <tr class="">
-                    <td><strong>HCLTECH</strong></td>
-                    <td>11.0%</td>
-                    <td>₹1373.50</td>
-                    <td style="color:#ff6b9d">-0.34%</td>
-                    <td style="color:#ff6b9d">-5.30%</td>
-                    <td style="color:#ff6b9d"><strong>20.2</strong></td>
-                    <td style="color:#00ff95"><strong>70/100</strong></td>
-                    <td style="color:#00ff95">₹1510.85</td>
-                    <td style="color:#ff6b9d">₹1304.83</td>
-                    <td style="color:#00ff95">+29.6%</td>
-                    <td><span class="sig-pill">🔥 Extreme Oversold</span></td>
-                    <td><span class="tag strong-buy">🔥 STRONG BUY</span></td>
-                </tr>
-                <tr class="">
-                    <td><strong>TCS</strong></td>
-                    <td>22.0%</td>
-                    <td>₹2647.70</td>
-                    <td style="color:#00ff95">+0.70%</td>
-                    <td style="color:#ff6b9d">-1.13%</td>
-                    <td style="color:#ff6b9d"><strong>25.3</strong></td>
-                    <td style="color:#ffa502"><strong>65/100</strong></td>
-                    <td style="color:#00ff95">₹2912.47</td>
-                    <td style="color:#ff6b9d">₹2515.31</td>
-                    <td style="color:#00ff95">+26.5%</td>
-                    <td><span class="sig-pill">🔥 RSI Oversold</span></td>
-                    <td><span class="tag buy">📊 BUY</span></td>
-                </tr></tbody>
+            <tr class="top-row">
+                <td><strong>HCLTECH</strong></td>
+                <td>11.0%</td>
+                <td>₹1373.50</td>
+                <td style="color:#ff6b9d">-0.34%</td>
+                <td style="color:#ff6b9d">-5.30%</td>
+                <td style="color:#ff6b9d">20.2 <small style="color:#00ff95">(+4.9)</small></td>
+                <td style="color:#00ff95"><strong>75/100</strong></td>
+                <td style="font-size:.75rem;color:#ff9999">⛔ Price Below SMA20 & SMA50, ⛔ 4/5 Recent Days Red</td>
+                <td style="font-size:.75rem;color:#99ff99">✅ RSI Turning Up from Oversold, ✅ MACD Histogram Improving</td>
+                <td style="color:#00ff95">₹1465.94</td>
+                <td style="color:#ff6b9d">₹1304.17</td>
+                <td><span class="tag" style="background:#ffa502;color:#000">⚠️ CAUTION</span></td>
+            </tr>
+            <tr class="top-row">
+                <td><strong>TCS</strong></td>
+                <td>22.0%</td>
+                <td>₹2647.70</td>
+                <td style="color:#00ff95">+0.70%</td>
+                <td style="color:#ff6b9d">-1.13%</td>
+                <td style="color:#ff6b9d">25.3 <small style="color:#00ff95">(+3.7)</small></td>
+                <td style="color:#00ff95"><strong>70/100</strong></td>
+                <td style="font-size:.75rem;color:#ff9999">⛔ Price Below SMA20 & SMA50</td>
+                <td style="font-size:.75rem;color:#99ff99">✅ RSI Turning Up from Oversold, ✅ MACD Histogram Improving</td>
+                <td style="color:#00ff95">₹2802.90</td>
+                <td style="color:#ff6b9d">₹2531.30</td>
+                <td><span class="tag" style="background:#00d9ff;color:#000">🔥 STRONG WATCH</span></td>
+            </tr>
+            <tr class="top-row">
+                <td><strong>TECHM</strong></td>
+                <td>10.0%</td>
+                <td>₹1361.80</td>
+                <td style="color:#ff6b9d">+0.00%</td>
+                <td style="color:#ff6b9d">-7.94%</td>
+                <td style="color:#ff6b9d">14.4 <small style="color:#00ff95">(+3.5)</small></td>
+                <td style="color:#00ff95"><strong>70/100</strong></td>
+                <td style="font-size:.75rem;color:#ff9999">⛔ Price Below SMA20 & SMA50, ⛔ 4/5 Recent Days Red</td>
+                <td style="font-size:.75rem;color:#99ff99">✅ RSI Turning Up from Oversold</td>
+                <td style="color:#00ff95">₹1464.25</td>
+                <td style="color:#ff6b9d">₹1284.96</td>
+                <td><span class="tag" style="background:#ffa502;color:#000">⚠️ CAUTION</span></td>
+            </tr>
+            <tr class="top-row">
+                <td><strong>INFY</strong></td>
+                <td>27.0%</td>
+                <td>₹1289.10</td>
+                <td style="color:#ff6b9d">-0.08%</td>
+                <td style="color:#ff6b9d">-5.94%</td>
+                <td style="color:#ff6b9d">13.6 <small style="color:#ff6b9d">(-0.4)</small></td>
+                <td style="color:#00ff95"><strong>60/100</strong></td>
+                <td style="font-size:.75rem;color:#ff9999">⛔ Price Below SMA20 & SMA50, ⛔ 4/5 Recent Days Red</td>
+                <td style="font-size:.75rem;color:#99ff99">✅ RSI Turning Up from Oversold, ✅ MACD Histogram Improving</td>
+                <td style="color:#00ff95">₹1382.23</td>
+                <td style="color:#ff6b9d">₹1219.25</td>
+                <td><span class="tag" style="background:#ffa502;color:#000">⚠️ CAUTION</span></td>
+            </tr>
+            <tr class="top-row">
+                <td><strong>WIPRO</strong></td>
+                <td>7.0%</td>
+                <td>₹201.08</td>
+                <td style="color:#ff6b9d">-0.42%</td>
+                <td style="color:#ff6b9d">-4.80%</td>
+                <td style="color:#ff6b9d">13.7 <small style="color:#ff6b9d">(-7.7)</small></td>
+                <td style="color:#00ff95"><strong>60/100</strong></td>
+                <td style="font-size:.75rem;color:#ff9999">⛔ Price Below SMA20 & SMA50, ⛔ RSI Still Falling (21→14)</td>
+                <td style="font-size:.75rem;color:#99ff99">✅ RSI Turning Up from Oversold, ✅ MACD Histogram Improving</td>
+                <td style="color:#00ff95">₹213.88</td>
+                <td style="color:#ff6b9d">₹191.48</td>
+                <td><span class="tag" style="background:#ffa502;color:#000">⚠️ CAUTION</span></td>
+            </tr>
+            <tr class="top-row">
+                <td><strong>LTIM</strong></td>
+                <td>6.0%</td>
+                <td>₹4504.00</td>
+                <td style="color:#ff6b9d">-1.21%</td>
+                <td style="color:#ff6b9d">-9.18%</td>
+                <td style="color:#ff6b9d">14.1 <small style="color:#ff6b9d">(-1.0)</small></td>
+                <td style="color:#00ff95"><strong>60/100</strong></td>
+                <td style="font-size:.75rem;color:#ff9999">⛔ Price Below SMA20 & SMA50, ⛔ 4/5 Recent Days Red</td>
+                <td style="font-size:.75rem;color:#99ff99">✅ RSI Turning Up from Oversold, ✅ MACD Histogram Improving</td>
+                <td style="color:#00ff95">₹4868.83</td>
+                <td style="color:#ff6b9d">₹4230.37</td>
+                <td><span class="tag" style="background:#ffa502;color:#000">⚠️ CAUTION</span></td>
+            </tr>
+            <tr class="">
+                <td><strong>PERSISTENT</strong></td>
+                <td>4.0%</td>
+                <td>₹4781.50</td>
+                <td style="color:#00ff95">+1.07%</td>
+                <td style="color:#ff6b9d">-9.20%</td>
+                <td style="color:#ff6b9d">18.7 <small style="color:#ff6b9d">(-8.1)</small></td>
+                <td style="color:#888"><strong>0/100</strong></td>
+                <td style="font-size:.75rem;color:#ff9999">⛔ Price Below SMA20 & SMA50, ⛔ RSI Still Falling (27→19)</td>
+                <td style="font-size:.75rem;color:#99ff99">✅ RSI Turning Up from Oversold</td>
+                <td style="color:#00ff95">₹5242.54</td>
+                <td style="color:#ff6b9d">₹4435.72</td>
+                <td><span class="tag" style="background:#ff6b9d;color:#000">🚫 AVOID</span></td>
+            </tr>
+            <tr class="">
+                <td><strong>COFORGE</strong></td>
+                <td>3.0%</td>
+                <td>₹1200.40</td>
+                <td style="color:#ff6b9d">-1.03%</td>
+                <td style="color:#ff6b9d">-11.80%</td>
+                <td style="color:#ff6b9d">8.7 <small style="color:#ff6b9d">(-10.9)</small></td>
+                <td style="color:#888"><strong>0/100</strong></td>
+                <td style="font-size:.75rem;color:#ff9999">⛔ Price Below SMA20 & SMA50, ⛔ RSI Still Falling (20→9)</td>
+                <td style="font-size:.75rem;color:#99ff99">—</td>
+                <td style="color:#00ff95">₹1320.25</td>
+                <td style="color:#ff6b9d">₹1110.51</td>
+                <td><span class="tag" style="background:#ff6b9d;color:#000">🚫 AVOID</span></td>
+            </tr></tbody>
             </table></div>
-            <h4 class="industry-title">🏭 Product Engineering</h4>
-            <div class="table-wrap">
-            <table>
+        </div>
+        <div class="sector-detail-block">
+            <div class="sector-detail-header">
+                <h3>📊 NIFTY PHARMA</h3>
+                <div class="sector-meta">
+                    RSI: <strong>80.4</strong> &nbsp;|&nbsp;
+                    RSI Slope: <strong style="color:#00ff95">+15.4</strong> &nbsp;|&nbsp;
+                    Week: <strong style="color:#00ff95">+3.89%</strong> &nbsp;|&nbsp;
+                    Danger: <strong style="color:#00ff95">1/6</strong>
+                </div>
+            </div>
+            <div class="table-wrap"><table>
                 <thead><tr>
-                    <th>Stock</th><th>Weight</th><th>LTP</th>
-                    <th>Day %</th><th>Week %</th><th>RSI</th>
-                    <th>Score</th><th>Target</th><th>Stop Loss</th>
-                    <th>Upside</th><th>Signals</th><th>Action</th>
+                    <th>Stock</th><th>Wt%</th><th>LTP</th><th>Day%</th><th>Week%</th>
+                    <th>RSI (slope)</th><th>Score</th><th>⚠ Danger Flags</th>
+                    <th>✅ Reversals</th><th>Target</th><th>Stop</th><th>Verdict</th>
                 </tr></thead>
                 <tbody>
-                <tr class="top-row">
-                    <td><strong>PERSISTENT</strong></td>
-                    <td>4.0%</td>
-                    <td>₹4781.50</td>
-                    <td style="color:#00ff95">+1.07%</td>
-                    <td style="color:#ff6b9d">-9.20%</td>
-                    <td style="color:#ff6b9d"><strong>18.7</strong></td>
-                    <td style="color:#00ff95"><strong>75/100</strong></td>
-                    <td style="color:#00ff95">₹5259.65</td>
-                    <td style="color:#ff6b9d">₹4542.43</td>
-                    <td style="color:#00ff95">+37.5%</td>
-                    <td><span class="sig-pill">🔥 Extreme Oversold</span></td>
-                    <td><span class="tag strong-buy">🔥 STRONG BUY</span></td>
-                </tr></tbody>
+            <tr class="">
+                <td><strong>DRREDDY</strong></td>
+                <td>9.4%</td>
+                <td>₹1319.30</td>
+                <td style="color:#00ff95">+0.98%</td>
+                <td style="color:#00ff95">+2.89%</td>
+                <td style="color:#00ff95">74.7 <small style="color:#00ff95">(+9.0)</small></td>
+                <td style="color:#ffa502"><strong>50/100</strong></td>
+                <td style="font-size:.75rem;color:#ff9999">✅ Clean</td>
+                <td style="font-size:.75rem;color:#99ff99">✅ Bullish Engulfing Pattern, ✅ SMA20 Slope Stabilizing</td>
+                <td style="color:#00ff95">₹1372.85</td>
+                <td style="color:#ff6b9d">₹1279.14</td>
+                <td><span class="tag" style="background:#00ff95;color:#000">✅ VALID BUY</span></td>
+            </tr>
+            <tr class="">
+                <td><strong>LUPIN</strong></td>
+                <td>6.6%</td>
+                <td>₹2323.20</td>
+                <td style="color:#00ff95">+1.35%</td>
+                <td style="color:#00ff95">+4.24%</td>
+                <td style="color:#00ff95">82.0 <small style="color:#00ff95">(+18.4)</small></td>
+                <td style="color:#ffa502"><strong>50/100</strong></td>
+                <td style="font-size:.75rem;color:#ff9999">✅ Clean</td>
+                <td style="font-size:.75rem;color:#99ff99">✅ Bullish Engulfing Pattern, ✅ SMA20 Slope Stabilizing</td>
+                <td style="color:#00ff95">₹2411.83</td>
+                <td style="color:#ff6b9d">₹2256.72</td>
+                <td><span class="tag" style="background:#00ff95;color:#000">✅ VALID BUY</span></td>
+            </tr>
+            <tr class="">
+                <td><strong>CIPLA</strong></td>
+                <td>9.4%</td>
+                <td>₹1358.10</td>
+                <td style="color:#00ff95">+0.89%</td>
+                <td style="color:#00ff95">+2.20%</td>
+                <td style="color:#00ff95">58.5 <small style="color:#00ff95">(+6.8)</small></td>
+                <td style="color:#ffa502"><strong>45/100</strong></td>
+                <td style="font-size:.75rem;color:#ff9999">✅ Clean</td>
+                <td style="font-size:.75rem;color:#99ff99">✅ SMA20 Slope Stabilizing</td>
+                <td style="color:#00ff95">₹1408.47</td>
+                <td style="color:#ff6b9d">₹1320.32</td>
+                <td><span class="tag" style="background:#00ff95;color:#000">✅ VALID BUY</span></td>
+            </tr>
+            <tr class="">
+                <td><strong>DIVISLAB</strong></td>
+                <td>9.7%</td>
+                <td>₹6474.00</td>
+                <td style="color:#00ff95">+1.23%</td>
+                <td style="color:#00ff95">+2.80%</td>
+                <td style="color:#00ff95">72.2 <small style="color:#00ff95">(+13.8)</small></td>
+                <td style="color:#ffa502"><strong>40/100</strong></td>
+                <td style="font-size:.75rem;color:#ff9999">✅ Clean</td>
+                <td style="font-size:.75rem;color:#99ff99">✅ SMA20 Slope Stabilizing</td>
+                <td style="color:#00ff95">₹6808.35</td>
+                <td style="color:#ff6b9d">₹6223.24</td>
+                <td><span class="tag" style="background:#00ff95;color:#000">✅ VALID BUY</span></td>
+            </tr>
+            <tr class="">
+                <td><strong>AUROPHARMA</strong></td>
+                <td>6.0%</td>
+                <td>₹1220.70</td>
+                <td style="color:#00ff95">+0.76%</td>
+                <td style="color:#00ff95">+4.21%</td>
+                <td style="color:#00ff95">54.8 <small style="color:#00ff95">(+9.8)</small></td>
+                <td style="color:#ffa502"><strong>40/100</strong></td>
+                <td style="font-size:.75rem;color:#ff9999">✅ Clean</td>
+                <td style="font-size:.75rem;color:#99ff99">✅ SMA20 Slope Stabilizing</td>
+                <td style="color:#00ff95">₹1302.45</td>
+                <td style="color:#ff6b9d">₹1159.39</td>
+                <td><span class="tag" style="background:#00ff95;color:#000">✅ VALID BUY</span></td>
+            </tr>
+            <tr class="">
+                <td><strong>BIOCON</strong></td>
+                <td>5.5%</td>
+                <td>₹394.85</td>
+                <td style="color:#ff6b9d">-0.25%</td>
+                <td style="color:#00ff95">+3.19%</td>
+                <td style="color:#00ff95">86.5 <small style="color:#00ff95">(+15.9)</small></td>
+                <td style="color:#ffa502"><strong>40/100</strong></td>
+                <td style="font-size:.75rem;color:#ff9999">✅ Clean</td>
+                <td style="font-size:.75rem;color:#99ff99">✅ SMA20 Slope Stabilizing</td>
+                <td style="color:#00ff95">₹413.18</td>
+                <td style="color:#ff6b9d">₹381.10</td>
+                <td><span class="tag" style="background:#00ff95;color:#000">✅ VALID BUY</span></td>
+            </tr>
+            <tr class="">
+                <td><strong>ALKEM</strong></td>
+                <td>4.5%</td>
+                <td>₹5752.00</td>
+                <td style="color:#00ff95">+2.26%</td>
+                <td style="color:#00ff95">+7.84%</td>
+                <td style="color:#00ff95">54.4 <small style="color:#00ff95">(+15.9)</small></td>
+                <td style="color:#ffa502"><strong>40/100</strong></td>
+                <td style="font-size:.75rem;color:#ff9999">⛔ Institutions Selling (Down-Vol > Up-Vol)</td>
+                <td style="font-size:.75rem;color:#99ff99">✅ Bullish Engulfing Pattern</td>
+                <td style="color:#00ff95">₹6032.89</td>
+                <td style="color:#ff6b9d">₹5541.34</td>
+                <td><span class="tag" style="background:#00ff95;color:#000">✅ VALID BUY</span></td>
+            </tr>
+            <tr class="">
+                <td><strong>SUNPHARMA</strong></td>
+                <td>21.3%</td>
+                <td>₹1785.70</td>
+                <td style="color:#00ff95">+1.22%</td>
+                <td style="color:#00ff95">+4.22%</td>
+                <td style="color:#00ff95">80.5 <small style="color:#ff6b9d">(-1.5)</small></td>
+                <td style="color:#888"><strong>30/100</strong></td>
+                <td style="font-size:.75rem;color:#ff9999">⛔ Institutions Selling (Down-Vol > Up-Vol)</td>
+                <td style="font-size:.75rem;color:#99ff99">✅ Bullish Engulfing Pattern, ✅ SMA20 Slope Stabilizing</td>
+                <td style="color:#00ff95">₹1840.81</td>
+                <td style="color:#ff6b9d">₹1744.37</td>
+                <td><span class="tag" style="background:#00ff95;color:#000">✅ VALID BUY</span></td>
+            </tr></tbody>
+            </table></div>
+        </div>
+        <div class="sector-detail-block">
+            <div class="sector-detail-header">
+                <h3>📊 NIFTY FMCG</h3>
+                <div class="sector-meta">
+                    RSI: <strong>51.4</strong> &nbsp;|&nbsp;
+                    RSI Slope: <strong style="color:#ff6b9d">-0.7</strong> &nbsp;|&nbsp;
+                    Week: <strong style="color:#00ff95">+1.05%</strong> &nbsp;|&nbsp;
+                    Danger: <strong style="color:#00ff95">0/6</strong>
+                </div>
+            </div>
+            <div class="table-wrap"><table>
+                <thead><tr>
+                    <th>Stock</th><th>Wt%</th><th>LTP</th><th>Day%</th><th>Week%</th>
+                    <th>RSI (slope)</th><th>Score</th><th>⚠ Danger Flags</th>
+                    <th>✅ Reversals</th><th>Target</th><th>Stop</th><th>Verdict</th>
+                </tr></thead>
+                <tbody>
+            <tr class="">
+                <td><strong>HINDUNILVR</strong></td>
+                <td>18.0%</td>
+                <td>₹2383.30</td>
+                <td style="color:#00ff95">+0.35%</td>
+                <td style="color:#00ff95">+4.56%</td>
+                <td style="color:#ffa502">44.6 <small style="color:#00ff95">(+6.6)</small></td>
+                <td style="color:#ffa502"><strong>40/100</strong></td>
+                <td style="font-size:.75rem;color:#ff9999">⛔ Institutions Selling (Down-Vol > Up-Vol)</td>
+                <td style="font-size:.75rem;color:#99ff99">✅ SMA20 Slope Stabilizing</td>
+                <td style="color:#00ff95">₹2479.11</td>
+                <td style="color:#ff6b9d">₹2311.45</td>
+                <td><span class="tag" style="background:#00ff95;color:#000">✅ VALID BUY</span></td>
+            </tr>
+            <tr class="">
+                <td><strong>NESTLEIND</strong></td>
+                <td>8.0%</td>
+                <td>₹1318.00</td>
+                <td style="color:#ff6b9d">-0.41%</td>
+                <td style="color:#00ff95">+3.09%</td>
+                <td style="color:#00ff95">55.0 <small style="color:#00ff95">(+22.6)</small></td>
+                <td style="color:#ffa502"><strong>40/100</strong></td>
+                <td style="font-size:.75rem;color:#ff9999">✅ Clean</td>
+                <td style="font-size:.75rem;color:#99ff99">✅ SMA20 Slope Stabilizing</td>
+                <td style="color:#00ff95">₹1366.72</td>
+                <td style="color:#ff6b9d">₹1281.46</td>
+                <td><span class="tag" style="background:#00ff95;color:#000">✅ VALID BUY</span></td>
+            </tr>
+            <tr class="">
+                <td><strong>DABUR</strong></td>
+                <td>5.5%</td>
+                <td>₹524.45</td>
+                <td style="color:#00ff95">+1.12%</td>
+                <td style="color:#00ff95">+4.55%</td>
+                <td style="color:#00ff95">62.2 <small style="color:#00ff95">(+16.3)</small></td>
+                <td style="color:#ffa502"><strong>40/100</strong></td>
+                <td style="font-size:.75rem;color:#ff9999">⛔ Institutions Selling (Down-Vol > Up-Vol)</td>
+                <td style="font-size:.75rem;color:#99ff99">✅ SMA20 Slope Stabilizing</td>
+                <td style="color:#00ff95">₹545.07</td>
+                <td style="color:#ff6b9d">₹508.99</td>
+                <td><span class="tag" style="background:#00ff95;color:#000">✅ VALID BUY</span></td>
+            </tr>
+            <tr class="">
+                <td><strong>GODREJCP</strong></td>
+                <td>4.0%</td>
+                <td>₹1239.20</td>
+                <td style="color:#00ff95">+0.15%</td>
+                <td style="color:#00ff95">+4.26%</td>
+                <td style="color:#00ff95">70.2 <small style="color:#00ff95">(+9.9)</small></td>
+                <td style="color:#ffa502"><strong>40/100</strong></td>
+                <td style="font-size:.75rem;color:#ff9999">✅ Clean</td>
+                <td style="font-size:.75rem;color:#99ff99">✅ SMA20 Slope Stabilizing</td>
+                <td style="color:#00ff95">₹1289.11</td>
+                <td style="color:#ff6b9d">₹1201.77</td>
+                <td><span class="tag" style="background:#00ff95;color:#000">✅ VALID BUY</span></td>
+            </tr>
+            <tr class="">
+                <td><strong>MARICO</strong></td>
+                <td>4.5%</td>
+                <td>₹805.75</td>
+                <td style="color:#ff6b9d">-0.07%</td>
+                <td style="color:#00ff95">+3.28%</td>
+                <td style="color:#00ff95">73.1 <small style="color:#00ff95">(+1.7)</small></td>
+                <td style="color:#888"><strong>30/100</strong></td>
+                <td style="font-size:.75rem;color:#ff9999">✅ Clean</td>
+                <td style="font-size:.75rem;color:#99ff99">✅ SMA20 Slope Stabilizing</td>
+                <td style="color:#00ff95">₹834.59</td>
+                <td style="color:#ff6b9d">₹784.12</td>
+                <td><span class="tag" style="background:#00ff95;color:#000">✅ VALID BUY</span></td>
+            </tr>
+            <tr class="">
+                <td><strong>TATACONSUM</strong></td>
+                <td>7.0%</td>
+                <td>₹1159.50</td>
+                <td style="color:#ff6b9d">-1.09%</td>
+                <td style="color:#ff6b9d">-0.09%</td>
+                <td style="color:#00ff95">50.1 <small style="color:#ff6b9d">(-9.6)</small></td>
+                <td style="color:#888"><strong>20/100</strong></td>
+                <td style="font-size:.75rem;color:#ff9999">⛔ RSI Still Falling (60→50)</td>
+                <td style="font-size:.75rem;color:#99ff99">✅ SMA20 Slope Stabilizing</td>
+                <td style="color:#00ff95">₹1209.06</td>
+                <td style="color:#ff6b9d">₹1122.33</td>
+                <td><span class="tag" style="background:#00ff95;color:#000">✅ VALID BUY</span></td>
+            </tr>
+            <tr class="">
+                <td><strong>BRITANNIA</strong></td>
+                <td>6.0%</td>
+                <td>₹6137.00</td>
+                <td style="color:#ff6b9d">-0.34%</td>
+                <td style="color:#00ff95">+0.47%</td>
+                <td style="color:#00ff95">63.9 <small style="color:#ff6b9d">(-1.6)</small></td>
+                <td style="color:#888"><strong>20/100</strong></td>
+                <td style="font-size:.75rem;color:#ff9999">⛔ 4/5 Recent Days Red</td>
+                <td style="font-size:.75rem;color:#99ff99">✅ SMA20 Slope Stabilizing</td>
+                <td style="color:#00ff95">₹6368.95</td>
+                <td style="color:#ff6b9d">₹5963.04</td>
+                <td><span class="tag" style="background:#00ff95;color:#000">✅ VALID BUY</span></td>
+            </tr>
+            <tr class="">
+                <td><strong>ITC</strong></td>
+                <td>33.0%</td>
+                <td>₹318.30</td>
+                <td style="color:#ff6b9d">-0.45%</td>
+                <td style="color:#ff6b9d">-2.36%</td>
+                <td style="color:#ffa502">42.0 <small style="color:#ff6b9d">(-15.5)</small></td>
+                <td style="color:#888"><strong>0/100</strong></td>
+                <td style="font-size:.75rem;color:#ff9999">⛔ Price Below SMA20 & SMA50, ⛔ RSI Still Falling (58→42)</td>
+                <td style="font-size:.75rem;color:#99ff99">✅ SMA20 Slope Stabilizing</td>
+                <td style="color:#00ff95">₹331.36</td>
+                <td style="color:#ff6b9d">₹308.51</td>
+                <td><span class="tag" style="background:#ff6b9d;color:#000">🚫 AVOID</span></td>
+            </tr></tbody>
+            </table></div>
+        </div>
+        <div class="sector-detail-block">
+            <div class="sector-detail-header">
+                <h3>📊 NIFTY METAL</h3>
+                <div class="sector-meta">
+                    RSI: <strong>63.2</strong> &nbsp;|&nbsp;
+                    RSI Slope: <strong style="color:#00ff95">+12.9</strong> &nbsp;|&nbsp;
+                    Week: <strong style="color:#00ff95">+5.11%</strong> &nbsp;|&nbsp;
+                    Danger: <strong style="color:#00ff95">0/6</strong>
+                </div>
+            </div>
+            <div class="table-wrap"><table>
+                <thead><tr>
+                    <th>Stock</th><th>Wt%</th><th>LTP</th><th>Day%</th><th>Week%</th>
+                    <th>RSI (slope)</th><th>Score</th><th>⚠ Danger Flags</th>
+                    <th>✅ Reversals</th><th>Target</th><th>Stop</th><th>Verdict</th>
+                </tr></thead>
+                <tbody>
+            <tr class="">
+                <td><strong>HINDZINC</strong></td>
+                <td>6.0%</td>
+                <td>₹609.80</td>
+                <td style="color:#ff6b9d">-1.49%</td>
+                <td style="color:#00ff95">+4.40%</td>
+                <td style="color:#00ff95">50.3 <small style="color:#00ff95">(+12.9)</small></td>
+                <td style="color:#ffa502"><strong>45/100</strong></td>
+                <td style="font-size:.75rem;color:#ff9999">✅ Clean</td>
+                <td style="font-size:.75rem;color:#99ff99">✅ MACD Histogram Improving</td>
+                <td style="color:#00ff95">₹654.23</td>
+                <td style="color:#ff6b9d">₹576.48</td>
+                <td><span class="tag" style="background:#00ff95;color:#000">✅ VALID BUY</span></td>
+            </tr>
+            <tr class="">
+                <td><strong>TATASTEEL</strong></td>
+                <td>17.0%</td>
+                <td>₹215.52</td>
+                <td style="color:#00ff95">+0.41%</td>
+                <td style="color:#00ff95">+4.92%</td>
+                <td style="color:#00ff95">71.8 <small style="color:#00ff95">(+8.6)</small></td>
+                <td style="color:#ffa502"><strong>40/100</strong></td>
+                <td style="font-size:.75rem;color:#ff9999">✅ Clean</td>
+                <td style="font-size:.75rem;color:#99ff99">✅ SMA20 Slope Stabilizing</td>
+                <td style="color:#00ff95">₹226.41</td>
+                <td style="color:#ff6b9d">₹207.35</td>
+                <td><span class="tag" style="background:#00ff95;color:#000">✅ VALID BUY</span></td>
+            </tr>
+            <tr class="">
+                <td><strong>HINDALCO</strong></td>
+                <td>15.0%</td>
+                <td>₹941.30</td>
+                <td style="color:#00ff95">+0.42%</td>
+                <td style="color:#00ff95">+3.94%</td>
+                <td style="color:#ffa502">49.7 <small style="color:#00ff95">(+12.4)</small></td>
+                <td style="color:#ffa502"><strong>40/100</strong></td>
+                <td style="font-size:.75rem;color:#ff9999">✅ Clean</td>
+                <td style="font-size:.75rem;color:#99ff99">✅ MACD Histogram Improving</td>
+                <td style="color:#00ff95">₹995.62</td>
+                <td style="color:#ff6b9d">₹900.56</td>
+                <td><span class="tag" style="background:#00ff95;color:#000">✅ VALID BUY</span></td>
+            </tr>
+            <tr class="">
+                <td><strong>JSWSTEEL</strong></td>
+                <td>14.0%</td>
+                <td>₹1280.60</td>
+                <td style="color:#00ff95">+0.44%</td>
+                <td style="color:#00ff95">+4.25%</td>
+                <td style="color:#00ff95">66.6 <small style="color:#00ff95">(+11.7)</small></td>
+                <td style="color:#ffa502"><strong>40/100</strong></td>
+                <td style="font-size:.75rem;color:#ff9999">✅ Clean</td>
+                <td style="font-size:.75rem;color:#99ff99">✅ SMA20 Slope Stabilizing</td>
+                <td style="color:#00ff95">₹1329.42</td>
+                <td style="color:#ff6b9d">₹1243.98</td>
+                <td><span class="tag" style="background:#00ff95;color:#000">✅ VALID BUY</span></td>
+            </tr>
+            <tr class="">
+                <td><strong>NMDC</strong></td>
+                <td>8.0%</td>
+                <td>₹82.56</td>
+                <td style="color:#00ff95">+0.86%</td>
+                <td style="color:#00ff95">+4.22%</td>
+                <td style="color:#00ff95">53.2 <small style="color:#00ff95">(+1.9)</small></td>
+                <td style="color:#888"><strong>30/100</strong></td>
+                <td style="font-size:.75rem;color:#ff9999">✅ Clean</td>
+                <td style="font-size:.75rem;color:#99ff99">✅ SMA20 Slope Stabilizing</td>
+                <td style="color:#00ff95">₹87.22</td>
+                <td style="color:#ff6b9d">₹79.06</td>
+                <td><span class="tag" style="background:#00ff95;color:#000">✅ VALID BUY</span></td>
+            </tr>
+            <tr class="">
+                <td><strong>VEDL</strong></td>
+                <td>7.5%</td>
+                <td>₹737.45</td>
+                <td style="color:#00ff95">+1.33%</td>
+                <td style="color:#00ff95">+9.07%</td>
+                <td style="color:#00ff95">71.6 <small style="color:#00ff95">(+23.0)</small></td>
+                <td style="color:#888"><strong>30/100</strong></td>
+                <td style="font-size:.75rem;color:#ff9999">✅ Clean</td>
+                <td style="font-size:.75rem;color:#99ff99">—</td>
+                <td style="color:#00ff95">₹783.27</td>
+                <td style="color:#ff6b9d">₹703.08</td>
+                <td><span class="tag" style="background:#888888;color:#fff">👀 WATCH</span></td>
+            </tr>
+            <tr class="">
+                <td><strong>SAIL</strong></td>
+                <td>6.5%</td>
+                <td>₹165.51</td>
+                <td style="color:#00ff95">+0.35%</td>
+                <td style="color:#00ff95">+6.23%</td>
+                <td style="color:#00ff95">58.2 <small style="color:#00ff95">(+0.6)</small></td>
+                <td style="color:#888"><strong>30/100</strong></td>
+                <td style="font-size:.75rem;color:#ff9999">✅ Clean</td>
+                <td style="font-size:.75rem;color:#99ff99">✅ SMA20 Slope Stabilizing</td>
+                <td style="color:#00ff95">₹176.17</td>
+                <td style="color:#ff6b9d">₹157.52</td>
+                <td><span class="tag" style="background:#00ff95;color:#000">✅ VALID BUY</span></td>
+            </tr>
+            <tr class="">
+                <td><strong>JINDALSTEL</strong></td>
+                <td>12.0%</td>
+                <td>₹1261.00</td>
+                <td style="color:#ff6b9d">-0.43%</td>
+                <td style="color:#00ff95">+4.12%</td>
+                <td style="color:#00ff95">74.7 <small style="color:#ff6b9d">(-1.0)</small></td>
+                <td style="color:#888"><strong>20/100</strong></td>
+                <td style="font-size:.75rem;color:#ff9999">✅ Clean</td>
+                <td style="font-size:.75rem;color:#99ff99">✅ SMA20 Slope Stabilizing</td>
+                <td style="color:#00ff95">₹1319.33</td>
+                <td style="color:#ff6b9d">₹1217.25</td>
+                <td><span class="tag" style="background:#00ff95;color:#000">✅ VALID BUY</span></td>
+            </tr></tbody>
+            </table></div>
+        </div>
+        <div class="sector-detail-block">
+            <div class="sector-detail-header">
+                <h3>📊 NIFTY AUTO</h3>
+                <div class="sector-meta">
+                    RSI: <strong>66.1</strong> &nbsp;|&nbsp;
+                    RSI Slope: <strong style="color:#00ff95">+3.2</strong> &nbsp;|&nbsp;
+                    Week: <strong style="color:#00ff95">+3.46%</strong> &nbsp;|&nbsp;
+                    Danger: <strong style="color:#00ff95">1/6</strong>
+                </div>
+            </div>
+            <div class="table-wrap"><table>
+                <thead><tr>
+                    <th>Stock</th><th>Wt%</th><th>LTP</th><th>Day%</th><th>Week%</th>
+                    <th>RSI (slope)</th><th>Score</th><th>⚠ Danger Flags</th>
+                    <th>✅ Reversals</th><th>Target</th><th>Stop</th><th>Verdict</th>
+                </tr></thead>
+                <tbody>
+            <tr class="">
+                <td><strong>EICHERMOT</strong></td>
+                <td>8.0%</td>
+                <td>₹8190.00</td>
+                <td style="color:#00ff95">+2.27%</td>
+                <td style="color:#00ff95">+3.71%</td>
+                <td style="color:#00ff95">81.3 <small style="color:#00ff95">(+7.6)</small></td>
+                <td style="color:#ffa502"><strong>50/100</strong></td>
+                <td style="font-size:.75rem;color:#ff9999">✅ Clean</td>
+                <td style="font-size:.75rem;color:#99ff99">✅ Bullish Engulfing Pattern, ✅ SMA20 Slope Stabilizing</td>
+                <td style="color:#00ff95">₹8562.93</td>
+                <td style="color:#ff6b9d">₹7910.30</td>
+                <td><span class="tag" style="background:#00ff95;color:#000">✅ VALID BUY</span></td>
+            </tr>
+            <tr class="">
+                <td><strong>TVSMOTOR</strong></td>
+                <td>6.0%</td>
+                <td>₹3954.20</td>
+                <td style="color:#00ff95">+0.56%</td>
+                <td style="color:#00ff95">+3.24%</td>
+                <td style="color:#00ff95">69.1 <small style="color:#00ff95">(+4.1)</small></td>
+                <td style="color:#ffa502"><strong>50/100</strong></td>
+                <td style="font-size:.75rem;color:#ff9999">✅ Clean</td>
+                <td style="font-size:.75rem;color:#99ff99">✅ Bullish Engulfing Pattern, ✅ SMA20 Slope Stabilizing</td>
+                <td style="color:#00ff95">₹4127.77</td>
+                <td style="color:#ff6b9d">₹3824.02</td>
+                <td><span class="tag" style="background:#00ff95;color:#000">✅ VALID BUY</span></td>
+            </tr>
+            <tr class="">
+                <td><strong>BAJAJ-AUTO</strong></td>
+                <td>10.0%</td>
+                <td>₹10110.00</td>
+                <td style="color:#00ff95">+0.13%</td>
+                <td style="color:#00ff95">+3.92%</td>
+                <td style="color:#00ff95">68.6 <small style="color:#00ff95">(+14.0)</small></td>
+                <td style="color:#ffa502"><strong>40/100</strong></td>
+                <td style="font-size:.75rem;color:#ff9999">✅ Clean</td>
+                <td style="font-size:.75rem;color:#99ff99">✅ SMA20 Slope Stabilizing</td>
+                <td style="color:#00ff95">₹10518.87</td>
+                <td style="color:#ff6b9d">₹9803.35</td>
+                <td><span class="tag" style="background:#00ff95;color:#000">✅ VALID BUY</span></td>
+            </tr>
+            <tr class="">
+                <td><strong>HEROMOTOCO</strong></td>
+                <td>9.0%</td>
+                <td>₹5787.00</td>
+                <td style="color:#00ff95">+0.86%</td>
+                <td style="color:#00ff95">+6.88%</td>
+                <td style="color:#00ff95">57.3 <small style="color:#00ff95">(+7.9)</small></td>
+                <td style="color:#ffa502"><strong>40/100</strong></td>
+                <td style="font-size:.75rem;color:#ff9999">✅ Clean</td>
+                <td style="font-size:.75rem;color:#99ff99">✅ SMA20 Slope Stabilizing</td>
+                <td style="color:#00ff95">₹6091.03</td>
+                <td style="color:#ff6b9d">₹5558.98</td>
+                <td><span class="tag" style="background:#00ff95;color:#000">✅ VALID BUY</span></td>
+            </tr>
+            <tr class="">
+                <td><strong>BOSCHLTD</strong></td>
+                <td>5.0%</td>
+                <td>₹36740.00</td>
+                <td style="color:#00ff95">+0.46%</td>
+                <td style="color:#00ff95">+4.93%</td>
+                <td style="color:#00ff95">53.5 <small style="color:#00ff95">(+14.8)</small></td>
+                <td style="color:#ffa502"><strong>40/100</strong></td>
+                <td style="font-size:.75rem;color:#ff9999">✅ Clean</td>
+                <td style="font-size:.75rem;color:#99ff99">✅ SMA20 Slope Stabilizing</td>
+                <td style="color:#00ff95">₹38553.26</td>
+                <td style="color:#ff6b9d">₹35380.05</td>
+                <td><span class="tag" style="background:#00ff95;color:#000">✅ VALID BUY</span></td>
+            </tr>
+            <tr class="">
+                <td><strong>MARUTI</strong></td>
+                <td>20.0%</td>
+                <td>₹15213.00</td>
+                <td style="color:#00ff95">+0.95%</td>
+                <td style="color:#00ff95">+2.08%</td>
+                <td style="color:#00ff95">55.9 <small style="color:#ff6b9d">(-1.0)</small></td>
+                <td style="color:#888"><strong>30/100</strong></td>
+                <td style="font-size:.75rem;color:#ff9999">✅ Clean</td>
+                <td style="font-size:.75rem;color:#99ff99">✅ Bullish Engulfing Pattern, ✅ SMA20 Slope Stabilizing</td>
+                <td style="color:#00ff95">₹15807.45</td>
+                <td style="color:#ff6b9d">₹14767.16</td>
+                <td><span class="tag" style="background:#00ff95;color:#000">✅ VALID BUY</span></td>
+            </tr>
+            <tr class="">
+                <td><strong>M&M</strong></td>
+                <td>12.0%</td>
+                <td>₹3484.60</td>
+                <td style="color:#ff6b9d">-0.19%</td>
+                <td style="color:#00ff95">+1.54%</td>
+                <td style="color:#ffa502">41.6 <small style="color:#ff6b9d">(-8.4)</small></td>
+                <td style="color:#888"><strong>30/100</strong></td>
+                <td style="font-size:.75rem;color:#ff9999">⛔ Price Below SMA20 & SMA50, ⛔ RSI Still Falling (50→42)</td>
+                <td style="font-size:.75rem;color:#99ff99">✅ MACD Histogram Improving, ✅ SMA20 Slope Stabilizing</td>
+                <td style="color:#00ff95">₹3645.24</td>
+                <td style="color:#ff6b9d">₹3364.12</td>
+                <td><span class="tag" style="background:#ffa502;color:#000">⚠️ CAUTION</span></td>
+            </tr></tbody>
+            </table></div>
+        </div>
+        <div class="sector-detail-block">
+            <div class="sector-detail-header">
+                <h3>📊 NIFTY ENERGY</h3>
+                <div class="sector-meta">
+                    RSI: <strong>60.4</strong> &nbsp;|&nbsp;
+                    RSI Slope: <strong style="color:#00ff95">+1.0</strong> &nbsp;|&nbsp;
+                    Week: <strong style="color:#00ff95">+3.03%</strong> &nbsp;|&nbsp;
+                    Danger: <strong style="color:#00ff95">1/6</strong>
+                </div>
+            </div>
+            <div class="table-wrap"><table>
+                <thead><tr>
+                    <th>Stock</th><th>Wt%</th><th>LTP</th><th>Day%</th><th>Week%</th>
+                    <th>RSI (slope)</th><th>Score</th><th>⚠ Danger Flags</th>
+                    <th>✅ Reversals</th><th>Target</th><th>Stop</th><th>Verdict</th>
+                </tr></thead>
+                <tbody>
+            <tr class="">
+                <td><strong>ONGC</strong></td>
+                <td>15.0%</td>
+                <td>₹280.10</td>
+                <td style="color:#00ff95">+0.96%</td>
+                <td style="color:#00ff95">+1.98%</td>
+                <td style="color:#00ff95">68.3 <small style="color:#00ff95">(+9.3)</small></td>
+                <td style="color:#ffa502"><strong>40/100</strong></td>
+                <td style="font-size:.75rem;color:#ff9999">✅ Clean</td>
+                <td style="font-size:.75rem;color:#99ff99">✅ SMA20 Slope Stabilizing</td>
+                <td style="color:#00ff95">₹293.85</td>
+                <td style="color:#ff6b9d">₹269.79</td>
+                <td><span class="tag" style="background:#00ff95;color:#000">✅ VALID BUY</span></td>
+            </tr>
+            <tr class="">
+                <td><strong>NTPC</strong></td>
+                <td>12.0%</td>
+                <td>₹381.90</td>
+                <td style="color:#ff6b9d">-0.78%</td>
+                <td style="color:#00ff95">+5.15%</td>
+                <td style="color:#00ff95">66.2 <small style="color:#00ff95">(+6.5)</small></td>
+                <td style="color:#ffa502"><strong>40/100</strong></td>
+                <td style="font-size:.75rem;color:#ff9999">✅ Clean</td>
+                <td style="font-size:.75rem;color:#99ff99">✅ SMA20 Slope Stabilizing</td>
+                <td style="color:#00ff95">₹396.51</td>
+                <td style="color:#ff6b9d">₹370.94</td>
+                <td><span class="tag" style="background:#00ff95;color:#000">✅ VALID BUY</span></td>
+            </tr>
+            <tr class="">
+                <td><strong>COALINDIA</strong></td>
+                <td>8.0%</td>
+                <td>₹433.50</td>
+                <td style="color:#ff6b9d">-1.16%</td>
+                <td style="color:#00ff95">+4.17%</td>
+                <td style="color:#00ff95">54.6 <small style="color:#00ff95">(+17.3)</small></td>
+                <td style="color:#ffa502"><strong>40/100</strong></td>
+                <td style="font-size:.75rem;color:#ff9999">✅ Clean</td>
+                <td style="font-size:.75rem;color:#99ff99">✅ SMA20 Slope Stabilizing</td>
+                <td style="color:#00ff95">₹453.93</td>
+                <td style="color:#ff6b9d">₹418.18</td>
+                <td><span class="tag" style="background:#00ff95;color:#000">✅ VALID BUY</span></td>
+            </tr>
+            <tr class="">
+                <td><strong>BPCL</strong></td>
+                <td>6.0%</td>
+                <td>₹386.00</td>
+                <td style="color:#00ff95">+1.30%</td>
+                <td style="color:#00ff95">+4.99%</td>
+                <td style="color:#ffa502">49.7 <small style="color:#ff6b9d">(-9.5)</small></td>
+                <td style="color:#888"><strong>30/100</strong></td>
+                <td style="font-size:.75rem;color:#ff9999">⛔ RSI Still Falling (59→50)</td>
+                <td style="font-size:.75rem;color:#99ff99">✅ MACD Histogram Improving, ✅ SMA20 Slope Stabilizing</td>
+                <td style="color:#00ff95">₹404.02</td>
+                <td style="color:#ff6b9d">₹372.48</td>
+                <td><span class="tag" style="background:#00ff95;color:#000">✅ VALID BUY</span></td>
+            </tr>
+            <tr class="">
+                <td><strong>IOC</strong></td>
+                <td>5.0%</td>
+                <td>₹186.47</td>
+                <td style="color:#00ff95">+1.88%</td>
+                <td style="color:#00ff95">+6.98%</td>
+                <td style="color:#00ff95">66.8 <small style="color:#00ff95">(+0.3)</small></td>
+                <td style="color:#888"><strong>30/100</strong></td>
+                <td style="font-size:.75rem;color:#ff9999">✅ Clean</td>
+                <td style="font-size:.75rem;color:#99ff99">✅ SMA20 Slope Stabilizing</td>
+                <td style="color:#00ff95">₹194.57</td>
+                <td style="color:#ff6b9d">₹180.39</td>
+                <td><span class="tag" style="background:#00ff95;color:#000">✅ VALID BUY</span></td>
+            </tr>
+            <tr class="">
+                <td><strong>ADANIGREEN</strong></td>
+                <td>7.0%</td>
+                <td>₹965.95</td>
+                <td style="color:#00ff95">+0.19%</td>
+                <td style="color:#ff6b9d">-1.08%</td>
+                <td style="color:#ffa502">48.7 <small style="color:#ff6b9d">(-20.4)</small></td>
+                <td style="color:#888"><strong>25/100</strong></td>
+                <td style="font-size:.75rem;color:#ff9999">⛔ RSI Still Falling (69→49)</td>
+                <td style="font-size:.75rem;color:#99ff99">✅ SMA20 Slope Stabilizing</td>
+                <td style="color:#00ff95">₹1032.74</td>
+                <td style="color:#ff6b9d">₹915.86</td>
+                <td><span class="tag" style="background:#00ff95;color:#000">✅ VALID BUY</span></td>
+            </tr>
+            <tr class="">
+                <td><strong>POWERGRID</strong></td>
+                <td>10.0%</td>
+                <td>₹303.25</td>
+                <td style="color:#ff6b9d">-1.30%</td>
+                <td style="color:#00ff95">+2.92%</td>
+                <td style="color:#00ff95">64.2 <small style="color:#ff6b9d">(-16.0)</small></td>
+                <td style="color:#888"><strong>20/100</strong></td>
+                <td style="font-size:.75rem;color:#ff9999">⛔ RSI Still Falling (80→64)</td>
+                <td style="font-size:.75rem;color:#99ff99">✅ SMA20 Slope Stabilizing</td>
+                <td style="color:#00ff95">₹316.48</td>
+                <td style="color:#ff6b9d">₹293.33</td>
+                <td><span class="tag" style="background:#00ff95;color:#000">✅ VALID BUY</span></td>
+            </tr>
+            <tr class="">
+                <td><strong>RELIANCE</strong></td>
+                <td>35.0%</td>
+                <td>₹1406.80</td>
+                <td style="color:#00ff95">+0.59%</td>
+                <td style="color:#ff6b9d">-0.19%</td>
+                <td style="color:#ffa502">39.7 <small style="color:#ff6b9d">(-13.2)</small></td>
+                <td style="color:#888"><strong>0/100</strong></td>
+                <td style="font-size:.75rem;color:#ff9999">⛔ Price Below SMA20 & SMA50, ⛔ RSI Still Falling (53→40)</td>
+                <td style="font-size:.75rem;color:#99ff99">✅ SMA20 Slope Stabilizing</td>
+                <td style="color:#00ff95">₹1462.42</td>
+                <td style="color:#ff6b9d">₹1365.09</td>
+                <td><span class="tag" style="background:#ff6b9d;color:#000">🚫 AVOID</span></td>
+            </tr></tbody>
             </table></div>
         </div>
   </div>
 
-  <div class="section">
-    <div class="disclaimer">
-      <strong>⚠️ Risk Disclaimer:</strong> This report is for informational and educational purposes only.
-      Past performance does not guarantee future results. All trading involves risk.
-      Please conduct your own research and consult with a certified financial advisor before making any investment decisions.
-      The profit scores and targets are algorithmic calculations and should not be considered as guaranteed outcomes.
-    </div>
+  <div class="avoided-section">
+    <div class="avoided-title">🚫 Stocks Avoided — Falling Knife Detection</div>
+    <p style="color:#ff9999;font-size:.8rem;margin-bottom:14px">These stocks would have been recommended by the old script (RSI &lt; 40). They are blocked because 3+ danger signals are active.</p>
+    <div class="tbl-wrap"><table>
+      <thead><tr>
+        <th>Stock</th><th>LTP</th><th>Day%</th><th>Week%</th><th>RSI</th><th>Danger Score</th><th>Reasons Blocked</th>
+      </tr></thead>
+      <tbody>
+        <tr>
+            <td><strong>DLF</strong><br><small style="color:#888">Nifty Realty</small></td>
+            <td>₹610.80</td>
+            <td style="color:#ff6b9d">-0.07%</td>
+            <td style="color:#ff6b9d">-1.56%</td>
+            <td style="color:#ffa502">29.4</td>
+            <td><span style="color:#ff6b9d;font-weight:700">5/6</span></td>
+            <td><span class="warn-pill">⛔ Price Below SMA20 & SMA50</span> <span class="warn-pill">⛔ RSI Still Falling (45→29)</span> <span class="warn-pill">⛔ Institutions Selling (Down-Vol > Up-Vol)</span></td>
+        </tr>
+        <tr>
+            <td><strong>HDFCBANK</strong><br><small style="color:#888">Nifty Bank</small></td>
+            <td>₹898.60</td>
+            <td style="color:#ff6b9d">-0.99%</td>
+            <td style="color:#ff6b9d">-1.86%</td>
+            <td style="color:#ffa502">30.6</td>
+            <td><span style="color:#ff6b9d;font-weight:700">4/6</span></td>
+            <td><span class="warn-pill">⛔ Price Below SMA20 & SMA50</span> <span class="warn-pill">⛔ RSI Still Falling (44→31)</span> <span class="warn-pill">⛔ Institutions Selling (Down-Vol > Up-Vol)</span></td>
+        </tr>
+        <tr>
+            <td><strong>PERSISTENT</strong><br><small style="color:#888">Nifty IT</small></td>
+            <td>₹4781.50</td>
+            <td style="color:#00ff95">+1.07%</td>
+            <td style="color:#ff6b9d">-9.20%</td>
+            <td style="color:#ffa502">18.7</td>
+            <td><span style="color:#ff6b9d;font-weight:700">4/6</span></td>
+            <td><span class="warn-pill">⛔ Price Below SMA20 & SMA50</span> <span class="warn-pill">⛔ RSI Still Falling (27→19)</span> <span class="warn-pill">⛔ Institutions Selling (Down-Vol > Up-Vol)</span></td>
+        </tr>
+        <tr>
+            <td><strong>PHOENIXLTD</strong><br><small style="color:#888">Nifty Realty</small></td>
+            <td>₹1715.90</td>
+            <td style="color:#00ff95">+1.29%</td>
+            <td style="color:#ff6b9d">-1.53%</td>
+            <td style="color:#ffa502">46.1</td>
+            <td><span style="color:#ff6b9d;font-weight:700">4/6</span></td>
+            <td><span class="warn-pill">⛔ Price Below SMA20 & SMA50</span> <span class="warn-pill">⛔ RSI Still Falling (61→46)</span> <span class="warn-pill">⛔ Institutions Selling (Down-Vol > Up-Vol)</span></td>
+        </tr>
+        <tr>
+            <td><strong>LODHA</strong><br><small style="color:#888">Nifty Realty</small></td>
+            <td>₹1011.50</td>
+            <td style="color:#ff6b9d">-1.08%</td>
+            <td style="color:#ff6b9d">-5.21%</td>
+            <td style="color:#ffa502">39.4</td>
+            <td><span style="color:#ff6b9d;font-weight:700">4/6</span></td>
+            <td><span class="warn-pill">⛔ Price Below SMA20 & SMA50</span> <span class="warn-pill">⛔ RSI Still Falling (68→39)</span> <span class="warn-pill">⛔ 4/5 Recent Days Red</span></td>
+        </tr>
+        <tr>
+            <td><strong>PRESTIGE</strong><br><small style="color:#888">Nifty Realty</small></td>
+            <td>₹1428.50</td>
+            <td style="color:#00ff95">+0.55%</td>
+            <td style="color:#ff6b9d">-4.26%</td>
+            <td style="color:#ffa502">25.0</td>
+            <td><span style="color:#ff6b9d;font-weight:700">4/6</span></td>
+            <td><span class="warn-pill">⛔ Price Below SMA20 & SMA50</span> <span class="warn-pill">⛔ RSI Still Falling (55→25)</span> <span class="warn-pill">⛔ Institutions Selling (Down-Vol > Up-Vol)</span></td>
+        </tr>
+        <tr>
+            <td><strong>BRIGADE</strong><br><small style="color:#888">Nifty Realty</small></td>
+            <td>₹716.15</td>
+            <td style="color:#00ff95">+0.25%</td>
+            <td style="color:#ff6b9d">-3.24%</td>
+            <td style="color:#ffa502">34.9</td>
+            <td><span style="color:#ff6b9d;font-weight:700">4/6</span></td>
+            <td><span class="warn-pill">⛔ Price Below SMA20 & SMA50</span> <span class="warn-pill">⛔ RSI Still Falling (47→35)</span> <span class="warn-pill">⛔ Institutions Selling (Down-Vol > Up-Vol)</span></td>
+        </tr>
+        <tr>
+            <td><strong>COFORGE</strong><br><small style="color:#888">Nifty IT</small></td>
+            <td>₹1200.40</td>
+            <td style="color:#ff6b9d">-1.03%</td>
+            <td style="color:#ff6b9d">-11.80%</td>
+            <td style="color:#ffa502">8.7</td>
+            <td><span style="color:#ff6b9d;font-weight:700">3/6</span></td>
+            <td><span class="warn-pill">⛔ Price Below SMA20 & SMA50</span> <span class="warn-pill">⛔ RSI Still Falling (20→9)</span> <span class="warn-pill">⛔ 4/5 Recent Days Red</span></td>
+        </tr>
+        <tr>
+            <td><strong>ITC</strong><br><small style="color:#888">Nifty FMCG</small></td>
+            <td>₹318.30</td>
+            <td style="color:#ff6b9d">-0.45%</td>
+            <td style="color:#ff6b9d">-2.36%</td>
+            <td style="color:#ffa502">42.0</td>
+            <td><span style="color:#ff6b9d;font-weight:700">3/6</span></td>
+            <td><span class="warn-pill">⛔ Price Below SMA20 & SMA50</span> <span class="warn-pill">⛔ RSI Still Falling (58→42)</span> <span class="warn-pill">⛔ 4/5 Recent Days Red</span></td>
+        </tr>
+        <tr>
+            <td><strong>RELIANCE</strong><br><small style="color:#888">Nifty Energy</small></td>
+            <td>₹1406.80</td>
+            <td style="color:#00ff95">+0.59%</td>
+            <td style="color:#ff6b9d">-0.19%</td>
+            <td style="color:#ffa502">39.7</td>
+            <td><span style="color:#ff6b9d;font-weight:700">3/6</span></td>
+            <td><span class="warn-pill">⛔ Price Below SMA20 & SMA50</span> <span class="warn-pill">⛔ RSI Still Falling (53→40)</span> <span class="warn-pill">⛔ MACD Bearish & Worsening</span></td>
+        </tr></tbody>
+    </table></div>
   </div>
 
-  <div class="footer">© 2026 Nifty Indices Scanner | Neon Cyan Theme | For Educational Purposes Only</div>
+  <div class="disclaimer">
+    <strong>⚠️ Risk Disclaimer:</strong> This report is for informational and educational purposes only.
+    Past performance does not guarantee future results. Falling-knife filters reduce but do not eliminate loss risk.
+    Always use stop losses and consult a SEBI-registered advisor before investing.
+  </div>
+
+  <div class="footer">© 2026 Nifty Sector Scanner v2 · Falling-Knife Filter Edition · For Educational Purposes Only</div>
 </div>
 
-<!-- Live IST Clock — ticks every second -->
 <script>
-  function updateISTClock() {
-    var now = new Date();
-    var opts = {
-      timeZone: 'Asia/Kolkata',
-      day: '2-digit',
-      month: 'short',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-      second: '2-digit',
-      hour12: true
-    };
-    var el = document.getElementById('live-clock');
-    if (el) el.textContent = '🕐 ' + now.toLocaleString('en-IN', opts) + ' IST';
-  }
-  updateISTClock();
-  setInterval(updateISTClock, 1000);
+function updateClock() {
+  var now  = new Date();
+  var opts = {timeZone:'Asia/Kolkata',day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:true};
+  var el   = document.getElementById('live-clock');
+  if (el) el.textContent = '🕐 ' + now.toLocaleString('en-IN', opts) + ' IST';
+}
+updateClock();
+setInterval(updateClock, 1000);
 </script>
-
-</body>
-</html>
+</body></html>
