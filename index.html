@@ -3,10 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>🎯 Nifty Sector Scanner v3</title>
+<title>🎯 Nifty Sector Scanner</title>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
-/* ── RESET & BASE ─────────────────────────────────────────── */
 *{box-sizing:border-box;margin:0;padding:0}
 :root{
   --nc:#00d9ff;--ng:#00ff95;--nr:#ff6b9d;
@@ -24,8 +23,6 @@ body::before{
   background:radial-gradient(circle,rgba(0,217,255,.06),transparent 70%);
   pointer-events:none;z-index:0;
 }
-
-/* ── CONTAINER ────────────────────────────────────────────── */
 .container{
   max-width:1500px;margin:auto;
   background:rgba(0,8,20,.97);
@@ -35,8 +32,6 @@ body::before{
   border:1px solid var(--border);
   position:relative;z-index:1;
 }
-
-/* ── HEADER ───────────────────────────────────────────────── */
 .header{
   background:linear-gradient(135deg,var(--bg2) 0%,#003d7a 100%);
   color:var(--nc);padding:28px 28px 24px;
@@ -56,8 +51,6 @@ body::before{
   box-shadow:0 0 20px rgba(0,217,255,.5);
   flex-shrink:0;
 }
-
-/* ── SUMMARY STRIP ────────────────────────────────────────── */
 .summary{
   display:flex;flex-wrap:wrap;gap:12px;
   padding:20px 28px;
@@ -76,15 +69,11 @@ body::before{
 .stat .num{font-size:1.9rem;font-weight:800;color:var(--nc);line-height:1}
 .stat .lbl{font-size:.65rem;color:#4a7a78;text-transform:uppercase;
   letter-spacing:.8px;margin-top:5px}
-
-/* ── EXPLAIN BOX (Sample 5 dual-panel) ────────────────────── */
 .explain-wrap{
   display:flex;gap:14px;flex-wrap:wrap;
   padding:20px 28px 4px;
 }
-.explain-panel{
-  flex:1 1 300px;border-radius:12px;overflow:hidden;
-}
+.explain-panel{flex:1 1 300px;border-radius:12px;overflow:hidden;}
 .ep-head{
   display:flex;align-items:center;gap:10px;
   padding:12px 16px;font-size:.82rem;font-weight:800;
@@ -109,10 +98,7 @@ body::before{
   background:rgba(0,217,255,.03);
   border:1px solid rgba(0,217,255,.15);border-top:none;
 }
-.ep-chip{
-  padding:5px 12px;border-radius:20px;
-  font-size:.7rem;font-weight:700;
-}
+.ep-chip{padding:5px 12px;border-radius:20px;font-size:.7rem;font-weight:700;}
 .ep-chip.danger{
   background:rgba(255,107,157,.12);color:#ff9ab0;
   border:1px solid rgba(255,107,157,.28);
@@ -121,8 +107,6 @@ body::before{
   background:rgba(0,217,255,.1);color:#80deea;
   border:1px solid rgba(0,217,255,.22);
 }
-
-/* ── SECTION ──────────────────────────────────────────────── */
 .section{padding:24px 28px}
 .section-title{
   font-size:1rem;font-weight:800;color:var(--nc);
@@ -132,8 +116,6 @@ body::before{
   border-radius:4px;margin-bottom:18px;
   text-shadow:0 0 8px rgba(0,217,255,.3);
 }
-
-/* ── SAMPLE 5 SECTOR CARDS ─────────────────────────────────── */
 .s5-grid{
   display:grid;
   grid-template-columns:repeat(auto-fill,minmax(195px,1fr));
@@ -146,109 +128,47 @@ body::before{
   transition:transform .25s,box-shadow .25s;
   border:1px solid rgba(0,217,255,.1);
 }
-.s5-card:hover{
-  transform:translateY(-4px);
-  box-shadow:0 10px 30px rgba(0,217,255,.15);
-}
+.s5-card:hover{transform:translateY(-4px);box-shadow:0 10px 30px rgba(0,217,255,.15);}
 .s5-card.bull{border-color:rgba(0,255,149,.2);}
 .s5-card.bear{border-color:rgba(255,107,157,.18);}
-.s5-header{
-  display:flex;align-items:center;justify-content:center;gap:6px;
-  margin-bottom:12px;
-}
+.s5-header{display:flex;align-items:center;justify-content:center;gap:6px;margin-bottom:12px;}
 .s5-icon{font-size:1.1rem}
-.s5-name{
-  font-size:.72rem;font-weight:800;
-  letter-spacing:.8px;text-transform:uppercase;color:#80deea;
-}
-.s5-ring-wrap{
-  position:relative;width:100px;height:100px;
-  margin:0 auto 12px;
-}
+.s5-name{font-size:.72rem;font-weight:800;letter-spacing:.8px;text-transform:uppercase;color:#80deea;}
+.s5-ring-wrap{position:relative;width:100px;height:100px;margin:0 auto 12px;}
 .rsi-svg{display:block}
 .s5-ring-label{
   position:absolute;top:50%;left:50%;
-  transform:translate(-50%,-50%);
-  text-align:center;line-height:1.2;
+  transform:translate(-50%,-50%);text-align:center;line-height:1.2;
 }
-.s5-rsi-num{
-  font-family:'JetBrains Mono',monospace;
-  font-size:1.2rem;font-weight:800;
-}
-.s5-rsi-sub{
-  font-size:.55rem;color:#2a5070;
-  letter-spacing:2px;text-transform:uppercase;
-}
+.s5-rsi-num{font-family:'JetBrains Mono',monospace;font-size:1.2rem;font-weight:800;}
+.s5-rsi-sub{font-size:.55rem;color:#2a5070;letter-spacing:2px;text-transform:uppercase;}
 .badge-bull{
   display:inline-block;padding:4px 14px;border-radius:30px;
   font-size:.68rem;font-weight:800;margin-bottom:12px;
-  background:rgba(0,255,149,.12);color:#00ff95;
-  border:1px solid rgba(0,255,149,.28);
+  background:rgba(0,255,149,.12);color:#00ff95;border:1px solid rgba(0,255,149,.28);
 }
 .badge-bear{
   display:inline-block;padding:4px 14px;border-radius:30px;
   font-size:.68rem;font-weight:800;margin-bottom:12px;
-  background:rgba(255,107,157,.1);color:#ff6b9d;
-  border:1px solid rgba(255,107,157,.25);
+  background:rgba(255,107,157,.1);color:#ff6b9d;border:1px solid rgba(255,107,157,.25);
 }
-.s5-stats{
-  display:grid;grid-template-columns:1fr 1fr;
-  gap:8px;margin-bottom:12px;text-align:left;
-}
-.s5-stat{
-  background:rgba(255,255,255,.03);border-radius:6px;
-  padding:7px 9px;
-}
-.s5-sl{
-  font-size:.57rem;color:#2a5070;
-  letter-spacing:1px;text-transform:uppercase;margin-bottom:2px;
-}
-.s5-sv{
-  font-family:'JetBrains Mono',monospace;
-  font-size:.82rem;font-weight:600;color:#e0f2f1;
-}
+.s5-stats{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px;text-align:left;}
+.s5-stat{background:rgba(255,255,255,.03);border-radius:6px;padding:7px 9px;}
+.s5-sl{font-size:.57rem;color:#2a5070;letter-spacing:1px;text-transform:uppercase;margin-bottom:2px;}
+.s5-sv{font-family:'JetBrains Mono',monospace;font-size:.82rem;font-weight:600;color:#e0f2f1;}
 .s5-danger-bar{margin-top:4px}
-.s5-db-label{
-  font-size:.62rem;color:#2a5070;
-  display:flex;justify-content:space-between;margin-bottom:4px;
-}
-.s5-db-track{
-  height:5px;background:rgba(255,255,255,.06);
-  border-radius:3px;overflow:hidden;
-}
+.s5-db-label{font-size:.62rem;color:#2a5070;display:flex;justify-content:space-between;margin-bottom:4px;}
+.s5-db-track{height:5px;background:rgba(255,255,255,.06);border-radius:3px;overflow:hidden;}
 .s5-db-fill{height:100%;border-radius:3px;transition:width .8s ease}
-
-/* ── TABLES ───────────────────────────────────────────────── */
-.tbl-wrap{
-  overflow-x:auto;border-radius:8px;
-  border:1px solid rgba(0,217,255,.12);
-  margin-bottom:8px;
-}
+.tbl-wrap{overflow-x:auto;border-radius:8px;border:1px solid rgba(0,217,255,.12);margin-bottom:8px;}
 table{width:100%;border-collapse:collapse;min-width:900px}
 thead tr{background:linear-gradient(135deg,var(--bg2),#003d7a)}
-th{
-  color:var(--nc);padding:10px 10px;text-align:left;
-  font-size:.68rem;font-weight:700;text-transform:uppercase;
-  letter-spacing:.6px;white-space:nowrap;
-}
-td{
-  padding:9px 10px;border-bottom:1px solid rgba(0,217,255,.07);
-  color:#cfd8dc;vertical-align:middle;
-}
+th{color:var(--nc);padding:10px 10px;text-align:left;font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.6px;white-space:nowrap;}
+td{padding:9px 10px;border-bottom:1px solid rgba(0,217,255,.07);color:#cfd8dc;vertical-align:middle;}
 tbody tr:hover{background:rgba(0,217,255,.04)}
-.top-row{
-  background:linear-gradient(90deg,rgba(0,217,255,.07),transparent)!important;
-  border-left:3px solid var(--nc);
-}
+.top-row{background:linear-gradient(90deg,rgba(0,217,255,.07),transparent)!important;border-left:3px solid var(--nc);}
 tbody tr:last-child td{border-bottom:none}
-
-/* ── VERDICT TAG ─────────────────────────────────────────── */
-.vtag{
-  display:inline-block;padding:4px 10px;border-radius:5px;
-  font-size:.68rem;font-weight:800;white-space:nowrap;
-}
-
-/* ── CHIP PILLS ──────────────────────────────────────────── */
+.vtag{display:inline-block;padding:4px 10px;border-radius:5px;font-size:.68rem;font-weight:800;white-space:nowrap;}
 .warn-chip{
   display:inline-block;
   background:rgba(255,107,157,.12);border:1px solid rgba(255,107,157,.28);
@@ -261,26 +181,15 @@ tbody tr:last-child td{border-bottom:none}
   color:#80deea;padding:2px 7px;border-radius:10px;
   font-size:.62rem;font-weight:700;margin:1px;white-space:nowrap;
 }
-
-/* ── SECTOR DETAIL ───────────────────────────────────────── */
-.detail-block{
-  margin-bottom:24px;
-  border:1px solid rgba(0,217,255,.15);
-  border-radius:12px;overflow:hidden;
-}
+.detail-block{margin-bottom:24px;border:1px solid rgba(0,217,255,.15);border-radius:12px;overflow:hidden;}
 .detail-header{
   background:linear-gradient(135deg,var(--bg2),#003d7a);
   padding:14px 18px;border-bottom:2px solid var(--nc);
   display:flex;align-items:center;gap:10px;flex-wrap:wrap;
 }
 .detail-icon{font-size:1.2rem}
-.detail-header h3{
-  font-size:.95rem;font-weight:800;color:var(--nc);
-  text-shadow:0 0 8px rgba(0,217,255,.5);flex:1;
-}
+.detail-header h3{font-size:.95rem;font-weight:800;color:var(--nc);text-shadow:0 0 8px rgba(0,217,255,.5);flex:1;}
 .detail-meta{font-size:.78rem;color:#80deea;width:100%}
-
-/* ── AVOIDED SECTION ─────────────────────────────────────── */
 .avoided-section{
   padding:24px 28px;
   background:rgba(255,107,157,.03);
@@ -293,8 +202,6 @@ tbody tr:last-child td{border-bottom:none}
   background:linear-gradient(90deg,rgba(255,107,157,.08),transparent);
   border-radius:4px;margin-bottom:10px;
 }
-
-/* ── DISCLAIMER + FOOTER ─────────────────────────────────── */
 .disclaimer{
   margin:10px 28px 24px;padding:14px 18px;
   background:rgba(255,107,157,.06);
@@ -307,8 +214,6 @@ tbody tr:last-child td{border-bottom:none}
   border-top:1px solid rgba(0,217,255,.1);
   font-size:.75rem;color:#4a7a78;
 }
-
-/* ── MOBILE ──────────────────────────────────────────────── */
 @media(max-width:640px){
   .header{flex-direction:column;align-items:flex-start}
   .s5-grid{grid-template-columns:repeat(2,1fr)}
@@ -322,19 +227,19 @@ tbody tr:last-child td{border-bottom:none}
 <body>
 <div class="container">
 
-<!-- ── HEADER ─────────────────────────────────────────────── -->
+<!-- ── HEADER  (no "v3") ────────────────────────────────────── -->
 <div class="header">
   <div>
-    <h1>🎯 Nifty Sector Scanner <span style="color:var(--ng)">v3</span></h1>
+    <h1>🎯 Nifty Sector Scanner</h1>
     <div class="sub">
       Falling-Knife Filter · 6-Point Danger Check · Reversal Confirmation<br>
-      Report generated: 27 Feb 2026 06:57 AM IST
+      Report generated: 27 Feb 2026 07:08 AM IST
     </div>
   </div>
   <div id="live-clock">🕐 Loading...</div>
 </div>
 
-<!-- ── SUMMARY STRIP ──────────────────────────────────────── -->
+<!-- ── SUMMARY STRIP ──────────────────────────────────────────── -->
 <div class="summary">
   <div class="stat">
     <div class="num">9</div>
@@ -362,33 +267,7 @@ tbody tr:last-child td{border-bottom:none}
   </div>
 </div>
 
-<!-- ── EXPLAIN BOX (below summary, Sample 5 dual-panel) ───── -->
-<div class="explain-wrap">
-  <div class="explain-panel">
-    <div class="ep-head danger">⛔ 6 Danger Signals — Any 3 or more = BLOCKED</div>
-    <div class="ep-body danger">
-      <span class="ep-chip danger">⛔ MA Bearish (20&lt;50&lt;200)</span>
-      <span class="ep-chip danger">⛔ Price Below SMA20 & SMA50</span>
-      <span class="ep-chip danger">⛔ RSI Still Falling</span>
-      <span class="ep-chip danger">⛔ Institutions Selling</span>
-      <span class="ep-chip danger">⛔ 4+ of 5 Days Red</span>
-      <span class="ep-chip danger">⛔ MACD Bearish & Worsening</span>
-    </div>
-  </div>
-  <div class="explain-panel">
-    <div class="ep-head ok">✅ Reversal Confirmations — At Least 1 Required</div>
-    <div class="ep-body ok">
-      <span class="ep-chip ok">✅ RSI Turning Up</span>
-      <span class="ep-chip ok">✅ Volume Climax</span>
-      <span class="ep-chip ok">✅ Bullish Engulfing</span>
-      <span class="ep-chip ok">✅ 52W Low Bounce</span>
-      <span class="ep-chip ok">✅ MACD Histogram Improving</span>
-      <span class="ep-chip ok">✅ SMA20 Stabilizing</span>
-    </div>
-  </div>
-</div>
-
-<!-- ── SECTOR SCORECARD (Sample 5 Progress Ring) ──────────── -->
+<!-- ── SECTOR SCORECARD ────────────────────────────────────────── -->
 <div class="section">
   <div class="section-title">🏆 Sector Scorecard</div>
   <div class="s5-grid">
@@ -423,7 +302,7 @@ tbody tr:last-child td{border-bottom:none}
             </div>
             <div class="s5-stat" style="grid-column:span 2">
               <div class="s5-sl">Key Signal</div>
-              <div class="s5-sv" style="font-size:.72rem;color:#80deea">✅ SMA20 Stabilizing</div>
+              <div class="s5-sv" style="font-size:.72rem;color:#80deea">SMA20 Stabilizing</div>
             </div>
           </div>
           <div class="s5-danger-bar">
@@ -467,7 +346,7 @@ tbody tr:last-child td{border-bottom:none}
             </div>
             <div class="s5-stat" style="grid-column:span 2">
               <div class="s5-sl">Key Signal</div>
-              <div class="s5-sv" style="font-size:.72rem;color:#80deea">✅ RSI Turning Up</div>
+              <div class="s5-sv" style="font-size:.72rem;color:#80deea">RSI Turning Up</div>
             </div>
           </div>
           <div class="s5-danger-bar">
@@ -511,7 +390,7 @@ tbody tr:last-child td{border-bottom:none}
             </div>
             <div class="s5-stat" style="grid-column:span 2">
               <div class="s5-sl">Key Signal</div>
-              <div class="s5-sv" style="font-size:.72rem;color:#80deea">✅ SMA20 Stabilizing</div>
+              <div class="s5-sv" style="font-size:.72rem;color:#80deea">SMA20 Stabilizing</div>
             </div>
           </div>
           <div class="s5-danger-bar">
@@ -555,7 +434,7 @@ tbody tr:last-child td{border-bottom:none}
             </div>
             <div class="s5-stat" style="grid-column:span 2">
               <div class="s5-sl">Key Signal</div>
-              <div class="s5-sv" style="font-size:.72rem;color:#80deea">✅ SMA20 Stabilizing</div>
+              <div class="s5-sv" style="font-size:.72rem;color:#80deea">SMA20 Stabilizing</div>
             </div>
           </div>
           <div class="s5-danger-bar">
@@ -599,7 +478,7 @@ tbody tr:last-child td{border-bottom:none}
             </div>
             <div class="s5-stat" style="grid-column:span 2">
               <div class="s5-sl">Key Signal</div>
-              <div class="s5-sv" style="font-size:.72rem;color:#80deea">✅ SMA20 Stabilizing</div>
+              <div class="s5-sv" style="font-size:.72rem;color:#80deea">SMA20 Stabilizing</div>
             </div>
           </div>
           <div class="s5-danger-bar">
@@ -643,7 +522,7 @@ tbody tr:last-child td{border-bottom:none}
             </div>
             <div class="s5-stat" style="grid-column:span 2">
               <div class="s5-sl">Key Signal</div>
-              <div class="s5-sv" style="font-size:.72rem;color:#80deea">✅ SMA20 Stabilizing</div>
+              <div class="s5-sv" style="font-size:.72rem;color:#80deea">SMA20 Stabilizing</div>
             </div>
           </div>
           <div class="s5-danger-bar">
@@ -687,7 +566,7 @@ tbody tr:last-child td{border-bottom:none}
             </div>
             <div class="s5-stat" style="grid-column:span 2">
               <div class="s5-sl">Key Signal</div>
-              <div class="s5-sv" style="font-size:.72rem;color:#80deea">✅ SMA20 Stabilizing</div>
+              <div class="s5-sv" style="font-size:.72rem;color:#80deea">SMA20 Stabilizing</div>
             </div>
           </div>
           <div class="s5-danger-bar">
@@ -731,7 +610,7 @@ tbody tr:last-child td{border-bottom:none}
             </div>
             <div class="s5-stat" style="grid-column:span 2">
               <div class="s5-sl">Key Signal</div>
-              <div class="s5-sv" style="font-size:.72rem;color:#80deea">✅ SMA20 Stabilizing</div>
+              <div class="s5-sv" style="font-size:.72rem;color:#80deea">SMA20 Stabilizing</div>
             </div>
           </div>
           <div class="s5-danger-bar">
@@ -775,7 +654,7 @@ tbody tr:last-child td{border-bottom:none}
             </div>
             <div class="s5-stat" style="grid-column:span 2">
               <div class="s5-sl">Key Signal</div>
-              <div class="s5-sv" style="font-size:.72rem;color:#80deea">✅ SMA20 Stabilizing</div>
+              <div class="s5-sv" style="font-size:.72rem;color:#80deea">SMA20 Stabilizing</div>
             </div>
           </div>
           <div class="s5-danger-bar">
@@ -790,7 +669,33 @@ tbody tr:last-child td{border-bottom:none}
         </div></div>
 </div>
 
-<!-- ── BUY TABLE ──────────────────────────────────────────── -->
+<!-- ── EXPLAIN BOX — now BELOW scorecard ──────────────────────── -->
+<div class="explain-wrap">
+  <div class="explain-panel">
+    <div class="ep-head danger">⛔ 6 Danger Signals — Any 3 or more = BLOCKED</div>
+    <div class="ep-body danger">
+      <span class="ep-chip danger">⛔ MA Bearish (20&lt;50&lt;200)</span>
+      <span class="ep-chip danger">⛔ Price Below SMA20 &amp; SMA50</span>
+      <span class="ep-chip danger">⛔ RSI Still Falling</span>
+      <span class="ep-chip danger">⛔ Institutions Selling</span>
+      <span class="ep-chip danger">⛔ 4+ of 5 Days Red</span>
+      <span class="ep-chip danger">⛔ MACD Bearish &amp; Worsening</span>
+    </div>
+  </div>
+  <div class="explain-panel">
+    <div class="ep-head ok">✅ Reversal Confirmations — At Least 1 Required</div>
+    <div class="ep-body ok">
+      <span class="ep-chip ok">✅ RSI Turning Up</span>
+      <span class="ep-chip ok">✅ Volume Climax</span>
+      <span class="ep-chip ok">✅ Bullish Engulfing</span>
+      <span class="ep-chip ok">✅ 52W Low Bounce</span>
+      <span class="ep-chip ok">✅ MACD Histogram Improving</span>
+      <span class="ep-chip ok">✅ SMA20 Stabilizing</span>
+    </div>
+  </div>
+</div>
+
+<!-- ── BUY TABLE ──────────────────────────────────────────────── -->
 <div class="section">
   <div class="section-title">🟢 Top Valid Buy Recommendations — Knife-Filtered</div>
   <div class="tbl-wrap">
@@ -1305,7 +1210,7 @@ tbody tr:last-child td{border-bottom:none}
   </div>
 </div>
 
-<!-- ── SECTOR DETAIL ──────────────────────────────────────── -->
+<!-- ── SECTOR DETAIL ──────────────────────────────────────────── -->
 <div class="section">
   <div class="section-title">📊 Bullish Sector Detail</div>
   
@@ -2400,7 +2305,7 @@ tbody tr:last-child td{border-bottom:none}
         </div>
 </div>
 
-<!-- ── AVOIDED TABLE ──────────────────────────────────────── -->
+<!-- ── AVOIDED TABLE ──────────────────────────────────────────── -->
 <div class="avoided-section">
   <div class="avoided-title">🚫 Stocks Avoided — Falling Knife Detected</div>
   <p style="color:rgba(255,107,157,.6);font-size:.75rem;margin-bottom:14px">
@@ -2508,7 +2413,7 @@ tbody tr:last-child td{border-bottom:none}
   </div>
 </div>
 
-<!-- ── DISCLAIMER ─────────────────────────────────────────── -->
+<!-- ── DISCLAIMER ─────────────────────────────────────────────── -->
 <div class="disclaimer">
   <strong>⚠️ Risk Disclaimer:</strong> This report is for informational and educational purposes only.
   Past performance does not guarantee future results. Falling-knife filters reduce but do not eliminate loss risk.
@@ -2516,17 +2421,15 @@ tbody tr:last-child td{border-bottom:none}
 </div>
 
 <div class="footer">
-  © 2026 Nifty Sector Scanner v3 · Falling-Knife Filter Edition · For Educational Purposes Only
+  © 2026 Nifty Sector Scanner · Falling-Knife Filter Edition · For Educational Purposes Only
 </div>
-</div><!-- /container -->
+</div>
 
 <script>
-/* Live IST clock */
 function updateClock() {
   var now  = new Date();
   var opts = {
-    timeZone:'Asia/Kolkata',
-    day:'2-digit',month:'short',year:'numeric',
+    timeZone:'Asia/Kolkata',day:'2-digit',month:'short',year:'numeric',
     hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:true
   };
   var el = document.getElementById('live-clock');
@@ -2534,8 +2437,6 @@ function updateClock() {
 }
 updateClock();
 setInterval(updateClock, 1000);
-
-/* Animate ring on load */
 window.addEventListener('load', function() {
   document.querySelectorAll('.rsi-svg circle:last-child').forEach(function(c) {
     var final = c.getAttribute('stroke-dashoffset');
