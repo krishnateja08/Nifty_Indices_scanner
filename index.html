@@ -118,47 +118,49 @@ body::before{
 }
 .s5-grid{
   display:grid;
-  grid-template-columns:repeat(auto-fill,minmax(195px,1fr));
-  gap:14px;
+  grid-template-columns:repeat(9,1fr);
+  gap:8px;
+  overflow-x:auto;
 }
 .s5-card{
   background:linear-gradient(145deg,#030f1c,#010810);
-  border-radius:16px;padding:18px 16px;
+  border-radius:12px;padding:12px 8px;
   text-align:center;
   transition:transform .25s,box-shadow .25s;
   border:1px solid rgba(0,217,255,.1);
+  min-width:130px;
 }
-.s5-card:hover{transform:translateY(-4px);box-shadow:0 10px 30px rgba(0,217,255,.15);}
+.s5-card:hover{transform:translateY(-3px);box-shadow:0 8px 20px rgba(0,217,255,.15);}
 .s5-card.bull{border-color:rgba(0,255,149,.2);}
 .s5-card.bear{border-color:rgba(255,107,157,.18);}
-.s5-header{display:flex;align-items:center;justify-content:center;gap:6px;margin-bottom:12px;}
-.s5-icon{font-size:1.1rem}
-.s5-name{font-size:.72rem;font-weight:800;letter-spacing:.8px;text-transform:uppercase;color:#80deea;}
-.s5-ring-wrap{position:relative;width:100px;height:100px;margin:0 auto 12px;}
+.s5-header{display:flex;align-items:center;justify-content:center;gap:4px;margin-bottom:8px;}
+.s5-icon{font-size:.9rem}
+.s5-name{font-size:.58rem;font-weight:800;letter-spacing:.5px;text-transform:uppercase;color:#80deea;line-height:1.2;}
+.s5-ring-wrap{position:relative;width:74px;height:74px;margin:0 auto 8px;}
 .rsi-svg{display:block}
 .s5-ring-label{
   position:absolute;top:50%;left:50%;
   transform:translate(-50%,-50%);text-align:center;line-height:1.2;
 }
-.s5-rsi-num{font-family:'JetBrains Mono',monospace;font-size:1.2rem;font-weight:800;}
-.s5-rsi-sub{font-size:.55rem;color:#2a5070;letter-spacing:2px;text-transform:uppercase;}
+.s5-rsi-num{font-family:'JetBrains Mono',monospace;font-size:.95rem;font-weight:800;}
+.s5-rsi-sub{font-size:.45rem;color:#2a5070;letter-spacing:1.5px;text-transform:uppercase;}
 .badge-bull{
-  display:inline-block;padding:4px 14px;border-radius:30px;
-  font-size:.68rem;font-weight:800;margin-bottom:12px;
+  display:inline-block;padding:3px 8px;border-radius:30px;
+  font-size:.58rem;font-weight:800;margin-bottom:8px;
   background:rgba(0,255,149,.12);color:#00ff95;border:1px solid rgba(0,255,149,.28);
 }
 .badge-bear{
-  display:inline-block;padding:4px 14px;border-radius:30px;
-  font-size:.68rem;font-weight:800;margin-bottom:12px;
+  display:inline-block;padding:3px 8px;border-radius:30px;
+  font-size:.58rem;font-weight:800;margin-bottom:8px;
   background:rgba(255,107,157,.1);color:#ff6b9d;border:1px solid rgba(255,107,157,.25);
 }
-.s5-stats{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px;text-align:left;}
-.s5-stat{background:rgba(255,255,255,.03);border-radius:6px;padding:7px 9px;}
-.s5-sl{font-size:.57rem;color:#2a5070;letter-spacing:1px;text-transform:uppercase;margin-bottom:2px;}
-.s5-sv{font-family:'JetBrains Mono',monospace;font-size:.82rem;font-weight:600;color:#e0f2f1;}
+.s5-stats{display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-bottom:8px;text-align:left;}
+.s5-stat{background:rgba(255,255,255,.03);border-radius:5px;padding:5px 6px;}
+.s5-sl{font-size:.5rem;color:#2a5070;letter-spacing:.8px;text-transform:uppercase;margin-bottom:1px;}
+.s5-sv{font-family:'JetBrains Mono',monospace;font-size:.7rem;font-weight:600;color:#e0f2f1;}
 .s5-danger-bar{margin-top:4px}
-.s5-db-label{font-size:.62rem;color:#2a5070;display:flex;justify-content:space-between;margin-bottom:4px;}
-.s5-db-track{height:5px;background:rgba(255,255,255,.06);border-radius:3px;overflow:hidden;}
+.s5-db-label{font-size:.55rem;color:#2a5070;display:flex;justify-content:space-between;margin-bottom:3px;}
+.s5-db-track{height:4px;background:rgba(255,255,255,.06);border-radius:3px;overflow:hidden;}
 .s5-db-fill{height:100%;border-radius:3px;transition:width .8s ease}
 .tbl-wrap{overflow-x:auto;border-radius:8px;border:1px solid rgba(0,217,255,.12);margin-bottom:8px;}
 table{width:100%;border-collapse:collapse;min-width:900px}
@@ -216,7 +218,7 @@ tbody tr:last-child td{border-bottom:none}
 }
 @media(max-width:640px){
   .header{flex-direction:column;align-items:flex-start}
-  .s5-grid{grid-template-columns:repeat(2,1fr)}
+  .s5-grid{grid-template-columns:repeat(3,1fr)}
   .explain-wrap{flex-direction:column}
   body{padding:10px}
   .section{padding:16px 14px}
@@ -233,7 +235,7 @@ tbody tr:last-child td{border-bottom:none}
     <h1>🎯 Nifty Sector Scanner</h1>
     <div class="sub">
       Falling-Knife Filter · 6-Point Danger Check · Reversal Confirmation<br>
-      Report generated: 27 Feb 2026 07:08 AM IST
+      Report generated: 27 Feb 2026 07:16 AM IST
     </div>
   </div>
   <div id="live-clock">🕐 Loading...</div>
@@ -270,13 +272,14 @@ tbody tr:last-child td{border-bottom:none}
 <!-- ── SECTOR SCORECARD ────────────────────────────────────────── -->
 <div class="section">
   <div class="section-title">🏆 Sector Scorecard</div>
-  <div class="s5-grid">
+  <div style="overflow-x:auto;">
+    <div class="s5-grid">
         <div class="s5-card bull">
           <div class="s5-header">
             <div class="s5-icon">🏦</div>
             <div class="s5-name">Nifty Bank</div>
           </div>
-          <div class="s5-ring-wrap"><svg width="100" height="100" viewBox="0 0 100 100" class="rsi-svg">
+          <div class="s5-ring-wrap"><svg width="74" height="74" viewBox="0 0 100 100" class="rsi-svg">
   <circle cx="50" cy="50" r="40" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="8"/>
   <circle cx="50" cy="50" r="40" fill="none"
     stroke="#00ff95" stroke-width="8" stroke-linecap="round"
@@ -320,7 +323,7 @@ tbody tr:last-child td{border-bottom:none}
             <div class="s5-icon">💻</div>
             <div class="s5-name">Nifty IT</div>
           </div>
-          <div class="s5-ring-wrap"><svg width="100" height="100" viewBox="0 0 100 100" class="rsi-svg">
+          <div class="s5-ring-wrap"><svg width="74" height="74" viewBox="0 0 100 100" class="rsi-svg">
   <circle cx="50" cy="50" r="40" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="8"/>
   <circle cx="50" cy="50" r="40" fill="none"
     stroke="#00ff95" stroke-width="8" stroke-linecap="round"
@@ -364,7 +367,7 @@ tbody tr:last-child td{border-bottom:none}
             <div class="s5-icon">💊</div>
             <div class="s5-name">Nifty Pharma</div>
           </div>
-          <div class="s5-ring-wrap"><svg width="100" height="100" viewBox="0 0 100 100" class="rsi-svg">
+          <div class="s5-ring-wrap"><svg width="74" height="74" viewBox="0 0 100 100" class="rsi-svg">
   <circle cx="50" cy="50" r="40" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="8"/>
   <circle cx="50" cy="50" r="40" fill="none"
     stroke="#00ff95" stroke-width="8" stroke-linecap="round"
@@ -408,7 +411,7 @@ tbody tr:last-child td{border-bottom:none}
             <div class="s5-icon">🏢</div>
             <div class="s5-name">Nifty Realty</div>
           </div>
-          <div class="s5-ring-wrap"><svg width="100" height="100" viewBox="0 0 100 100" class="rsi-svg">
+          <div class="s5-ring-wrap"><svg width="74" height="74" viewBox="0 0 100 100" class="rsi-svg">
   <circle cx="50" cy="50" r="40" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="8"/>
   <circle cx="50" cy="50" r="40" fill="none"
     stroke="#ff6b9d" stroke-width="8" stroke-linecap="round"
@@ -452,7 +455,7 @@ tbody tr:last-child td{border-bottom:none}
             <div class="s5-icon">🛒</div>
             <div class="s5-name">Nifty FMCG</div>
           </div>
-          <div class="s5-ring-wrap"><svg width="100" height="100" viewBox="0 0 100 100" class="rsi-svg">
+          <div class="s5-ring-wrap"><svg width="74" height="74" viewBox="0 0 100 100" class="rsi-svg">
   <circle cx="50" cy="50" r="40" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="8"/>
   <circle cx="50" cy="50" r="40" fill="none"
     stroke="#00ff95" stroke-width="8" stroke-linecap="round"
@@ -496,7 +499,7 @@ tbody tr:last-child td{border-bottom:none}
             <div class="s5-icon">⚙️</div>
             <div class="s5-name">Nifty Metal</div>
           </div>
-          <div class="s5-ring-wrap"><svg width="100" height="100" viewBox="0 0 100 100" class="rsi-svg">
+          <div class="s5-ring-wrap"><svg width="74" height="74" viewBox="0 0 100 100" class="rsi-svg">
   <circle cx="50" cy="50" r="40" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="8"/>
   <circle cx="50" cy="50" r="40" fill="none"
     stroke="#00ff95" stroke-width="8" stroke-linecap="round"
@@ -540,7 +543,7 @@ tbody tr:last-child td{border-bottom:none}
             <div class="s5-icon">🚗</div>
             <div class="s5-name">Nifty Auto</div>
           </div>
-          <div class="s5-ring-wrap"><svg width="100" height="100" viewBox="0 0 100 100" class="rsi-svg">
+          <div class="s5-ring-wrap"><svg width="74" height="74" viewBox="0 0 100 100" class="rsi-svg">
   <circle cx="50" cy="50" r="40" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="8"/>
   <circle cx="50" cy="50" r="40" fill="none"
     stroke="#00ff95" stroke-width="8" stroke-linecap="round"
@@ -584,7 +587,7 @@ tbody tr:last-child td{border-bottom:none}
             <div class="s5-icon">⚡</div>
             <div class="s5-name">Nifty Energy</div>
           </div>
-          <div class="s5-ring-wrap"><svg width="100" height="100" viewBox="0 0 100 100" class="rsi-svg">
+          <div class="s5-ring-wrap"><svg width="74" height="74" viewBox="0 0 100 100" class="rsi-svg">
   <circle cx="50" cy="50" r="40" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="8"/>
   <circle cx="50" cy="50" r="40" fill="none"
     stroke="#00ff95" stroke-width="8" stroke-linecap="round"
@@ -628,7 +631,7 @@ tbody tr:last-child td{border-bottom:none}
             <div class="s5-icon">📺</div>
             <div class="s5-name">Nifty Consumer Durables</div>
           </div>
-          <div class="s5-ring-wrap"><svg width="100" height="100" viewBox="0 0 100 100" class="rsi-svg">
+          <div class="s5-ring-wrap"><svg width="74" height="74" viewBox="0 0 100 100" class="rsi-svg">
   <circle cx="50" cy="50" r="40" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="8"/>
   <circle cx="50" cy="50" r="40" fill="none"
     stroke="#ff6b9d" stroke-width="8" stroke-linecap="round"
@@ -667,6 +670,7 @@ tbody tr:last-child td{border-bottom:none}
             </div>
           </div>
         </div></div>
+  </div>
 </div>
 
 <!-- ── EXPLAIN BOX — now BELOW scorecard ──────────────────────── -->
