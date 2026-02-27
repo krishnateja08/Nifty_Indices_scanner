@@ -167,7 +167,7 @@ sectors_config = {
         }
     },
     "Nifty Consumer Durables": {
-        "ticker": "^NIFTY_CONSR_DURBL.NS",
+        "ticker": "^CNXCONSUM",
         "stocks": {
             "TITAN.NS":      {"weight": 25.0, "industry": "Jewelry & Watches"},
             "VOLTAS.NS":     {"weight": 12.0, "industry": "Air Conditioners"},
