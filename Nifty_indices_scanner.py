@@ -56,8 +56,6 @@ import os
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
-import numpy as np
-
 warnings.filterwarnings("ignore")
 
 # ─── CONFIGURATION ────────────────────────────────────────────────────────────
@@ -85,7 +83,6 @@ SECTOR_ICONS = {
     "Nifty Auto":             "🚗",
     "Nifty Energy":           "⚡",
     "Nifty Consumer Durables":"📺",
-    "Nifty Private Bank":     "🏛️",
 }
 
 # =============================================================================
@@ -420,14 +417,8 @@ def fetch_and_analyze(ticker, period="1y"):
         prev_close    = float(close.iloc[-2])
         day_chg_pct   = ((ltp - prev_close) / prev_close) * 100
         week_chg_pct  = ((ltp - float(close.iloc[-6]))  / float(close.iloc[-6]))  * 100 if len(close) >= 6  else 0.0
-        month_chg_pct = ((ltp - float(close.iloc[-22])) / float(close.iloc[-22])) * 100 if len(close) >= 22 else 0.0
 
         high_52w = float(data['High'].tail(252).max() if len(data) >= 252 else data['High'].max())
-        low_52w  = float(data['Low'].tail(252).min()  if len(data) >= 252 else data['Low'].min())
-
-        sma20  = float(close.rolling(20).mean().iloc[-1])
-        sma50  = float(close.rolling(50).mean().iloc[-1])  if len(close) >= 50  else None
-        sma200 = float(close.rolling(200).mean().iloc[-1]) if len(close) >= 200 else None
 
         rsi_series    = calculate_rsi(close)
         rsi_now       = float(rsi_series.iloc[-1])
@@ -441,7 +432,6 @@ def fetch_and_analyze(ticker, period="1y"):
         rsi_slope_strong = rsi_dir_data['strong']    # True if |slope| > 8
 
         atr     = float(calculate_atr(data))
-        atr_pct = (atr / ltp) * 100
 
         fk_checks, fk_flags, danger_score = falling_knife_checks(data)
         rev_confirms, rev_count           = reversal_confirmations(data)
@@ -510,25 +500,18 @@ def fetch_and_analyze(ticker, period="1y"):
             "ltp":               ltp,
             "day_chg_pct":       day_chg_pct,
             "week_chg_pct":      week_chg_pct,
-            "month_chg_pct":     month_chg_pct,
             "rsi":               rsi_now,
             "rsi_slope":         rsi_slope,
-            "rsi_direction":     rsi_direction,        # NEW: Rising/Falling/Flat
-            "rsi_slope_strong":  rsi_slope_strong,     # NEW: True if |slope|>8
-            "sma20":             sma20,
-            "sma50":             sma50,
-            "sma200":            sma200,
+            "rsi_direction":     rsi_direction,
             "high_52w":          high_52w,
-            "low_52w":           low_52w,
             "atr":               atr,
-            "atr_pct":           atr_pct,
             "danger_score":      danger_score,
             "fk_flags":          fk_flags,
             "rev_confirms":      rev_confirms,
             "rev_count":         rev_count,
             "is_falling_knife":  is_falling_knife,
-            "veto_signals":      veto_signals,         # NEW: count of bearish signals
-            "trend_veto_fired":  trend_veto_fired,     # NEW: True if hard-capped
+            "veto_signals":      veto_signals,
+            "trend_veto_fired":  trend_veto_fired,
             "verdict":           verdict,
             "score":             score,
             "stop_loss":         stop_loss,
@@ -1586,7 +1569,6 @@ def main():
             continue
 
         is_bull, reasons = is_sector_bullish(idx_data)
-        strength_score   = max(0, 50 - idx_data['danger_score'] * 8 + idx_data['rev_count'] * 10)
 
         rsi_dir_label = idx_data.get('rsi_direction', 'Flat')
         if is_bull:
@@ -1611,11 +1593,8 @@ def main():
                 stocks_data.append(sd)
 
         sector_analysis[sector_name] = {
-            'index_data':     idx_data,
-            'strength_score': strength_score,
-            'is_bullish':     is_bull,
-            'sector_reasons': reasons,
-            'stocks':         stocks_data,
+            'index_data': idx_data,
+            'stocks':     stocks_data,
         }
 
     # ── Summary ───────────────────────────────────────────────
