@@ -657,8 +657,18 @@ def generate_html(sector_analysis, bullish_sectors, ist_time):
         rev_short = idx['rev_confirms'][0] if idx['rev_confirms'] else \
                     (f"week {idx['week_chg_pct']:+.1f}%" if idx['week_chg_pct'] else "—")
 
+        anchor_id  = sn.lower().replace(" ", "-")
+        # Cards for bullish sectors scroll to their detail table;
+        # blocked sectors scroll to the avoided table instead.
+        if is_bull:
+            click_js  = f"onclick=\"document.getElementById('sector-{anchor_id}').scrollIntoView({{behavior:'smooth',block:'start'}});this.classList.add('card-flash')\""
+            click_tip = "title=\"Click to jump to sector detail ↓\""
+        else:
+            click_js  = "onclick=\"document.getElementById('avoided-section').scrollIntoView({behavior:'smooth',block:'start'})\""
+            click_tip = "title=\"Click to see blocked stocks ↓\""
+
         sector_cards_html += f"""
-        <div class="{card_cls}">
+        <div class="{card_cls} clickable-card" {click_js} {click_tip}>
           <div class="s5-header">
             <div class="s5-icon">{icon}</div>
             <div class="s5-name">{sn}</div>
@@ -805,8 +815,9 @@ def generate_html(sector_analysis, bullish_sectors, ist_time):
               <td>{verdict_tag(st['verdict'])}</td>
             </tr>"""
 
+        anchor_id = sn.lower().replace(" ", "-")
         sector_detail_html += f"""
-        <div class="detail-block">
+        <div class="detail-block" id="sector-{anchor_id}">
           <div class="detail-header">
             <span class="detail-icon">{icon}</span>
             <h3>{sn.upper()}</h3>
@@ -966,6 +977,23 @@ body::before{{
   min-width:130px;
 }}
 .s5-card:hover{{transform:translateY(-3px);box-shadow:0 8px 20px rgba(0,217,255,.15);}}
+.clickable-card{{cursor:pointer;position:relative;}}
+.clickable-card::after{{
+  content:'↓';
+  position:absolute;bottom:6px;right:8px;
+  font-size:.55rem;color:rgba(0,217,255,.35);
+  font-weight:700;letter-spacing:.5px;
+  transition:color .2s;
+}}
+.clickable-card:hover::after{{color:rgba(0,217,255,.9);}}
+.clickable-card.bull::after{{content:'↓ Detail';}}
+.clickable-card.bear::after{{content:'↓ Avoided';}}
+@keyframes card-flash{{
+  0%{{box-shadow:0 0 0 0 rgba(0,217,255,.6)}}
+  50%{{box-shadow:0 0 0 8px rgba(0,217,255,0)}}
+  100%{{box-shadow:0 0 0 0 rgba(0,217,255,0)}}
+}}
+.card-flash{{animation:card-flash .6s ease;}}
 .s5-card.bull{{border-color:rgba(0,255,149,.2);}}
 .s5-card.bear{{border-color:rgba(255,107,157,.18);}}
 .s5-header{{display:flex;align-items:center;justify-content:center;gap:4px;margin-bottom:8px;}}
@@ -1197,7 +1225,7 @@ tbody tr:last-child td{{border-bottom:none}}
 </div>
 
 <!-- ── AVOIDED TABLE ──────────────────────────────────────────── -->
-<div class="avoided-section">
+<div class="avoided-section" id="avoided-section">
   <div class="avoided-title">🚫 Stocks Avoided — Falling Knife Detected</div>
   <p style="color:rgba(255,107,157,.6);font-size:.75rem;margin-bottom:14px">
     These stocks had RSI &lt; 40 and would have been recommended by the old script.
@@ -1241,10 +1269,17 @@ function updateClock() {{
 updateClock();
 setInterval(updateClock, 1000);
 window.addEventListener('load', function() {{
+  // RSI ring animation
   document.querySelectorAll('.rsi-svg circle:last-child').forEach(function(c) {{
     var final = c.getAttribute('stroke-dashoffset');
     c.setAttribute('stroke-dashoffset', '251.3');
     setTimeout(function() {{ c.style.transition = 'stroke-dashoffset 1.2s ease'; c.setAttribute('stroke-dashoffset', final); }}, 200);
+  }});
+  // Remove card-flash class after animation completes
+  document.querySelectorAll('.clickable-card').forEach(function(card) {{
+    card.addEventListener('animationend', function() {{
+      card.classList.remove('card-flash');
+    }});
   }});
 }});
 </script>
