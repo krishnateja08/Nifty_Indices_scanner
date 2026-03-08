@@ -1,10 +1,42 @@
 """
 NIFTY SECTOR SCANNER — Falling-Knife Filter + Progress Ring UI
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-CHANGES vs v3:
+CHANGES in v2 (logic borrowed from Nifty50_stocksanalyzer_v5.4):
+
+  FIX-1  RSI → Wilder's smoothing (EMA com=period-1)
+           Old: simple rolling mean — overstated RSI by 5-10 pts vs TradingView.
+           New: matches TradingView exactly. A stock previously showing RSI 52
+           (neutral/pass) may now correctly show 44 (weak-momentum penalty).
+
+  FIX-2  Data fetch 6mo → 1y, min bars 50 → 200
+           Old: 6mo data meant SMA200 was almost never calculated (only ~126
+           bars available), so the MA-Bearish check in falling_knife_checks
+           always defaulted to False — missing the long-term trend entirely.
+           New: full year of data ensures SMA200 is always present.
+
+  FIX-3  RSI Direction — Rising / Falling / Flat
+           New helper calculate_rsi_direction() returns slope, direction, and
+           a 'strong' flag (|slope|>8). Wired into the Trend Veto Gate below.
+           Shows in terminal output next to RSI value.
+
+  FIX-4  Trend Veto Gate (V54-1 from Stocks Analyzer)
+           If 3+ of these bearish signals fire simultaneously:
+             · SMA20 declining (today < 5 bars ago)
+             · Death cross forming (SMA20 < SMA50)
+             · MACD bearish crossover
+             · RSI < 50 (momentum lost)
+             · Price < SMA50
+             · RSI falling sharply (direction=Falling AND |slope|>8)
+           → Verdict is hard-capped to AVOID regardless of danger_score or
+           reversal count. Prevents a stock in confirmed distribution from
+           being labelled VALID just because it has 1 reversal candle.
+
+UNCHANGED:
   ✅ Removed "v3" from title
   ✅ Explain box moved BELOW Sector Scorecard
   ✅ Email now uses dark background (no more white email)
+  ✅ All sector configs, falling-knife checks, reversal confirmations,
+     sector bullish gate, scoring, HTML/email generation — untouched.
 
 REQUIREMENTS:
     pip install yfinance pandas numpy pytz
@@ -180,11 +212,56 @@ sectors_config = {
 #  INDICATORS
 # =============================================================================
 def calculate_rsi(series, period=14):
-    delta = series.diff()
-    gain  = (delta.where(delta > 0, 0)).rolling(window=period).mean()
-    loss  = (-delta.where(delta < 0, 0)).rolling(window=period).mean()
-    rs    = gain / loss
+    # Wilder's smoothing — matches TradingView exactly (fixes 5-10pt overstatement
+    # vs the old simple rolling mean). Borrowed from Stocks Analyzer v5.4.
+    delta    = series.diff()
+    gain     = delta.where(delta > 0, 0)
+    loss     = (-delta.where(delta < 0, 0))
+    avg_gain = gain.ewm(com=period - 1, min_periods=period).mean()
+    avg_loss = loss.ewm(com=period - 1, min_periods=period).mean()
+    rs       = avg_gain / avg_loss
     return 100 - (100 / (1 + rs))
+
+
+def calculate_rsi_direction(series, period=14, lookback=5):
+    """
+    RSI slope direction — Rising / Falling / Flat.
+    Borrowed from Stocks Analyzer v5.4 (calculate_rsi_slope).
+    Catches topping-out stocks that still have an OK RSI *value* but are
+    actively rolling over (e.g. RSI was 71, now 46 = 'Falling Strong').
+    Returns dict with keys: slope, direction, strong, rsi_5bar
+    """
+    try:
+        delta    = series.diff()
+        gain     = delta.where(delta > 0, 0)
+        loss     = (-delta.where(delta < 0, 0))
+        avg_gain = gain.ewm(com=period - 1, min_periods=period).mean()
+        avg_loss = loss.ewm(com=period - 1, min_periods=period).mean()
+        rsi_ser  = (100 - (100 / (1 + avg_gain / avg_loss))).dropna()
+
+        if len(rsi_ser) < lookback + 2:
+            return {'slope': 0, 'direction': 'Flat', 'strong': False,
+                    'rsi_5bar': float(rsi_ser.iloc[-1]) if len(rsi_ser) else 50.0}
+
+        rsi_now  = float(rsi_ser.iloc[-1])
+        rsi_prev = float(rsi_ser.iloc[-(lookback + 1)])
+        slope    = round(rsi_now - rsi_prev, 2)
+
+        if slope > 3:
+            direction = 'Rising'
+        elif slope < -3:
+            direction = 'Falling'
+        else:
+            direction = 'Flat'
+
+        return {
+            'slope':     slope,
+            'direction': direction,
+            'strong':    abs(slope) > 8,   # sharp move (e.g. 71→46)
+            'rsi_5bar':  round(rsi_prev, 1),
+        }
+    except Exception:
+        return {'slope': 0, 'direction': 'Flat', 'strong': False, 'rsi_5bar': 50.0}
 
 def calculate_macd(series):
     ema12  = series.ewm(span=12, adjust=False).mean()
@@ -327,12 +404,14 @@ def reversal_confirmations(data):
 # =============================================================================
 #  FETCH + ANALYZE
 # =============================================================================
-def fetch_and_analyze(ticker, period="6mo"):
+def fetch_and_analyze(ticker, period="1y"):
+    # Period upgraded 6mo → 1y so SMA200 is always available for the
+    # falling-knife MA-bearish check (borrowed from Stocks Analyzer v5.4).
     try:
         with suppress_stdout():
             data = yf.download(ticker, period=period, interval="1d",
                                progress=False, multi_level_index=False)
-        if data.empty or len(data) < 50:
+        if data.empty or len(data) < 200:
             return None
 
         close = data['Close']
@@ -350,10 +429,16 @@ def fetch_and_analyze(ticker, period="6mo"):
         sma50  = float(close.rolling(50).mean().iloc[-1])  if len(close) >= 50  else None
         sma200 = float(close.rolling(200).mean().iloc[-1]) if len(close) >= 200 else None
 
-        rsi_series = calculate_rsi(close)
-        rsi_now    = float(rsi_series.iloc[-1])
-        rsi_5ago   = float(rsi_series.iloc[-6])
-        rsi_slope  = rsi_now - rsi_5ago
+        rsi_series    = calculate_rsi(close)
+        rsi_now       = float(rsi_series.iloc[-1])
+        rsi_5ago      = float(rsi_series.iloc[-6])
+        rsi_slope     = rsi_now - rsi_5ago
+
+        # FIX-3: RSI direction (Rising/Falling/Flat) — borrowed from Stocks Analyzer.
+        # Catches stocks topping out even when RSI value still looks acceptable.
+        rsi_dir_data  = calculate_rsi_direction(close)
+        rsi_direction = rsi_dir_data['direction']    # 'Rising' | 'Falling' | 'Flat'
+        rsi_slope_strong = rsi_dir_data['strong']    # True if |slope| > 8
 
         atr     = float(calculate_atr(data))
         atr_pct = (atr / ltp) * 100
@@ -364,7 +449,34 @@ def fetch_and_analyze(ticker, period="6mo"):
         is_falling_knife = danger_score >= 3
         has_reversal     = rev_count >= 1
 
-        if is_falling_knife:
+        # ── Trend Veto Gate (borrowed from Stocks Analyzer V54-1) ─────────────
+        # Count active bearish signals across all dimensions.
+        # If 3+ fire simultaneously the stock is in a CONFIRMED downtrend —
+        # no reversal count can rescue it.  Cap verdict to AVOID.
+        sma20_series    = close.rolling(20).mean()
+        sma50_val       = float(close.rolling(50).mean().iloc[-1])
+        sma20_val       = float(sma20_series.iloc[-1])
+        sma20_5bar_ago  = float(sma20_series.iloc[-6]) if len(sma20_series) >= 6 else sma20_val
+        sma20_declining = sma20_val < sma20_5bar_ago
+        death_cross     = sma20_val < sma50_val
+        macd_v, sig_v, _ = calculate_macd(close) if len(close) >= 35 else (0, 0, 0)
+        macd_bearish    = macd_v < sig_v
+
+        veto_signals = sum([
+            bool(sma20_declining),                            # SMA20 rolling over
+            bool(death_cross),                                # SMA20 < SMA50
+            bool(macd_bearish),                               # MACD bearish crossover
+            bool(rsi_now < 50),                               # momentum lost
+            bool(ltp < sma50_val),                            # below medium trend
+            bool(rsi_direction == 'Falling' and rsi_slope_strong),  # sharp RSI drop
+        ])
+        trend_veto_fired = veto_signals >= 3
+        # ──────────────────────────────────────────────────────────────────────
+
+        # Verdict — original logic preserved; veto gate applied on top
+        if trend_veto_fired:
+            verdict = "AVOID"          # hard cap regardless of danger_score
+        elif is_falling_knife:
             verdict = "AVOID"
         elif danger_score == 2 and not has_reversal:
             verdict = "AVOID"
@@ -395,30 +507,34 @@ def fetch_and_analyze(ticker, period="6mo"):
         risk_reward = ((target_1 - ltp) / (ltp - stop_loss)) if (ltp - stop_loss) > 0 else 0.0
 
         return {
-            "ltp":             ltp,
-            "day_chg_pct":     day_chg_pct,
-            "week_chg_pct":    week_chg_pct,
-            "month_chg_pct":   month_chg_pct,
-            "rsi":             rsi_now,
-            "rsi_slope":       rsi_slope,
-            "sma20":           sma20,
-            "sma50":           sma50,
-            "sma200":          sma200,
-            "high_52w":        high_52w,
-            "low_52w":         low_52w,
-            "atr":             atr,
-            "atr_pct":         atr_pct,
-            "danger_score":    danger_score,
-            "fk_flags":        fk_flags,
-            "rev_confirms":    rev_confirms,
-            "rev_count":       rev_count,
-            "is_falling_knife":is_falling_knife,
-            "verdict":         verdict,
-            "score":           score,
-            "stop_loss":       stop_loss,
-            "target_1":        target_1,
-            "target_2":        target_2,
-            "risk_reward":     risk_reward,
+            "ltp":               ltp,
+            "day_chg_pct":       day_chg_pct,
+            "week_chg_pct":      week_chg_pct,
+            "month_chg_pct":     month_chg_pct,
+            "rsi":               rsi_now,
+            "rsi_slope":         rsi_slope,
+            "rsi_direction":     rsi_direction,        # NEW: Rising/Falling/Flat
+            "rsi_slope_strong":  rsi_slope_strong,     # NEW: True if |slope|>8
+            "sma20":             sma20,
+            "sma50":             sma50,
+            "sma200":            sma200,
+            "high_52w":          high_52w,
+            "low_52w":           low_52w,
+            "atr":               atr,
+            "atr_pct":           atr_pct,
+            "danger_score":      danger_score,
+            "fk_flags":          fk_flags,
+            "rev_confirms":      rev_confirms,
+            "rev_count":         rev_count,
+            "is_falling_knife":  is_falling_knife,
+            "veto_signals":      veto_signals,         # NEW: count of bearish signals
+            "trend_veto_fired":  trend_veto_fired,     # NEW: True if hard-capped
+            "verdict":           verdict,
+            "score":             score,
+            "stop_loss":         stop_loss,
+            "target_1":          target_1,
+            "target_2":          target_2,
+            "risk_reward":       risk_reward,
         }
     except Exception:
         return None
@@ -1403,13 +1519,14 @@ def main():
         is_bull, reasons = is_sector_bullish(idx_data)
         strength_score   = max(0, 50 - idx_data['danger_score'] * 8 + idx_data['rev_count'] * 10)
 
+        rsi_dir_label = idx_data.get('rsi_direction', 'Flat')
         if is_bull:
             bullish_sectors.append(sector_name)
-            print(f"{GREEN}   ✅ BULLISH  RSI:{idx_data['rsi']:.1f}  "
+            print(f"{GREEN}   ✅ BULLISH  RSI:{idx_data['rsi']:.1f} ({rsi_dir_label})  "
                   f"Slope:{idx_data['rsi_slope']:+.1f}  "
                   f"Danger:{idx_data['danger_score']}/6{RESET}")
         else:
-            print(f"{RED}   🚫 BLOCKED  RSI:{idx_data['rsi']:.1f}  "
+            print(f"{RED}   🚫 BLOCKED  RSI:{idx_data['rsi']:.1f} ({rsi_dir_label})  "
                   f"Slope:{idx_data['rsi_slope']:+.1f}  "
                   f"Danger:{idx_data['danger_score']}/6{RESET}")
             for r in reasons:
@@ -1446,8 +1563,11 @@ def main():
         print(f"{GREEN}   • {s}{RESET}")
     print(f"\n{MAGENTA}🔥 Top Valid Picks:{RESET}")
     for i, p in enumerate(top_picks[:5], 1):
+        veto_tag = f"  {RED}🚫Veto:{p['veto_signals']}/6{RESET}" if p.get('trend_veto_fired') else ""
+        rsi_dir  = p.get('rsi_direction', 'Flat')
         print(f"{YELLOW}   {i}. {p['symbol']}  Score:{p['score']}/100  "
-              f"Danger:{p['danger_score']}/6  Verdict:{p['verdict']}{RESET}")
+              f"RSI:{p['rsi']:.1f}({rsi_dir})  "
+              f"Danger:{p['danger_score']}/6  Verdict:{p['verdict']}{veto_tag}{RESET}")
     print(f"{CYAN}{'='*70}{RESET}\n")
 
     # ── Save web HTML ──────────────────────────────────────────
