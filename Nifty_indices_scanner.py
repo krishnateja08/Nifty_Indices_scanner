@@ -953,7 +953,7 @@ body::before{{
 }}
 .s5-grid{{
   display:grid;
-  grid-template-columns:repeat(9,1fr);
+  grid-template-columns:repeat(auto-fill,minmax(140px,1fr));
   gap:8px;
   overflow-x:auto;
 }}
@@ -1051,13 +1051,47 @@ tbody tr:last-child td{{border-bottom:none}}
   border-top:1px solid rgba(0,217,255,.1);
   font-size:.75rem;color:#4a7a78;
 }}
+/* ── TABLET (≤900px) ─────────────────────────────────────── */
+@media(max-width:900px){{
+  .s5-grid{{grid-template-columns:repeat(5,1fr);}}
+  table{{min-width:700px}}
+}}
+/* ── MOBILE LARGE (≤640px) ───────────────────────────────── */
 @media(max-width:640px){{
-  .header{{flex-direction:column;align-items:flex-start}}
-  .s5-grid{{grid-template-columns:repeat(3,1fr)}}
-  .explain-wrap{{flex-direction:column}}
-  body{{padding:10px}}
-  .section{{padding:16px 14px}}
-  .summary{{padding:14px}}
+  body{{padding:8px}}
+  .container{{border-radius:10px}}
+  .header{{flex-direction:column;align-items:flex-start;padding:16px}}
+  .header h1{{font-size:1.1rem}}
+  #live-clock{{width:100%;text-align:center;font-size:.75rem;padding:8px 14px}}
+  .summary{{padding:10px;gap:8px}}
+  .stat{{flex:1 1 90px;padding:10px 8px}}
+  .stat .num{{font-size:1.4rem}}
+  .s5-grid{{grid-template-columns:repeat(2,1fr);gap:6px}}
+  .s5-card{{min-width:0;padding:10px 6px}}
+  .s5-name{{font-size:.55rem}}
+  .s5-ring-wrap{{width:60px;height:60px}}
+  .rsi-svg{{width:60px;height:60px}}
+  .s5-rsi-num{{font-size:.8rem}}
+  .explain-wrap{{flex-direction:column;padding:12px 12px 4px}}
+  .explain-panel{{flex:1 1 100%}}
+  .section{{padding:12px 10px}}
+  .section-title{{font-size:.85rem;padding:8px 12px}}
+  .avoided-section{{padding:12px 10px}}
+  .disclaimer{{margin:8px 10px 16px;font-size:.7rem}}
+  .footer{{font-size:.68rem;padding:12px}}
+  .detail-header{{padding:10px 12px}}
+  .detail-header h3{{font-size:.82rem}}
+  .detail-meta{{font-size:.7rem}}
+  th{{font-size:.62rem;padding:8px 7px}}
+  td{{padding:7px 7px;font-size:.72rem}}
+  .vtag{{font-size:.6rem;padding:3px 7px}}
+  .warn-chip,.rev-chip{{font-size:.58rem;padding:2px 5px}}
+}}
+/* ── MOBILE SMALL (≤400px) ───────────────────────────────── */
+@media(max-width:400px){{
+  .s5-grid{{grid-template-columns:repeat(2,1fr)}}
+  .stat{{flex:1 1 80px}}
+  .stat .num{{font-size:1.2rem}}
 }}
 </style>
 </head>
