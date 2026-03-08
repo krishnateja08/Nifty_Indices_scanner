@@ -118,7 +118,7 @@ body::before{
 }
 .s5-grid{
   display:grid;
-  grid-template-columns:repeat(9,1fr);
+  grid-template-columns:repeat(auto-fill,minmax(140px,1fr));
   gap:8px;
   overflow-x:auto;
 }
@@ -131,6 +131,23 @@ body::before{
   min-width:130px;
 }
 .s5-card:hover{transform:translateY(-3px);box-shadow:0 8px 20px rgba(0,217,255,.15);}
+.clickable-card{cursor:pointer;position:relative;}
+.clickable-card::after{
+  content:'↓';
+  position:absolute;bottom:6px;right:8px;
+  font-size:.55rem;color:rgba(0,217,255,.35);
+  font-weight:700;letter-spacing:.5px;
+  transition:color .2s;
+}
+.clickable-card:hover::after{color:rgba(0,217,255,.9);}
+.clickable-card.bull::after{content:'↓ Detail';}
+.clickable-card.bear::after{content:'↓ Avoided';}
+@keyframes card-flash{
+  0%{box-shadow:0 0 0 0 rgba(0,217,255,.6)}
+  50%{box-shadow:0 0 0 8px rgba(0,217,255,0)}
+  100%{box-shadow:0 0 0 0 rgba(0,217,255,0)}
+}
+.card-flash{animation:card-flash .6s ease;}
 .s5-card.bull{border-color:rgba(0,255,149,.2);}
 .s5-card.bear{border-color:rgba(255,107,157,.18);}
 .s5-header{display:flex;align-items:center;justify-content:center;gap:4px;margin-bottom:8px;}
@@ -216,13 +233,47 @@ tbody tr:last-child td{border-bottom:none}
   border-top:1px solid rgba(0,217,255,.1);
   font-size:.75rem;color:#4a7a78;
 }
+/* ── TABLET (≤900px) ─────────────────────────────────────── */
+@media(max-width:900px){
+  .s5-grid{grid-template-columns:repeat(5,1fr);}
+  table{min-width:700px}
+}
+/* ── MOBILE LARGE (≤640px) ───────────────────────────────── */
 @media(max-width:640px){
-  .header{flex-direction:column;align-items:flex-start}
-  .s5-grid{grid-template-columns:repeat(3,1fr)}
-  .explain-wrap{flex-direction:column}
-  body{padding:10px}
-  .section{padding:16px 14px}
-  .summary{padding:14px}
+  body{padding:8px}
+  .container{border-radius:10px}
+  .header{flex-direction:column;align-items:flex-start;padding:16px}
+  .header h1{font-size:1.1rem}
+  #live-clock{width:100%;text-align:center;font-size:.75rem;padding:8px 14px}
+  .summary{padding:10px;gap:8px}
+  .stat{flex:1 1 90px;padding:10px 8px}
+  .stat .num{font-size:1.4rem}
+  .s5-grid{grid-template-columns:repeat(2,1fr);gap:6px}
+  .s5-card{min-width:0;padding:10px 6px}
+  .s5-name{font-size:.55rem}
+  .s5-ring-wrap{width:60px;height:60px}
+  .rsi-svg{width:60px;height:60px}
+  .s5-rsi-num{font-size:.8rem}
+  .explain-wrap{flex-direction:column;padding:12px 12px 4px}
+  .explain-panel{flex:1 1 100%}
+  .section{padding:12px 10px}
+  .section-title{font-size:.85rem;padding:8px 12px}
+  .avoided-section{padding:12px 10px}
+  .disclaimer{margin:8px 10px 16px;font-size:.7rem}
+  .footer{font-size:.68rem;padding:12px}
+  .detail-header{padding:10px 12px}
+  .detail-header h3{font-size:.82rem}
+  .detail-meta{font-size:.7rem}
+  th{font-size:.62rem;padding:8px 7px}
+  td{padding:7px 7px;font-size:.72rem}
+  .vtag{font-size:.6rem;padding:3px 7px}
+  .warn-chip,.rev-chip{font-size:.58rem;padding:2px 5px}
+}
+/* ── MOBILE SMALL (≤400px) ───────────────────────────────── */
+@media(max-width:400px){
+  .s5-grid{grid-template-columns:repeat(2,1fr)}
+  .stat{flex:1 1 80px}
+  .stat .num{font-size:1.2rem}
 }
 </style>
 </head>
@@ -235,7 +286,7 @@ tbody tr:last-child td{border-bottom:none}
     <h1>🎯 Nifty Sector Scanner</h1>
     <div class="sub">
       Falling-Knife Filter · 6-Point Danger Check · Reversal Confirmation<br>
-      Report generated: 08 Mar 2026 08:03 AM IST
+      Report generated: 08 Mar 2026 08:08 AM IST
     </div>
   </div>
   <div id="live-clock">🕐 Loading...</div>
@@ -274,7 +325,7 @@ tbody tr:last-child td{border-bottom:none}
   <div class="section-title">🏆 Sector Scorecard</div>
   <div style="overflow-x:auto;">
     <div class="s5-grid">
-        <div class="s5-card bear">
+        <div class="s5-card bear clickable-card" onclick="document.getElementById('avoided-section').scrollIntoView({behavior:'smooth',block:'start'})" title="Click to see blocked stocks ↓">
           <div class="s5-header">
             <div class="s5-icon">🏦</div>
             <div class="s5-name">Nifty Bank</div>
@@ -318,7 +369,7 @@ tbody tr:last-child td{border-bottom:none}
             </div>
           </div>
         </div>
-        <div class="s5-card bull">
+        <div class="s5-card bull clickable-card" onclick="document.getElementById('sector-nifty-it').scrollIntoView({behavior:'smooth',block:'start'});this.classList.add('card-flash')" title="Click to jump to sector detail ↓">
           <div class="s5-header">
             <div class="s5-icon">💻</div>
             <div class="s5-name">Nifty IT</div>
@@ -362,7 +413,7 @@ tbody tr:last-child td{border-bottom:none}
             </div>
           </div>
         </div>
-        <div class="s5-card bull">
+        <div class="s5-card bull clickable-card" onclick="document.getElementById('sector-nifty-pharma').scrollIntoView({behavior:'smooth',block:'start'});this.classList.add('card-flash')" title="Click to jump to sector detail ↓">
           <div class="s5-header">
             <div class="s5-icon">💊</div>
             <div class="s5-name">Nifty Pharma</div>
@@ -406,7 +457,7 @@ tbody tr:last-child td{border-bottom:none}
             </div>
           </div>
         </div>
-        <div class="s5-card bear">
+        <div class="s5-card bear clickable-card" onclick="document.getElementById('avoided-section').scrollIntoView({behavior:'smooth',block:'start'})" title="Click to see blocked stocks ↓">
           <div class="s5-header">
             <div class="s5-icon">🏢</div>
             <div class="s5-name">Nifty Realty</div>
@@ -450,7 +501,7 @@ tbody tr:last-child td{border-bottom:none}
             </div>
           </div>
         </div>
-        <div class="s5-card bear">
+        <div class="s5-card bear clickable-card" onclick="document.getElementById('avoided-section').scrollIntoView({behavior:'smooth',block:'start'})" title="Click to see blocked stocks ↓">
           <div class="s5-header">
             <div class="s5-icon">🛒</div>
             <div class="s5-name">Nifty FMCG</div>
@@ -494,7 +545,7 @@ tbody tr:last-child td{border-bottom:none}
             </div>
           </div>
         </div>
-        <div class="s5-card bull">
+        <div class="s5-card bull clickable-card" onclick="document.getElementById('sector-nifty-metal').scrollIntoView({behavior:'smooth',block:'start'});this.classList.add('card-flash')" title="Click to jump to sector detail ↓">
           <div class="s5-header">
             <div class="s5-icon">⚙️</div>
             <div class="s5-name">Nifty Metal</div>
@@ -538,7 +589,7 @@ tbody tr:last-child td{border-bottom:none}
             </div>
           </div>
         </div>
-        <div class="s5-card bear">
+        <div class="s5-card bear clickable-card" onclick="document.getElementById('avoided-section').scrollIntoView({behavior:'smooth',block:'start'})" title="Click to see blocked stocks ↓">
           <div class="s5-header">
             <div class="s5-icon">🚗</div>
             <div class="s5-name">Nifty Auto</div>
@@ -582,7 +633,7 @@ tbody tr:last-child td{border-bottom:none}
             </div>
           </div>
         </div>
-        <div class="s5-card bull">
+        <div class="s5-card bull clickable-card" onclick="document.getElementById('sector-nifty-energy').scrollIntoView({behavior:'smooth',block:'start'});this.classList.add('card-flash')" title="Click to jump to sector detail ↓">
           <div class="s5-header">
             <div class="s5-icon">⚡</div>
             <div class="s5-name">Nifty Energy</div>
@@ -626,7 +677,7 @@ tbody tr:last-child td{border-bottom:none}
             </div>
           </div>
         </div>
-        <div class="s5-card bear">
+        <div class="s5-card bear clickable-card" onclick="document.getElementById('avoided-section').scrollIntoView({behavior:'smooth',block:'start'})" title="Click to see blocked stocks ↓">
           <div class="s5-header">
             <div class="s5-icon">📺</div>
             <div class="s5-name">Nifty Consumer Durables</div>
@@ -918,7 +969,7 @@ tbody tr:last-child td{border-bottom:none}
 <div class="section">
   <div class="section-title">📊 Bullish Sector Detail</div>
   
-        <div class="detail-block">
+        <div class="detail-block" id="sector-nifty-it">
           <div class="detail-header">
             <span class="detail-icon">💻</span>
             <h3>NIFTY IT</h3>
@@ -1076,7 +1127,7 @@ tbody tr:last-child td{border-bottom:none}
             </table>
           </div>
         </div>
-        <div class="detail-block">
+        <div class="detail-block" id="sector-nifty-pharma">
           <div class="detail-header">
             <span class="detail-icon">💊</span>
             <h3>NIFTY PHARMA</h3>
@@ -1234,7 +1285,7 @@ tbody tr:last-child td{border-bottom:none}
             </table>
           </div>
         </div>
-        <div class="detail-block">
+        <div class="detail-block" id="sector-nifty-metal">
           <div class="detail-header">
             <span class="detail-icon">⚙️</span>
             <h3>NIFTY METAL</h3>
@@ -1392,7 +1443,7 @@ tbody tr:last-child td{border-bottom:none}
             </table>
           </div>
         </div>
-        <div class="detail-block">
+        <div class="detail-block" id="sector-nifty-energy">
           <div class="detail-header">
             <span class="detail-icon">⚡</span>
             <h3>NIFTY ENERGY</h3>
@@ -1553,7 +1604,7 @@ tbody tr:last-child td{border-bottom:none}
 </div>
 
 <!-- ── AVOIDED TABLE ──────────────────────────────────────────── -->
-<div class="avoided-section">
+<div class="avoided-section" id="avoided-section">
   <div class="avoided-title">🚫 Stocks Avoided — Falling Knife Detected</div>
   <p style="color:rgba(255,107,157,.6);font-size:.75rem;margin-bottom:14px">
     These stocks had RSI &lt; 40 and would have been recommended by the old script.
@@ -1730,10 +1781,17 @@ function updateClock() {
 updateClock();
 setInterval(updateClock, 1000);
 window.addEventListener('load', function() {
+  // RSI ring animation
   document.querySelectorAll('.rsi-svg circle:last-child').forEach(function(c) {
     var final = c.getAttribute('stroke-dashoffset');
     c.setAttribute('stroke-dashoffset', '251.3');
     setTimeout(function() { c.style.transition = 'stroke-dashoffset 1.2s ease'; c.setAttribute('stroke-dashoffset', final); }, 200);
+  });
+  // Remove card-flash class after animation completes
+  document.querySelectorAll('.clickable-card').forEach(function(card) {
+    card.addEventListener('animationend', function() {
+      card.classList.remove('card-flash');
+    });
   });
 });
 </script>
