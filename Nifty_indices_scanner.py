@@ -720,7 +720,7 @@ def generate_html(sector_analysis, bullish_sectors, ist_time):
         rr  = s['risk_reward']
         rrc = "#00ff95" if rr >= 2 else ("#ffa502" if rr >= 1 else "#ff6b9d")
         buy_rows += f"""
-        <tr class="{'top-row' if s['score']>=60 else ''}">
+        <tr class="{'top-row' if s['score']>=60 else ''}" data-verdict="{s['verdict']}" data-symbol="{s['symbol']}" data-rank="{i}">
           <td style="color:#2a5070;font-weight:700">{i}</td>
           <td>
             <div style="font-weight:800;color:#e0f2f1">{s['symbol']}</div>
@@ -892,12 +892,27 @@ body::before{{
   border-radius:10px;padding:14px 16px;
   text-align:center;
   border-left:3px solid var(--nc);
-  transition:transform .2s;
+  transition:transform .2s,box-shadow .2s;
+  cursor:pointer;position:relative;
 }}
-.stat:hover{{transform:translateY(-2px)}}
+.stat:hover{{transform:translateY(-2px);box-shadow:0 4px 14px rgba(0,217,255,.25)}}
+.stat:active{{transform:translateY(0)}}
 .stat .num{{font-size:1.9rem;font-weight:800;color:var(--nc);line-height:1}}
 .stat .lbl{{font-size:.65rem;color:#4a7a78;text-transform:uppercase;
   letter-spacing:.8px;margin-top:5px}}
+.stat.stat-active{{box-shadow:0 0 0 2px var(--nc),0 4px 14px rgba(0,217,255,.35)}}
+.row-hidden{{display:none !important;}}
+.filter-banner{{
+  display:flex;align-items:center;gap:10px;flex-wrap:wrap;
+  margin:0 28px 18px;padding:10px 16px;
+  background:rgba(0,217,255,.1);border:1px solid rgba(0,217,255,.3);
+  border-radius:8px;font-size:.78rem;color:#c6faff;
+}}
+.filter-banner .fb-clear{{
+  cursor:pointer;color:#ff6b9d;font-weight:700;text-decoration:underline;
+  margin-left:auto;
+}}
+.filter-banner .fb-clear:hover{{color:#ff9dbe;}}
 .explain-wrap{{
   display:flex;gap:14px;flex-wrap:wrap;
   padding:20px 28px 4px;
@@ -1122,35 +1137,36 @@ tbody tr:last-child td{{border-bottom:none}}
 </div>
 
 <!-- ── SUMMARY STRIP ──────────────────────────────────────────── -->
-<div class="summary">
-  <div class="stat">
+<div class="summary" id="summary-strip">
+  <div class="stat" onclick="filterCard('all-sectors', this)" title="Click to see all sectors">
     <div class="num">{total_sectors}</div>
     <div class="lbl">Sectors Scanned</div>
   </div>
-  <div class="stat" style="border-color:var(--ng)">
+  <div class="stat" style="border-color:var(--ng)" onclick="filterCard('bullish', this)" title="Click to see only bullish sectors">
     <div class="num" style="color:var(--ng)">{bullish_count}</div>
     <div class="lbl">Truly Bullish</div>
   </div>
-  <div class="stat" style="border-color:var(--nc)">
+  <div class="stat" style="border-color:var(--nc)" onclick="filterCard('valid-buys', this)" title="Click to jump to valid buys">
     <div class="num" style="color:var(--nc)">{len(top_picks)}</div>
     <div class="lbl">Valid Buys</div>
   </div>
-  <div class="stat" style="border-color:var(--no)">
+  <div class="stat" style="border-color:var(--no)" onclick="filterCard('strong-watch', this)" title="Click to see only Strong Watch picks">
     <div class="num" style="color:var(--no)">{len(strong_buys)}</div>
     <div class="lbl">Strong Watch</div>
   </div>
-  <div class="stat" style="border-color:var(--nr)">
+  <div class="stat" style="border-color:var(--nr)" onclick="filterCard('avoided', this)" title="Click to jump to avoided stocks">
     <div class="num" style="color:var(--nr)">{len(all_avoided)}</div>
     <div class="lbl">Avoided (Knife)</div>
   </div>
-  <div class="stat" style="border-color:var(--nc)">
-    <div class="num" style="color:var(--nc);font-size:1.1rem;padding-top:8px">{top_symbol}</div>
+  <div class="stat" style="border-color:var(--nc)" onclick="filterCard('top-pick', this)" title="Click to see only the top pick">
+    <div class="num" id="top-pick-symbol" style="color:var(--nc);font-size:1.1rem;padding-top:8px">{top_symbol}</div>
     <div class="lbl">Top Pick</div>
   </div>
 </div>
+<div id="filter-banner-slot"></div>
 
 <!-- ── SECTOR SCORECARD ────────────────────────────────────────── -->
-<div class="section">
+<div class="section" id="scorecard-section">
   <div class="section-title">🏆 Sector Scorecard</div>
   <div style="overflow-x:auto;">
     <div class="s5-grid">{sector_cards_html}</div>
@@ -1184,7 +1200,7 @@ tbody tr:last-child td{{border-bottom:none}}
 </div>
 
 <!-- ── BUY TABLE ──────────────────────────────────────────────── -->
-<div class="section">
+<div class="section" id="buy-table-section">
   <div class="section-title">🟢 Top Valid Buy Recommendations — Knife-Filtered</div>
   <div class="tbl-wrap">
     <table>
@@ -1193,7 +1209,7 @@ tbody tr:last-child td{{border-bottom:none}}
         <th>RSI (slope)</th><th>Score</th><th>⚠ Danger</th><th>✅ Reversals</th>
         <th>Target</th><th>Stop Loss</th><th>R:R</th><th>Verdict</th>
       </tr></thead>
-      <tbody>{buy_rows if buy_rows else
+      <tbody id="buy-tbody">{buy_rows if buy_rows else
         '<tr><td colspan="13" style="text-align:center;color:#2a5070;padding:24px">No valid buys — market in downtrend. All falling knives blocked.</td></tr>'
       }</tbody>
     </table>
@@ -1220,7 +1236,7 @@ tbody tr:last-child td{{border-bottom:none}}
         <th>Stock</th><th>LTP</th><th>Day%</th><th>Week%</th>
         <th>RSI</th><th>Danger</th><th>Reasons Blocked</th>
       </tr></thead>
-      <tbody>{avoided_rows if avoided_rows else
+      <tbody id="avoided-tbody">{avoided_rows if avoided_rows else
         '<tr><td colspan="7" style="text-align:center;color:#2a5070;padding:16px">No stocks blocked this session.</td></tr>'
       }</tbody>
     </table>
@@ -1265,6 +1281,76 @@ window.addEventListener('load', function() {{
     }});
   }});
 }});
+
+// ── SUMMARY-CARD FILTERING ──────────────────────────────────────
+function clearFilters() {{
+  document.querySelectorAll('#buy-tbody tr').forEach(function(r) {{ r.classList.remove('row-hidden'); }});
+  document.querySelectorAll('#avoided-tbody tr').forEach(function(r) {{ r.classList.remove('row-hidden'); }});
+  document.querySelectorAll('.s5-card').forEach(function(c) {{ c.classList.remove('row-hidden'); }});
+  document.querySelectorAll('.stat').forEach(function(s) {{ s.classList.remove('stat-active'); }});
+  var slot = document.getElementById('filter-banner-slot');
+  if (slot) slot.innerHTML = '';
+}}
+
+function showFilterBanner(text) {{
+  var slot = document.getElementById('filter-banner-slot');
+  if (!slot) return;
+  slot.innerHTML = '<div class="filter-banner">🔎 Showing: <strong>' + text + '</strong>' +
+    '<span class="fb-clear" onclick="clearFilters()">✕ Clear filter</span></div>';
+}}
+
+function flashScrollTo(el) {{
+  if (!el) return;
+  el.scrollIntoView({{behavior:'smooth', block:'start'}});
+  el.classList.add('card-flash');
+  setTimeout(function() {{ el.classList.remove('card-flash'); }}, 700);
+}}
+
+function filterCard(type, cardEl) {{
+  clearFilters();
+  if (cardEl) cardEl.classList.add('stat-active');
+
+  var target = null, label = '';
+
+  if (type === 'all-sectors') {{
+    target = document.getElementById('scorecard-section');
+    label  = 'All Sectors';
+
+  }} else if (type === 'bullish') {{
+    document.querySelectorAll('.s5-card.bear').forEach(function(c) {{ c.classList.add('row-hidden'); }});
+    target = document.getElementById('scorecard-section');
+    label  = 'Truly Bullish Sectors';
+
+  }} else if (type === 'valid-buys') {{
+    target = document.getElementById('buy-table-section');
+    label  = 'All Valid Buys';
+
+  }} else if (type === 'strong-watch') {{
+    document.querySelectorAll('#buy-tbody tr').forEach(function(r) {{
+      if (r.getAttribute('data-verdict') !== 'STRONG WATCH') r.classList.add('row-hidden');
+    }});
+    target = document.getElementById('buy-table-section');
+    label  = 'Strong Watch Picks';
+
+  }} else if (type === 'avoided') {{
+    target = document.getElementById('avoided-section');
+    label  = 'Avoided (Falling Knife)';
+
+  }} else if (type === 'top-pick') {{
+    var topEl  = document.getElementById('top-pick-symbol');
+    var topSym = topEl ? topEl.textContent.trim() : '';
+    document.querySelectorAll('#buy-tbody tr').forEach(function(r) {{
+      if (r.getAttribute('data-symbol') !== topSym) r.classList.add('row-hidden');
+    }});
+    target = document.getElementById('buy-table-section');
+    label  = 'Top Pick — ' + (topSym || 'None');
+  }}
+
+  if (target) {{
+    showFilterBanner(label);
+    flashScrollTo(target);
+  }}
+}}
 </script>
 </body></html>"""
     return html
