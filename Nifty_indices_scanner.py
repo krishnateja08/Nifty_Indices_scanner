@@ -31,6 +31,20 @@ CHANGES in v2 (logic borrowed from Nifty50_stocksanalyzer_v5.4):
            reversal count. Prevents a stock in confirmed distribution from
            being labelled VALID just because it has 1 reversal candle.
 
+  FIX-5  Sector "BULLISH" gate corrected to mean actual uptrend
+           Old is_sector_bullish() was mean-reversion logic borrowed from
+           the stock-picker: RSI<50 ("not overbought"), danger_score<=2
+           ("not falling apart"), and ANY single reversal confirmation
+           (even a weak one like "SMA20 Stabilizing") — pass 2-of-3 and
+           the sector got a green BULLISH badge, even while its chart was
+           in a clear downtrend (e.g. Bank Nifty at RSI 50.4, red week,
+           price rejected from its recent high).
+           New logic requires genuine uptrend evidence on ALL THREE legs:
+             · RSI > 50 AND rising (bullish momentum, not just "not high")
+             · Danger score <= 1/6 (stricter risk bar)
+             · Week change > 0% (price actually up, not just "not down much")
+           A sector must pass all three (not 2-of-3) to be badged BULLISH.
+
 UNCHANGED:
   ✅ Removed "v3" from title
   ✅ Explain box moved BELOW Sector Scorecard
@@ -527,6 +541,14 @@ def fetch_and_analyze(ticker, period="1y"):
 #  SECTOR BULLISH CHECK
 # =============================================================================
 def is_sector_bullish(idx_data):
+    # FIX-5  Real uptrend gate (replaces old "not overbought / not falling
+    #        apart" mean-reversion gate that borrowed from the stock-picker).
+    #        Old logic could badge a sector BULLISH just because it wasn't
+    #        in freefall (RSI<50 "not overbought", danger<=2, ANY single
+    #        reversal candle) — that let flat/rolling-over sectors like a
+    #        50 RSI, red-week Bank Nifty pass 2-of-3 despite no actual
+    #        uptrend. New logic requires genuine bullish evidence on ALL
+    #        three legs: momentum, risk, and price action.
     if not idx_data:
         return False, []
 
@@ -535,27 +557,31 @@ def is_sector_bullish(idx_data):
 
     rsi       = idx_data['rsi']
     rsi_slope = idx_data['rsi_slope']
-    if rsi < 50 and rsi_slope > -2:
-        passes += 1
-        reasons.append(f"✅ RSI {rsi:.1f} — not overbought & slope OK")
-    else:
-        reasons.append(f"❌ RSI {rsi:.1f} slope {rsi_slope:+.1f} — trending down")
 
-    if idx_data['danger_score'] <= 2:
+    # 1) Momentum must be ABOVE 50 and rising — not just "not overbought"
+    if rsi > 50 and rsi_slope > 0:
         passes += 1
-        reasons.append(f"✅ Danger Score {idx_data['danger_score']}/6 — acceptable")
+        reasons.append(f"✅ RSI {rsi:.1f} rising (+{rsi_slope:.1f}) — bullish momentum")
     else:
-        reasons.append(f"❌ Danger Score {idx_data['danger_score']}/6 — falling knife")
+        reasons.append(f"❌ RSI {rsi:.1f} slope {rsi_slope:+.1f} — momentum not bullish")
 
+    # 2) Danger score must be genuinely low (stricter than before)
+    if idx_data['danger_score'] <= 1:
+        passes += 1
+        reasons.append(f"✅ Danger Score {idx_data['danger_score']}/6 — clean")
+    else:
+        reasons.append(f"❌ Danger Score {idx_data['danger_score']}/6 — too risky")
+
+    # 3) Price must actually be UP this week — not merely "not down much"
     wk = idx_data['week_chg_pct']
-    if idx_data['rev_count'] >= 1 or (wk and wk > 0.5):
+    if wk and wk > 0:
         passes += 1
-        conf_str = ", ".join(idx_data['rev_confirms'][:2]) if idx_data['rev_confirms'] else f"week +{wk:.1f}%"
-        reasons.append(f"✅ Reversal evidence: {conf_str}")
+        reasons.append(f"✅ Week +{wk:.1f}% — actual uptrend")
     else:
-        reasons.append(f"❌ No reversal confirmation — week {wk:+.1f}%")
+        reasons.append(f"❌ Week {wk:+.1f}% — not confirmed uptrend")
 
-    return passes >= 2, reasons
+    # Require ALL 3 legs, not a 2-of-3 majority vote
+    return passes == 3, reasons
 
 
 # =============================================================================
