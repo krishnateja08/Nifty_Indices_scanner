@@ -639,7 +639,6 @@ def _analyze_ohlcv(data):
         death_cross     = sma20_val < sma50_val
         macd_v, sig_v, _ = calculate_macd(close) if len(close) >= 35 else (0, 0, 0)
         macd_bearish    = macd_v < sig_v
-
         veto_signals = sum([
             bool(sma20_declining),                            # SMA20 rolling over
             bool(death_cross),                                # SMA20 < SMA50
@@ -684,6 +683,14 @@ def _analyze_ohlcv(data):
         target_2    = ltp + (atr * 3.5)
         risk_reward = ((target_1 - ltp) / (ltp - stop_loss)) if (ltp - stop_loss) > 0 else 0.0
 
+        # FIX-14: sparkline + return-series data for the new dashboard
+        # widgets (Sector Strength Timeline sparklines, Index Correlation
+        # Panel). Cheap to compute since `close` is already in memory —
+        # avoids a second download just for these features.
+        sparkline   = [round(float(v), 2) for v in close.tail(6).tolist()]
+        returns_30d = close.pct_change().dropna().tail(30)
+        returns_ser = [round(float(v), 6) for v in returns_30d.tolist()]
+
         return {
             "ltp":               ltp,
             "day_chg_pct":       day_chg_pct,
@@ -706,6 +713,9 @@ def _analyze_ohlcv(data):
             "target_1":          target_1,
             "target_2":          target_2,
             "risk_reward":       risk_reward,
+            "sparkline":         sparkline,
+            "returns_series":    returns_ser,
+            "macd_hist":         float(macd_v - sig_v),   # FIX-15: for Sector Alerts MACD-flip detection
         }
     except Exception:
         return None
@@ -854,6 +864,66 @@ def is_sector_bullish(idx_data):
 
 
 # =============================================================================
+#  SUGGESTION #7: INDEX CORRELATION PANEL
+# =============================================================================
+# Benchmark tickers to correlate every sector against. FINNIFTY has no
+# ^ ticker on Yahoo's free API (same gap as the six synthetic sectors —
+# see FIX-10), so it's built the same way: NIFTY_FIN_SERVICE.NS is the
+# actual tradeable index-fund/ETF-underlying ticker and carries real
+# daily history, unlike the bare ^CNXFIN benchmark symbol.
+CORRELATION_BENCHMARKS = {
+    "NIFTY 50":   "^NSEI",
+    "BANK NIFTY": "^NSEBANK",
+    "FIN NIFTY":  "NIFTY_FIN_SERVICE.NS",
+}
+
+
+def fetch_benchmark_returns():
+    """Fetch each benchmark's daily-return series (last 30 sessions) once
+    per run. Returns {benchmark_name: [returns]} — benchmarks that fail to
+    fetch are simply omitted, so the panel degrades gracefully rather than
+    blocking the whole report."""
+    out = {}
+    for name, ticker in CORRELATION_BENCHMARKS.items():
+        data = _download_with_retry(ticker, period="1y", interval="1d")
+        time.sleep(0.4)
+        if data is None or data.empty:
+            continue
+        data = data[~data['Close'].isna()]
+        if len(data) < 30:
+            continue
+        rets = data['Close'].pct_change().dropna().tail(30)
+        out[name] = [round(float(v), 6) for v in rets.tolist()]
+    return out
+
+
+def compute_correlation_matrix(sector_analysis, benchmark_returns):
+    """Pearson correlation between each sector's stored returns_series
+    (FIX-14) and each benchmark's returns, aligned on the trailing N
+    common sessions. Positional alignment (last-N-vs-last-N) is an
+    approximation — good enough for a directional 'how tied to the
+    broad market is this sector' read, not a precision-trading input."""
+    import numpy as np
+    matrix = {}
+    for sn, analysis in sector_analysis.items():
+        sector_rets = analysis['index_data'].get('returns_series') or []
+        row = {}
+        for bname, brets in benchmark_returns.items():
+            n = min(len(sector_rets), len(brets))
+            if n < 10:
+                row[bname] = None
+                continue
+            a = np.array(sector_rets[-n:])
+            b = np.array(brets[-n:])
+            if a.std() == 0 or b.std() == 0:
+                row[bname] = None
+                continue
+            row[bname] = round(float(np.corrcoef(a, b)[0, 1]), 2)
+        matrix[sn] = row
+    return matrix
+
+
+# =============================================================================
 #  SVG RING HELPER
 # =============================================================================
 def rsi_ring_svg(rsi_val, is_bull):
@@ -891,9 +961,64 @@ def rsi_ring_svg_email(rsi_val, is_bull):
 
 
 # =============================================================================
+#  SUGGESTION #4: STOCK BUY/SELL SEMICIRCLE METER (0-100 score)
+# =============================================================================
+def score_meter_svg(score, danger_flags, rev_count):
+    """Semicircle gauge (0-100) for each stock's composite score.
+    Color reflects the score band; danger/reversal counts sit under the
+    arc so the meter reads 'strength + why' without eating table width."""
+    score = min(max(score, 0), 100)
+    color = "#00ff95" if score >= 60 else ("#ffa502" if score >= 40 else "#ff6b9d")
+    circ    = 3.14159265 * 34   # half-circumference of the semicircle arc
+    offset  = circ * (1 - score / 100)
+    danger_n = len(danger_flags) if danger_flags else 0
+    return f"""<div class="score-meter" title="Score {score}/100 - {danger_n} danger flag(s) - {rev_count} reversal(s)">
+<svg width="72" height="42" viewBox="0 0 100 58">
+  <path d="M8,54 A42,42 0 0,1 92,54" fill="none" stroke="rgba(255,255,255,.08)" stroke-width="9" stroke-linecap="round"/>
+  <path d="M8,54 A42,42 0 0,1 92,54" fill="none" stroke="{color}" stroke-width="9" stroke-linecap="round"
+    stroke-dasharray="{circ:.1f}" stroke-dashoffset="{offset:.1f}"
+    style="filter:drop-shadow(0 0 5px {color});transition:stroke-dashoffset 1s ease"/>
+  <text x="50" y="46" text-anchor="middle" fill="{color}" font-size="18" font-weight="800" font-family="monospace">{score}</text>
+</svg>
+<div class="score-meter-tags">
+  <span style="color:#ff6b9d">&#9940;{danger_n}</span><span style="color:#00ff95">&#9989;{rev_count}</span>
+</div>
+</div>"""
+
+
+# =============================================================================
+#  SUGGESTION #3: SECTOR STRENGTH TIMELINE (mini sparkline, last sessions)
+# =============================================================================
+def sparkline_svg(values, is_bull):
+    """Tiny inline SVG polyline for a sector's last ~5-6 closes. Purely
+    directional (shape, not scale) — enough to eyeball trend consistency
+    at a glance inside a scorecard-sized card."""
+    if not values or len(values) < 2:
+        return ""
+    lo, hi = min(values), max(values)
+    span   = (hi - lo) or 1.0
+    w, h, pad = 96, 26, 3
+    n = len(values)
+    pts = []
+    for i, v in enumerate(values):
+        x = pad + (i / (n - 1)) * (w - 2 * pad)
+        y = (h - pad) - ((v - lo) / span) * (h - 2 * pad)
+        pts.append(f"{x:.1f},{y:.1f}")
+    color = "#00ff95" if is_bull else ("#00d9ff" if values[-1] >= values[0] else "#ff6b9d")
+    poly  = " ".join(pts)
+    last_x, last_y = pts[-1].split(",")
+    return f"""<svg class="s5-spark" width="{w}" height="{h}" viewBox="0 0 {w} {h}">
+  <polyline points="{poly}" fill="none" stroke="{color}" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
+  <circle cx="{last_x}" cy="{last_y}" r="2.4" fill="{color}"/>
+</svg>"""
+
+
+# =============================================================================
 #  HTML GENERATOR  (web version — unchanged layout)
 # =============================================================================
-def generate_html(sector_analysis, bullish_sectors, ist_time):
+def generate_html(sector_analysis, bullish_sectors, ist_time, sector_alerts=None, correlation_matrix=None):
+    sector_alerts      = sector_alerts or []
+    correlation_matrix = correlation_matrix or {}
 
     all_valid   = []
     all_avoided = []
@@ -995,6 +1120,89 @@ def generate_html(sector_analysis, bullish_sectors, ist_time):
       </div>
     </div>
   </div>
+  <!-- Suggestion #2: Market Mood Bar — literal 🔴/🟡/🟢 horizontal gauge,
+       marker position driven by the same directional_score computed above. -->
+  <div class="mood-bar-wrap">
+    <div class="mood-bar-track">
+      <div class="mood-bar-seg" style="background:var(--nr)"></div>
+      <div class="mood-bar-seg" style="background:var(--no)"></div>
+      <div class="mood-bar-seg" style="background:var(--ng)"></div>
+      <div class="mood-bar-marker" style="left:{directional_score}%"><div class="mood-bar-marker-tip"></div></div>
+    </div>
+    <div class="mood-bar-labels">
+      <span>🔴 Avoid</span><span>🟡 Neutral</span><span>🟢 Strong</span>
+    </div>
+  </div>
+</div>
+"""
+
+    # ── Suggestion #9: Sector Alerts Panel ──────────────────────
+    # Built in main() by diffing this run's sector data against the
+    # last-run cache (FIX-15) — empty on the very first run since
+    # there's nothing yet to compare against.
+    if sector_alerts:
+        alert_items = "".join(
+            f'<div class="alert-item alert-{a["color"]}"><span class="alert-icon">{a["icon"]}</span>{a["text"]}</div>'
+            for a in sector_alerts
+        )
+    else:
+        alert_items = '<div class="alert-empty">No sector changes since the last run.</div>'
+    sector_alerts_html = f"""
+<div class="section" id="sector-alerts-section">
+  <div class="section-title">🔔 Sector Alerts</div>
+  <div class="alerts-panel">{alert_items}</div>
+</div>
+"""
+
+    # ── Suggestion #7: Index Correlation Panel ──────────────────
+    if correlation_matrix:
+        bench_names = list(next(iter(correlation_matrix.values())).keys())
+
+        def corr_color(v):
+            if v is None: return "#2a5070"
+            av = abs(v)
+            if av >= 0.7:  return "#00ff95" if v > 0 else "#ff6b9d"
+            if av >= 0.4:  return "#ffa502"
+            return "#5a7a94"
+
+        corr_header = "".join(f"<th>{b}</th>" for b in bench_names)
+        corr_rows = ""
+        for sn, row in correlation_matrix.items():
+            cells = "".join(
+                f'<td style="color:{corr_color(row.get(b))};font-weight:800;font-family:\'JetBrains Mono\',monospace">'
+                f'{row.get(b):+.2f}</td>' if row.get(b) is not None else '<td style="color:#2a5070">—</td>'
+                for b in bench_names
+            )
+            corr_rows += f'<tr><td style="text-align:left;font-weight:800;color:#e0f2f1">{sn}</td>{cells}</tr>'
+
+        correlation_html = f"""
+<div class="section" id="correlation-section">
+  <div class="section-title">🔗 Index Correlation Panel</div>
+  <p style="color:#5a7a94;font-size:.72rem;margin-bottom:12px">
+    30-session return correlation vs broad-market benchmarks. High (|r|≥0.7) means the sector
+    largely moves with that index — useful for gauging diversification / concentrated risk.
+  </p>
+  <div class="tbl-wrap">
+    <table class="corr-table">
+      <thead><tr><th style="text-align:left">Sector</th>{corr_header}</tr></thead>
+      <tbody>{corr_rows}</tbody>
+    </table>
+  </div>
+</div>
+"""
+    else:
+        correlation_html = ""
+
+    # ── Suggestion #11: Color Coding legend ─────────────────────
+    legend_html = """
+<div class="section" style="padding-top:0">
+  <div class="legend-panel">
+    <div class="legend-item"><span class="legend-dot" style="background:#00ff95"></span>Bullish / Safe</div>
+    <div class="legend-item"><span class="legend-dot" style="background:#ffa502"></span>Watch / Caution</div>
+    <div class="legend-item"><span class="legend-dot" style="background:#ff6b9d"></span>Avoid / Danger</div>
+    <div class="legend-item"><span class="legend-dot" style="background:#00d9ff"></span>Neutral / Info</div>
+    <div class="legend-item"><span class="legend-dot" style="background:#c586ff"></span>Synthetic Sector</div>
+  </div>
 </div>
 """
 
@@ -1033,7 +1241,11 @@ def generate_html(sector_analysis, bullish_sectors, ist_time):
 
         stale_badge = ' <span style="font-size:.6rem;color:#ffa502;font-weight:700" title="Live fetch failed this run — showing last successful read">⚠ STALE</span>' if idx.get('stale') else ''
         synth_cov   = idx.get('synthetic_coverage', '?')
-        synth_badge = f' <span style="font-size:.6rem;color:#70a1ff;font-weight:700" title="Yahoo has no history for this index ticker — composite built from {synth_cov}% of constituent weight">◆ SYNTHETIC</span>' if idx.get('synthetic') else ''
+        synth_badge = f' <span style="font-size:.6rem;color:#c586ff;font-weight:700" title="Yahoo has no history for this index ticker — composite built from {synth_cov}% of constituent weight">◆ SYNTHETIC</span>' if idx.get('synthetic') else ''
+        # Suggestion #3: Sector Strength Timeline — mini sparkline of the
+        # last ~6 sessions, reusing the sparkline/returns_series added in
+        # FIX-14 so no extra data fetch is needed.
+        spark_svg = sparkline_svg(idx.get('sparkline', []), is_bull)
 
         sector_cards_html += f"""
         <div class="{card_cls} clickable-card" {click_js} {click_tip}>
@@ -1071,6 +1283,7 @@ def generate_html(sector_analysis, bullish_sectors, ist_time):
               <div class="s5-db-fill" style="width:{danger_pct:.0f}%;background:{danger_color}"></div>
             </div>
           </div>
+          <div class="s5-spark-wrap">{spark_svg}<span class="s5-spark-lbl">5-day trend</span></div>
         </div>"""
 
     # ── Verdict helpers ───────────────────────────────────────
@@ -1120,6 +1333,7 @@ def generate_html(sector_analysis, bullish_sectors, ist_time):
             <div style="font-size:.65rem;color:{'#00ff95' if s['rsi_slope']>0 else '#ff6b9d'}">{s['rsi_slope']:+.1f} slope</div>
           </td>
           <td style="color:{sc};font-weight:800;font-family:'JetBrains Mono',monospace">{s['score']}/100</td>
+          <td>{score_meter_svg(s['score'], s['fk_flags'], s['rev_count'])}</td>
           <td>{danger_chips(s['fk_flags'])}</td>
           <td>{rev_chips(s['rev_confirms'])}</td>
           <td>
@@ -1184,6 +1398,47 @@ def generate_html(sector_analysis, bullish_sectors, ist_time):
             </tr>"""
 
         anchor_id = sn.lower().replace(" ", "-")
+
+        # ── Suggestion #6: Sector → Stock Drilldown ─────────────
+        # Three quick-scan lanes above the full table: strongest 5,
+        # weakest 5, and anything showing a reversal signal — pulled
+        # from the sector's full constituent list (not just VALID
+        # verdicts), so "weakest" actually shows the laggards.
+        def mini_pill(st, metric_label, metric_val, metric_color):
+            return f"""<div class="drill-pill">
+              <div class="drill-sym">{st['symbol']}</div>
+              <div class="drill-metric" style="color:{metric_color}">{metric_val}</div>
+              <div class="drill-sub">{metric_label}</div>
+            </div>"""
+
+        top5     = stocks_sorted[:5]
+        weakest5 = sorted(analysis['stocks'], key=lambda x: x['score'])[:5]
+        rev_cands = sorted(
+            [st for st in analysis['stocks'] if st['rev_count'] >= 1],
+            key=lambda x: (x['rev_count'], x['score']), reverse=True
+        )[:5]
+
+        top5_html = "".join(
+            mini_pill(st, "Score", f"{st['score']}/100",
+                      "#00ff95" if st['score'] >= 60 else "#ffa502")
+            for st in top5
+        ) or '<span class="drill-empty">—</span>'
+        weak5_html = "".join(
+            mini_pill(st, "Score", f"{st['score']}/100", "#ff6b9d")
+            for st in weakest5
+        ) or '<span class="drill-empty">—</span>'
+        rev_html = "".join(
+            mini_pill(st, f"{st['rev_count']} signal(s)", st['verdict'], "#00d9ff")
+            for st in rev_cands
+        ) or '<span class="drill-empty">No reversal signals yet</span>'
+
+        drilldown_html = f"""
+          <div class="drill-wrap">
+            <div class="drill-lane"><div class="drill-lane-title">🏆 Top 5</div><div class="drill-row">{top5_html}</div></div>
+            <div class="drill-lane"><div class="drill-lane-title">🐢 Weakest 5</div><div class="drill-row">{weak5_html}</div></div>
+            <div class="drill-lane"><div class="drill-lane-title">🔄 Reversal Candidates</div><div class="drill-row">{rev_html}</div></div>
+          </div>"""
+
         sector_detail_html += f"""
         <div class="detail-block" id="sector-{anchor_id}">
           <div class="detail-header">
@@ -1196,16 +1451,20 @@ def generate_html(sector_analysis, bullish_sectors, ist_time):
               Danger <strong style="color:{dn_c}">{idx['danger_score']}/6</strong>
             </div>
           </div>
-          <div class="tbl-wrap">
-            <table>
-              <thead><tr>
-                <th>Stock</th><th>Wt%</th><th>LTP</th><th>Day%</th><th>Week%</th>
-                <th>RSI (slope)</th><th>Score</th><th>⚠ Danger</th>
-                <th>✅ Reversals</th><th>Target</th><th>Stop</th><th>Verdict</th>
-              </tr></thead>
-              <tbody>{rows}</tbody>
-            </table>
-          </div>
+          {drilldown_html}
+          <details class="detail-full-toggle">
+            <summary>Show full constituent table ({len(stocks_sorted)} stocks)</summary>
+            <div class="tbl-wrap">
+              <table>
+                <thead><tr>
+                  <th>Stock</th><th>Wt%</th><th>LTP</th><th>Day%</th><th>Week%</th>
+                  <th>RSI (slope)</th><th>Score</th><th>⚠ Danger</th>
+                  <th>✅ Reversals</th><th>Target</th><th>Stop</th><th>Verdict</th>
+                </tr></thead>
+                <tbody>{rows}</tbody>
+              </table>
+            </div>
+          </details>
         </div>"""
 
     # ══════════════════════════════════════════════════════════
@@ -1259,12 +1518,16 @@ body::before{{
 #live-clock{{
   font-family:'JetBrains Mono',monospace;
   background:var(--nc);color:#000;
-  border-radius:30px;padding:10px 22px;
-  font-weight:700;font-size:.82rem;
-  white-space:nowrap;
+  border-radius:16px;padding:10px 20px;
+  font-weight:700;font-size:.72rem;
+  white-space:nowrap;line-height:1.7;
   box-shadow:0 0 20px rgba(0,217,255,.5);
-  flex-shrink:0;
+  flex-shrink:0;text-align:left;
 }}
+#market-status{{font-size:.68rem;font-weight:800;margin-top:2px;}}
+.market-status-open{{color:#00602e;}}
+.market-status-pre{{color:#7a4b00;}}
+.market-status-closed{{color:#7a0030;}}
 .summary{{
   display:flex;flex-wrap:wrap;gap:12px;
   padding:20px 28px;
@@ -1408,6 +1671,35 @@ body::before{{
 .s5-db-label{{font-size:.55rem;color:#2a5070;display:flex;justify-content:space-between;margin-bottom:3px;}}
 .s5-db-track{{height:4px;background:rgba(255,255,255,.06);border-radius:3px;overflow:hidden;}}
 .s5-db-fill{{height:100%;border-radius:3px;transition:width .8s ease}}
+.s5-spark-wrap{{margin-top:6px;display:flex;flex-direction:column;align-items:center;gap:1px}}
+.s5-spark{{display:block}}
+.s5-spark-lbl{{font-size:.52rem;color:#2a5070;text-transform:uppercase;letter-spacing:.4px}}
+.score-meter{{display:flex;flex-direction:column;align-items:center;line-height:1}}
+.score-meter-tags{{display:flex;gap:6px;font-size:.62rem;font-weight:700;margin-top:-2px}}
+.mood-bar-wrap{{margin-top:16px;}}
+.mood-bar-track{{position:relative;display:flex;height:10px;border-radius:6px;overflow:visible;}}
+.mood-bar-seg{{flex:1;height:100%;opacity:.85;}}
+.mood-bar-seg:first-child{{border-radius:6px 0 0 6px;}}
+.mood-bar-seg:last-child{{border-radius:0 6px 6px 0;}}
+.mood-bar-marker{{position:absolute;top:-5px;transform:translateX(-50%);width:2px;height:20px;background:#fff;box-shadow:0 0 8px #fff;transition:left 1s ease;}}
+.mood-bar-marker-tip{{position:absolute;top:-6px;left:50%;transform:translateX(-50%);width:0;height:0;border-left:5px solid transparent;border-right:5px solid transparent;border-top:6px solid #fff;}}
+.mood-bar-labels{{display:flex;justify-content:space-between;margin-top:6px;font-size:.65rem;color:#5a7a94;font-weight:700;}}
+.knife-toggle{{display:flex;align-items:center;gap:8px;cursor:pointer;font-size:.72rem;color:#80deea;font-weight:700;}}
+.knife-toggle input{{position:absolute;opacity:0;width:0;height:0;}}
+.knife-toggle-track{{position:relative;width:38px;height:20px;background:rgba(0,255,149,.25);border:1px solid var(--ng);border-radius:12px;transition:background .25s;flex-shrink:0;}}
+.knife-toggle input:not(:checked) + .knife-toggle-track{{background:rgba(255,107,157,.2);border-color:var(--nr);}}
+.knife-toggle-thumb{{position:absolute;top:1px;left:1px;width:16px;height:16px;border-radius:50%;background:var(--ng);transition:left .25s,background .25s;}}
+.knife-toggle input:not(:checked) + .knife-toggle-track .knife-toggle-thumb{{left:19px;background:var(--nr);}}
+.alerts-panel{{display:flex;flex-direction:column;gap:8px;}}
+.alert-item{{display:flex;align-items:center;gap:10px;padding:10px 14px;border-radius:8px;font-size:.78rem;font-weight:600;}}
+.alert-icon{{font-size:1rem;flex-shrink:0;}}
+.alert-ok{{background:rgba(0,255,149,.06);border:1px solid rgba(0,255,149,.2);color:#9df7d6;}}
+.alert-danger{{background:rgba(255,107,157,.06);border:1px solid rgba(255,107,157,.2);color:#ffb3d9;}}
+.alert-empty{{color:#2a5070;font-size:.78rem;padding:8px 4px;}}
+.legend-panel{{display:flex;flex-wrap:wrap;gap:14px;padding:12px 16px;}}
+.legend-item{{display:flex;align-items:center;gap:6px;font-size:.72rem;color:#80deea;font-weight:600;}}
+.legend-dot{{width:10px;height:10px;border-radius:50%;flex-shrink:0;}}
+.corr-table td, .corr-table th{{text-align:center;}}
 .tbl-wrap{{overflow-x:auto;border-radius:8px;border:1px solid rgba(0,217,255,.12);margin-bottom:8px;}}
 table{{width:100%;border-collapse:collapse;min-width:900px}}
 thead tr{{background:linear-gradient(135deg,var(--bg2),#003d7a)}}
@@ -1438,6 +1730,17 @@ tbody tr:last-child td{{border-bottom:none}}
 .detail-icon{{font-size:1.2rem}}
 .detail-header h3{{font-size:.95rem;font-weight:800;color:var(--nc);text-shadow:0 0 8px rgba(0,217,255,.5);flex:1;}}
 .detail-meta{{font-size:.78rem;color:#80deea;width:100%}}
+.drill-wrap{{padding:12px 16px;display:flex;flex-direction:column;gap:10px;background:rgba(0,217,255,.02);border-bottom:1px solid rgba(0,217,255,.1);}}
+.drill-lane-title{{font-size:.68rem;font-weight:800;color:#80deea;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;}}
+.drill-row{{display:flex;flex-wrap:wrap;gap:8px;}}
+.drill-pill{{background:rgba(0,217,255,.05);border:1px solid rgba(0,217,255,.12);border-radius:8px;padding:6px 12px;text-align:center;min-width:78px;}}
+.drill-sym{{font-size:.68rem;font-weight:800;color:#e0f2f1;}}
+.drill-metric{{font-size:.8rem;font-weight:800;font-family:'JetBrains Mono',monospace;}}
+.drill-sub{{font-size:.55rem;color:#4a7a78;text-transform:uppercase;}}
+.drill-empty{{font-size:.72rem;color:#2a5070;}}
+.detail-full-toggle{{padding:0 16px 14px;}}
+.detail-full-toggle summary{{cursor:pointer;font-size:.72rem;color:#00d9ff;font-weight:700;padding:8px 0;}}
+.detail-full-toggle summary:hover{{color:#80deea;}}
 .avoided-section{{
   padding:24px 28px;
   background:rgba(255,107,157,.03);
@@ -1518,7 +1821,11 @@ tbody tr:last-child td{{border-bottom:none}}
       Report generated: {ist_time}
     </div>
   </div>
-  <div id="live-clock">🕐 Loading...</div>
+  <div id="live-clock">
+    <div id="clock-ist">🕐 IST — Loading...</div>
+    <div id="clock-est">🕒 EST — Loading...</div>
+    <div id="market-status">● …</div>
+  </div>
 </div>
 
 <!-- ── SUMMARY STRIP ──────────────────────────────────────────── -->
@@ -1551,6 +1858,9 @@ tbody tr:last-child td{{border-bottom:none}}
 <div id="filter-banner-slot"></div>
 
 {directional_bar_html}
+{legend_html}
+{sector_alerts_html}
+{correlation_html}
 <!-- ── SECTOR SCORECARD ────────────────────────────────────────── -->
 <div class="section" id="scorecard-section">
   <div class="section-title">🏆 Sector Scorecard</div>
@@ -1587,16 +1897,23 @@ tbody tr:last-child td{{border-bottom:none}}
 
 <!-- ── BUY TABLE ──────────────────────────────────────────────── -->
 <div class="section" id="buy-table-section">
-  <div class="section-title">🟢 Top Valid Buy Recommendations — Knife-Filtered</div>
+  <div class="section-title" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px">
+    <span>🟢 Top Valid Buy Recommendations — Knife-Filtered</span>
+    <label class="knife-toggle" title="OFF reveals the blocked/falling-knife stocks below the table">
+      <input type="checkbox" id="knife-toggle-input" checked onchange="toggleKnifeFilter(this)">
+      <span class="knife-toggle-track"><span class="knife-toggle-thumb"></span></span>
+      <span class="knife-toggle-lbl" id="knife-toggle-lbl">Knife Filter: ON — Safe stocks only</span>
+    </label>
+  </div>
   <div class="tbl-wrap">
     <table>
       <thead><tr>
         <th>#</th><th>Stock</th><th>LTP</th><th>Day%</th><th>Week%</th>
-        <th>RSI (slope)</th><th>Score</th><th>⚠ Danger</th><th>✅ Reversals</th>
+        <th>RSI (slope)</th><th>Score</th><th>Meter</th><th>⚠ Danger</th><th>✅ Reversals</th>
         <th>Target</th><th>Stop Loss</th><th>R:R</th><th>Verdict</th>
       </tr></thead>
       <tbody id="buy-tbody">{buy_rows if buy_rows else
-        '<tr><td colspan="13" style="text-align:center;color:#2a5070;padding:24px">No valid buys — market in downtrend. All falling knives blocked.</td></tr>'
+        '<tr><td colspan="14" style="text-align:center;color:#2a5070;padding:24px">No valid buys — market in downtrend. All falling knives blocked.</td></tr>'
       }</tbody>
     </table>
   </div>
@@ -1643,13 +1960,42 @@ tbody tr:last-child td{{border-bottom:none}}
 
 <script>
 function updateClock() {{
-  var now  = new Date();
-  var opts = {{
-    timeZone:'Asia/Kolkata',day:'2-digit',month:'short',year:'numeric',
-    hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:true
-  }};
-  var el = document.getElementById('live-clock');
-  if (el) el.textContent = '🕐 ' + now.toLocaleString('en-IN', opts) + ' IST';
+  var now = new Date();
+
+  var istOpts = {{timeZone:'Asia/Kolkata',day:'2-digit',month:'short',year:'numeric',
+    hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:true}};
+  var estOpts = {{timeZone:'America/New_York',day:'2-digit',month:'short',
+    hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:true}};
+
+  var istEl = document.getElementById('clock-ist');
+  var estEl = document.getElementById('clock-est');
+  if (istEl) istEl.textContent = '🕐 IST ' + now.toLocaleString('en-IN', istOpts);
+  if (estEl) estEl.textContent = '🕒 EST ' + now.toLocaleString('en-US', estOpts);
+
+  // Suggestion #8: market open/closed indicator — NSE cash session is
+  // 09:15–15:30 IST, Mon–Fri. Reads IST wall-clock components directly
+  // via Intl so it's correct regardless of the viewer's own timezone.
+  var istParts = new Intl.DateTimeFormat('en-US', {{
+    timeZone:'Asia/Kolkata', weekday:'short', hour:'2-digit', minute:'2-digit', hour12:false
+  }}).formatToParts(now);
+  var map = {{}};
+  istParts.forEach(function(p) {{ map[p.type] = p.value; }});
+  var wd = map.weekday, hh = parseInt(map.hour, 10), mm = parseInt(map.minute, 10);
+  var mins = hh * 60 + mm;
+  var isWeekday = ['Mon','Tue','Wed','Thu','Fri'].indexOf(wd) !== -1;
+
+  var statusEl = document.getElementById('market-status');
+  if (statusEl) {{
+    var text, cls;
+    if (!isWeekday) {{ text = 'Market Closed (Weekend)'; cls = 'closed'; }}
+    else if (mins < 9*60) {{ text = 'Pre-Market'; cls = 'pre'; }}
+    else if (mins < 9*60+15) {{ text = 'Pre-Open Session'; cls = 'pre'; }}
+    else if (mins < 15*60+30) {{ text = 'Market Open'; cls = 'open'; }}
+    else if (mins < 16*60) {{ text = 'Post-Market'; cls = 'pre'; }}
+    else {{ text = 'Market Closed'; cls = 'closed'; }}
+    statusEl.textContent = '● ' + text;
+    statusEl.className = 'market-status-' + cls;
+  }}
 }}
 updateClock();
 setInterval(updateClock, 1000);
@@ -1666,6 +2012,27 @@ window.addEventListener('load', function() {{
       card.classList.remove('card-flash');
     }});
   }});
+}});
+
+// ── SUGGESTION #5: KNIFE FILTER TOGGLE ──────────────────────────
+// ON (default) = only safe/valid stocks visible, avoided table tucked
+// away. OFF = also reveal the falling-knife/blocked stocks table so
+// the user can see everything the scan looked at, not just the winners.
+function toggleKnifeFilter(cb) {{
+  var section = document.getElementById('avoided-section');
+  var lbl     = document.getElementById('knife-toggle-lbl');
+  if (cb.checked) {{
+    section.classList.add('row-hidden');
+    lbl.textContent = 'Knife Filter: ON — Safe stocks only';
+  }} else {{
+    section.classList.remove('row-hidden');
+    lbl.textContent = 'Knife Filter: OFF — Showing all stocks';
+    section.scrollIntoView({{behavior:'smooth', block:'start'}});
+  }}
+}}
+window.addEventListener('load', function() {{
+  var sec = document.getElementById('avoided-section');
+  if (sec) sec.classList.add('row-hidden');   // ON by default
 }});
 
 // ── SUMMARY-CARD FILTERING ──────────────────────────────────────
@@ -2088,9 +2455,14 @@ def main():
 
     sector_analysis = {}
     bullish_sectors = []
+    sector_alerts   = []   # Suggestion #9: Sector Alerts Panel
 
     for sector_name, config in sectors_config.items():
         print(f"{YELLOW}📊 Scanning {sector_name}...{RESET}")
+
+        # FIX-15: snapshot last run's cached data BEFORE this run overwrites
+        # it, so we can diff old vs new for the Sector Alerts Panel below.
+        prev_idx_data = _SECTOR_CACHE.get(sector_name)
 
         # FIX-10: these six sectors' ^CNX* index tickers have no history on
         # Yahoo's free API (confirmed live — 1 row returned no matter the
@@ -2139,6 +2511,37 @@ def main():
             for r in reasons:
                 print(f"       {r}")
 
+        # ── FIX-15: Sector Alerts — diff this run vs last run's cache ──
+        if prev_idx_data:
+            prev_bull, _ = is_sector_bullish(prev_idx_data)
+            if prev_bull is not None and prev_bull != is_bull:
+                if is_bull:
+                    sector_alerts.append({'sector': sector_name, 'icon': '🟢',
+                        'text': f'{sector_name} turned BULLISH', 'color': 'ok'})
+                else:
+                    sector_alerts.append({'sector': sector_name, 'icon': '🔴',
+                        'text': f'{sector_name} is turning weak — dropped out of bullish gate', 'color': 'danger'})
+
+            prev_rsi = prev_idx_data.get('rsi')
+            cur_rsi  = idx_data.get('rsi')
+            if prev_rsi is not None and cur_rsi is not None:
+                if prev_rsi < 60 <= cur_rsi:
+                    sector_alerts.append({'sector': sector_name, 'icon': '📈',
+                        'text': f'{sector_name} RSI crossed above 60 ({prev_rsi:.1f}→{cur_rsi:.1f})', 'color': 'ok'})
+                elif prev_rsi > 40 >= cur_rsi:
+                    sector_alerts.append({'sector': sector_name, 'icon': '📉',
+                        'text': f'{sector_name} RSI crossed below 40 ({prev_rsi:.1f}→{cur_rsi:.1f})', 'color': 'danger'})
+
+            prev_hist = prev_idx_data.get('macd_hist')
+            cur_hist  = idx_data.get('macd_hist')
+            if prev_hist is not None and cur_hist is not None:
+                if prev_hist <= 0 < cur_hist:
+                    sector_alerts.append({'sector': sector_name, 'icon': '🔄',
+                        'text': f'{sector_name} MACD histogram flipped bullish', 'color': 'ok'})
+                elif prev_hist >= 0 > cur_hist:
+                    sector_alerts.append({'sector': sector_name, 'icon': '🔄',
+                        'text': f'{sector_name} MACD histogram flipped bearish', 'color': 'danger'})
+
         stocks_data = []
         for ticker, info in config['stocks'].items():
             sd = fetch_and_analyze(ticker)
@@ -2175,8 +2578,13 @@ def main():
               f"Danger:{p['danger_score']}/6  Verdict:{p['verdict']}{veto_tag}{RESET}")
     print(f"{CYAN}{'='*70}{RESET}\n")
 
+    # ── Suggestion #7: Index Correlation Panel ──────────────────
+    print(f"{YELLOW}📊 Fetching correlation benchmarks (NIFTY/BANKNIFTY/FINNIFTY)...{RESET}")
+    benchmark_returns  = fetch_benchmark_returns()
+    correlation_matrix = compute_correlation_matrix(sector_analysis, benchmark_returns) if benchmark_returns else {}
+
     # ── Save web HTML ──────────────────────────────────────────
-    web_html = generate_html(sector_analysis, bullish_sectors, ist_time_str)
+    web_html = generate_html(sector_analysis, bullish_sectors, ist_time_str, sector_alerts, correlation_matrix)
     with open("index.html", "w", encoding="utf-8") as f:
         f.write(web_html)
     print(f"{GREEN}✅ index.html saved{RESET}")
