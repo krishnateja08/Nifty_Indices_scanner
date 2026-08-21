@@ -185,7 +185,7 @@ sectors_config = {
             "HCLTECH.NS":    {"weight": 11.0, "industry": "IT Services"},
             "TECHM.NS":      {"weight": 10.0, "industry": "IT Services"},
             "WIPRO.NS":      {"weight":  7.0, "industry": "IT Services"},
-            "LTIM.NS":       {"weight":  6.0, "industry": "IT Services"},
+            "LTI.NS":       {"weight":  6.0, "industry": "IT Services"},
             "PERSISTENT.NS": {"weight":  4.0, "industry": "Product Engineering"},
             "COFORGE.NS":    {"weight":  3.0, "industry": "IT Consulting"},
         }
