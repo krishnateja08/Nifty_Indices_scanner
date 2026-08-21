@@ -185,7 +185,7 @@ sectors_config = {
             "HCLTECH.NS":    {"weight": 11.0, "industry": "IT Services"},
             "TECHM.NS":      {"weight": 10.0, "industry": "IT Services"},
             "WIPRO.NS":      {"weight":  7.0, "industry": "IT Services"},
-            "LTI.NS":       {"weight":  6.0, "industry": "IT Services"},
+            "LTM.NS":       {"weight":  6.0, "industry": "IT Services"},  # FIX-11: LTIMindtree renamed to "LTM Limited" in 2026, ticker LTIM.NS → LTM.NS (previously LTI.NS → LTIM.NS after the 2022 LTI/Mindtree merger)
             "PERSISTENT.NS": {"weight":  4.0, "industry": "Product Engineering"},
             "COFORGE.NS":    {"weight":  3.0, "industry": "IT Consulting"},
         }
@@ -501,12 +501,49 @@ def _make_yf_session():
 
 _YF_SESSION = _make_yf_session()
 
+# =============================================================================
+#  FIX-9: LAST-KNOWN-GOOD CACHE
+#  When a sector index is throttled after all retries, we now fall back to
+#  the last successful result (saved to a small JSON file in the repo)
+#  instead of showing nothing. The cached entry is clearly labelled STALE
+#  in the UI so it's never mistaken for a live read.
+# =============================================================================
+import json
 
-def _download_with_retry(ticker, period="1y", interval="1d", max_retries=3):
+_CACHE_PATH = "sector_cache.json"
+
+
+def _load_cache():
+    try:
+        with open(_CACHE_PATH, "r", encoding="utf-8") as f:
+            return json.load(f)
+    except Exception:
+        return {}
+
+
+def _save_cache(cache):
+    try:
+        with open(_CACHE_PATH, "w", encoding="utf-8") as f:
+            json.dump(cache, f)
+    except Exception:
+        pass
+
+
+_SECTOR_CACHE = _load_cache()
+
+
+def _download_with_retry(ticker, period="1y", interval="1d", max_retries=5):
     """
     yf.download() wrapper with retry + exponential backoff + a real-browser
     session (FIX-8) to survive Yahoo's throttling of the default yfinance
     client. See _make_yf_session() docstring for the full root-cause story.
+
+    FIX-9: max_retries raised 3 → 5 and backoff lengthened (now 2s, 4s, 8s,
+    16s + jitter instead of 1s, 2s, 4s). GitHub Actions runners share IP
+    ranges that Yahoo rate-limits at the IP level, and per FIX-8's own
+    docstring that block "lasts minutes" — the old 3-try/7s-total window
+    couldn't outlast that. This trades a bit of runtime on genuinely bad
+    runs for a much higher chance of the block clearing before we give up.
     """
     import random
     for attempt in range(1, max_retries + 1):
@@ -522,7 +559,7 @@ def _download_with_retry(ticker, period="1y", interval="1d", max_retries=3):
         except Exception:
             pass
         if attempt < max_retries:
-            time.sleep((2 ** (attempt - 1)) + random.uniform(0, 0.5))
+            time.sleep((2 ** attempt) + random.uniform(0, 1.0))
     return None
 
 
@@ -531,11 +568,20 @@ def fetch_and_analyze(ticker, period="1y"):
     # falling-knife MA-bearish check (borrowed from Stocks Analyzer v5.4).
     # FIX-7: now uses _download_with_retry() instead of a single direct
     # yf.download() call — see that function's docstring for why.
-    try:
-        data = _download_with_retry(ticker, period=period, interval="1d")
-        if data is None:
-            return None
+    # FIX-10: body extracted into _analyze_ohlcv() so build_synthetic_index()
+    # can run the identical analysis on a composite series — see FIX-10 note
+    # above build_synthetic_index() for why that's needed.
+    data = _download_with_retry(ticker, period=period, interval="1d")
+    if data is None:
+        return None
+    return _analyze_ohlcv(data)
 
+
+def _analyze_ohlcv(data):
+    """Core RSI/danger-score/verdict analysis, given an OHLCV DataFrame.
+    Shared by fetch_and_analyze() (real index/stock tickers) and
+    build_synthetic_index() (composite sector series) — see FIX-10."""
+    try:
         close = data['Close']
         ltp   = float(close.iloc[-1])
 
@@ -646,6 +692,83 @@ def fetch_and_analyze(ticker, period="1y"):
         }
     except Exception:
         return None
+
+
+# =============================================================================
+#  FIX-10: SYNTHETIC SECTOR INDEX (Yahoo history gap workaround)
+# =============================================================================
+# Confirmed via live debug session (2026-08-21) that Yahoo's free chart API
+# returns only a single live-quote row — zero historical rows — for these
+# six ^CNX* sector index tickers, even though the same tickers show a full
+# 1-year chart on Yahoo's own website. That history isn't reachable through
+# yfinance's public endpoint (most likely gated behind Yahoo's paid tier),
+# so no amount of retrying, backoff, or session/header tricks fixes it —
+# the server simply never sends the data. Bank/PSU Bank/IT/Pharma are NOT
+# affected and keep using their real ^NSEBANK/^CNX* index tickers directly.
+#
+# Workaround: build a synthetic composite index from the sector's own
+# constituent stocks + weights (already defined in sectors_config below) —
+# individual NSE stocks aren't subject to this restriction. This mirrors
+# how the real Nifty sectoral indices are calculated in the first place:
+# a weighted composite of constituent price moves, indexed to a base of 100.
+SYNTHETIC_INDEX_SECTORS = {
+    "Nifty Realty", "Nifty FMCG", "Nifty Metal",
+    "Nifty Auto", "Nifty Energy", "Nifty Consumer Durables",
+}
+
+
+def build_synthetic_index(stocks_dict, period="1y"):
+    """
+    Builds a synthetic OHLCV series for a sector from its constituent
+    stocks (weighted the same way sectors_config already weights them),
+    then runs it through the same _analyze_ohlcv() used for real index
+    tickers. See the FIX-10 note above for why this exists.
+
+    Returns the same dict shape as fetch_and_analyze(), plus:
+      'synthetic': True
+      'synthetic_coverage': % of the sector's total constituent weight
+                             that had usable data and went into the composite
+    Returns None if fewer than half the sector's weight could be fetched —
+    below that, the composite isn't a meaningful stand-in for the real index.
+    """
+    frames = {}
+    total_weight = 0.0
+    for symbol, meta in stocks_dict.items():
+        data = _download_with_retry(symbol, period=period, interval="1d")
+        time.sleep(0.4)  # FIX-7 pacing — same courtesy as the main stock loop
+        if data is None or data.empty or len(data) < 200:
+            continue
+        frames[symbol] = (data, meta['weight'])
+        total_weight += meta['weight']
+
+    full_weight = sum(m['weight'] for m in stocks_dict.values())
+    if not frames or total_weight < full_weight * 0.5:
+        return None
+
+    # Align on trading dates common to every usable constituent.
+    common_index = None
+    for data, _ in frames.values():
+        common_index = data.index if common_index is None else common_index.intersection(data.index)
+    if common_index is None or len(common_index) < 200:
+        return None
+    common_index = common_index.sort_values()
+
+    composite = pd.DataFrame(index=common_index)
+    for col in ['Open', 'High', 'Low', 'Close']:
+        weighted_sum = None
+        for symbol, (data, weight) in frames.items():
+            aligned = data.loc[common_index, col]
+            base    = float(aligned.iloc[0])
+            normalized = (aligned / base) * 100.0 * (weight / total_weight)
+            weighted_sum = normalized if weighted_sum is None else weighted_sum + normalized
+        composite[col] = weighted_sum
+    composite['Volume'] = sum(data.loc[common_index, 'Volume'] for data, _ in frames.values())
+
+    result = _analyze_ohlcv(composite)
+    if result is not None:
+        result['synthetic']          = True
+        result['synthetic_coverage'] = round((total_weight / full_weight) * 100, 1)
+    return result
 
 
 # =============================================================================
@@ -787,11 +910,15 @@ def generate_html(sector_analysis, bullish_sectors, ist_time):
             click_js  = "onclick=\"document.getElementById('avoided-section').scrollIntoView({behavior:'smooth',block:'start'})\""
             click_tip = "title=\"Click to see blocked stocks ↓\""
 
+        stale_badge = ' <span style="font-size:.6rem;color:#ffa502;font-weight:700" title="Live fetch failed this run — showing last successful read">⚠ STALE</span>' if idx.get('stale') else ''
+        synth_cov   = idx.get('synthetic_coverage', '?')
+        synth_badge = f' <span style="font-size:.6rem;color:#70a1ff;font-weight:700" title="Yahoo has no history for this index ticker — composite built from {synth_cov}% of constituent weight">◆ SYNTHETIC</span>' if idx.get('synthetic') else ''
+
         sector_cards_html += f"""
         <div class="{card_cls} clickable-card" {click_js} {click_tip}>
           <div class="s5-header">
             <div class="s5-icon">{icon}</div>
-            <div class="s5-name">{sn}</div>
+            <div class="s5-name">{sn}{stale_badge}{synth_badge}</div>
           </div>
           <div class="s5-ring-wrap">{ring}
             <div class="s5-ring-label">
@@ -1561,7 +1688,7 @@ def generate_email_html(sector_analysis, bullish_sectors, ist_time, top_picks, a
                 <td style="padding-left:14px;vertical-align:middle">
                   <div style="font-size:11px;font-weight:800;color:#80deea;
                     text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">
-                    {icon} {sn}</div>
+                    {icon} {sn}{' ⚠ STALE' if idx.get('stale') else ''}{' ◆ SYNTHETIC' if idx.get('synthetic') else ''}</div>
                   <div style="display:inline-block;padding:3px 12px;border-radius:20px;
                     background:{badge_bg};color:{badge_col};font-size:10px;
                     font-weight:800;margin-bottom:8px">{badge_txt}</div>
@@ -1786,24 +1913,50 @@ def main():
     for sector_name, config in sectors_config.items():
         print(f"{YELLOW}📊 Scanning {sector_name}...{RESET}")
 
-        idx_data = fetch_and_analyze(config['ticker'])
-        time.sleep(0.4)   # FIX-7: pace requests — reduces Yahoo throttling
-        if not idx_data:
-            print(f"{RED}   ❌ No index data{RESET}")
-            continue
+        # FIX-10: these six sectors' ^CNX* index tickers have no history on
+        # Yahoo's free API (confirmed live — 1 row returned no matter the
+        # period). Build a synthetic composite from constituent stocks
+        # instead of hitting the broken ticker at all. See the FIX-10 note
+        # above build_synthetic_index() for the full root-cause story.
+        if sector_name in SYNTHETIC_INDEX_SECTORS:
+            idx_data = build_synthetic_index(config['stocks'])
+        else:
+            idx_data = fetch_and_analyze(config['ticker'])
+            time.sleep(0.4)   # FIX-7: pace requests — reduces Yahoo throttling
+
+        if idx_data:
+            # Live read succeeded — refresh the cache for next time.
+            idx_data['stale'] = False
+            _SECTOR_CACHE[sector_name] = idx_data
+            _save_cache(_SECTOR_CACHE)
+        else:
+            # FIX-9: all retries exhausted — fall back to last-known-good
+            # data instead of dropping the sector entirely. Marked STALE
+            # so it's never confused with a live read.
+            cached = _SECTOR_CACHE.get(sector_name)
+            if cached:
+                idx_data = dict(cached)
+                idx_data['stale'] = True
+                print(f"{YELLOW}   ⚠️  Live fetch failed — using cached data (STALE){RESET}")
+            else:
+                print(f"{RED}   ❌ No index data (and no cache to fall back on){RESET}")
+                continue
 
         is_bull, reasons = is_sector_bullish(idx_data)
 
         rsi_dir_label = idx_data.get('rsi_direction', 'Flat')
+        stale_tag     = f"  {YELLOW}[STALE CACHE]{RESET}" if idx_data.get('stale') else ""
+        if idx_data.get('synthetic'):
+            stale_tag += f"  {YELLOW}[SYNTHETIC {idx_data.get('synthetic_coverage', '?')}% coverage]{RESET}"
         if is_bull:
             bullish_sectors.append(sector_name)
             print(f"{GREEN}   ✅ BULLISH  RSI:{idx_data['rsi']:.1f} ({rsi_dir_label})  "
                   f"Slope:{idx_data['rsi_slope']:+.1f}  "
-                  f"Danger:{idx_data['danger_score']}/6{RESET}")
+                  f"Danger:{idx_data['danger_score']}/6{RESET}{stale_tag}")
         else:
             print(f"{RED}   🚫 BLOCKED  RSI:{idx_data['rsi']:.1f} ({rsi_dir_label})  "
                   f"Slope:{idx_data['rsi_slope']:+.1f}  "
-                  f"Danger:{idx_data['danger_score']}/6{RESET}")
+                  f"Danger:{idx_data['danger_score']}/6{RESET}{stale_tag}")
             for r in reasons:
                 print(f"       {r}")
 
