@@ -102,6 +102,8 @@ ENV VARS (optional):
 import yfinance as yf
 import pandas as pd
 import warnings
+import time
+import random
 from datetime import datetime
 import pytz
 import contextlib
