@@ -502,11 +502,20 @@ def _make_yf_session():
 _YF_SESSION = _make_yf_session()
 
 
-def _download_with_retry(ticker, period="1y", interval="1d", max_retries=3):
+def _download_with_retry(ticker, period="1y", interval="1d", max_retries=4):
     """
     yf.download() wrapper with retry + exponential backoff + a real-browser
     session (FIX-8) to survive Yahoo's throttling of the default yfinance
     client. See _make_yf_session() docstring for the full root-cause story.
+
+    FIX-9  Longer backoff window
+           The old backoff (1s, 2s, 4s ≈ 7s total) could never outlast a
+           Yahoo throttle block, which — per FIX-8's own findings — persists
+           for MINUTES once triggered (this is IP-based throttling of
+           GitHub Actions' shared runner IP ranges, not just TLS/bot
+           fingerprinting, so curl_cffi impersonation alone doesn't clear
+           it). New backoff is 8s, 16s, 24s (~48s total across 4 attempts),
+           which gives a real chance of the block clearing mid-retry.
     """
     import random
     for attempt in range(1, max_retries + 1):
@@ -522,7 +531,8 @@ def _download_with_retry(ticker, period="1y", interval="1d", max_retries=3):
         except Exception:
             pass
         if attempt < max_retries:
-            time.sleep((2 ** (attempt - 1)) + random.uniform(0, 0.5))
+            wait = (attempt * 8) + random.uniform(0, 2)
+            time.sleep(wait)
     return None
 
 
@@ -1782,21 +1792,24 @@ def main():
 
     sector_analysis = {}
     bullish_sectors = []
+    failed_sectors  = []   # FIX-9: sectors with no index data get one more shot later
 
-    for sector_name, config in sectors_config.items():
+    # FIX-9  scan_sector() pulled out into its own function so the exact
+    #        same logic can be reused for the end-of-run retry pass below,
+    #        instead of duplicating the loop body.
+    def scan_sector(sector_name, config):
         print(f"{YELLOW}📊 Scanning {sector_name}...{RESET}")
 
         idx_data = fetch_and_analyze(config['ticker'])
-        time.sleep(0.4)   # FIX-7: pace requests — reduces Yahoo throttling
+        time.sleep(1.2)   # FIX-9: paced up from 0.4s — fewer requests trigger the throttle
         if not idx_data:
             print(f"{RED}   ❌ No index data{RESET}")
-            continue
+            return None
 
         is_bull, reasons = is_sector_bullish(idx_data)
 
         rsi_dir_label = idx_data.get('rsi_direction', 'Flat')
         if is_bull:
-            bullish_sectors.append(sector_name)
             print(f"{GREEN}   ✅ BULLISH  RSI:{idx_data['rsi']:.1f} ({rsi_dir_label})  "
                   f"Slope:{idx_data['rsi_slope']:+.1f}  "
                   f"Danger:{idx_data['danger_score']}/6{RESET}")
@@ -1810,17 +1823,56 @@ def main():
         stocks_data = []
         for ticker, info in config['stocks'].items():
             sd = fetch_and_analyze(ticker)
-            time.sleep(0.4)   # FIX-7: pace requests — reduces Yahoo throttling
+            time.sleep(1.2)   # FIX-9: paced up from 0.4s
             if sd:
                 sd['symbol']   = ticker.replace('.NS', '')
                 sd['weight']   = info['weight']
                 sd['industry'] = info['industry']
                 stocks_data.append(sd)
 
+        return {'index_data': idx_data, 'stocks': stocks_data, 'is_bull': is_bull}
+
+    for sector_name, config in sectors_config.items():
+        result = scan_sector(sector_name, config)
+        if result is None:
+            failed_sectors.append(sector_name)
+            continue
         sector_analysis[sector_name] = {
-            'index_data': idx_data,
-            'stocks':     stocks_data,
+            'index_data': result['index_data'],
+            'stocks':     result['stocks'],
         }
+        if result['is_bull']:
+            bullish_sectors.append(sector_name)
+
+    # ── FIX-9: Retry pass for sectors that had no index data ────
+    # Per FIX-8's own findings, a Yahoo throttle block persists for
+    # MINUTES once triggered — so a long cooldown here has a real chance
+    # of clearing it, unlike the few-second in-loop retry backoff.
+    if failed_sectors:
+        cooldown = 60
+        print(f"\n{YELLOW}⏳ {len(failed_sectors)} sector(s) had no data "
+              f"({', '.join(failed_sectors)}). Cooling down {cooldown}s "
+              f"before retrying...{RESET}")
+        time.sleep(cooldown)
+
+        still_failed = []
+        for sector_name in failed_sectors:
+            config = sectors_config[sector_name]
+            print(f"{YELLOW}🔁 Retrying {sector_name}...{RESET}")
+            result = scan_sector(sector_name, config)
+            if result is None:
+                still_failed.append(sector_name)
+                continue
+            sector_analysis[sector_name] = {
+                'index_data': result['index_data'],
+                'stocks':     result['stocks'],
+            }
+            if result['is_bull']:
+                bullish_sectors.append(sector_name)
+
+        if still_failed:
+            print(f"{RED}⚠️  Still no data after retry: {', '.join(still_failed)}{RESET}")
+        failed_sectors = still_failed
 
     # ── Summary ───────────────────────────────────────────────
     all_valid   = [st for sn in bullish_sectors
