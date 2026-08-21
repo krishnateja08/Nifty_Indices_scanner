@@ -45,6 +45,14 @@ CHANGES in v2 (logic borrowed from Nifty50_stocksanalyzer_v5.4):
              · Week change > 0% (price actually up, not just "not down much")
            A sector must pass all three (not 2-of-3) to be badged BULLISH.
 
+  FIX-6  New sector — Nifty PSU Bank
+           Added as its own tracked sector (ticker ^CNXPSUBANK) instead of
+           leaving PSU banks buried inside Nifty Bank. Mirrors tick_hub.py's
+           SECTOR_MAP, which already separates PSU_BANK from PVT_BANK as
+           distinct categories. Constituents: SBIN, BANKBARODA, CANBK, PNB,
+           UNIONBANK, INDIANB, BANKINDIA, MAHABANK — current NSE weightages.
+           (Existing Nifty Bank sector composition is untouched.)
+
 UNCHANGED:
   ✅ Removed "v3" from title
   ✅ Explain box moved BELOW Sector Scorecard
@@ -89,6 +97,7 @@ CYAN = "\033[96m"; BLUE = "\033[94m"; MAGENTA = "\033[95m"; RESET = "\033[0m"
 # ─── SECTOR ICONS ─────────────────────────────────────────────────────────────
 SECTOR_ICONS = {
     "Nifty Bank":             "🏦",
+    "Nifty PSU Bank":         "🏛️",
     "Nifty IT":               "💻",
     "Nifty Pharma":           "💊",
     "Nifty Realty":           "🏢",
@@ -114,6 +123,24 @@ sectors_config = {
             "INDUSINDBK.NS": {"weight":  5.0, "industry": "Private Bank"},
             "BANKBARODA.NS": {"weight":  3.5, "industry": "PSU Bank"},
             "PNB.NS":        {"weight":  2.5, "industry": "PSU Bank"},
+        }
+    },
+    # NEW — Nifty PSU Bank added as its own tracked sector (previously PSU
+    # banks like SBIN/BANKBARODA/PNB only showed up buried inside Nifty
+    # Bank). tick_hub.py's SECTOR_MAP already treats PSU_BANK as a distinct
+    # category from PVT_BANK — this mirrors that split with the real Nifty
+    # PSU Bank index (^CNXPSUBANK) constituents and current NSE weightages.
+    "Nifty PSU Bank": {
+        "ticker": "^CNXPSUBANK",
+        "stocks": {
+            "SBIN.NS":        {"weight": 33.9, "industry": "PSU Bank"},
+            "BANKBARODA.NS":  {"weight": 12.6, "industry": "PSU Bank"},
+            "CANBK.NS":       {"weight": 11.8, "industry": "PSU Bank"},
+            "PNB.NS":         {"weight": 10.9, "industry": "PSU Bank"},
+            "UNIONBANK.NS":   {"weight":  9.3, "industry": "PSU Bank"},
+            "INDIANB.NS":     {"weight":  8.3, "industry": "PSU Bank"},
+            "BANKINDIA.NS":   {"weight":  4.7, "industry": "PSU Bank"},
+            "MAHABANK.NS":    {"weight":  4.5, "industry": "PSU Bank"},
         }
     },
     "Nifty IT": {
