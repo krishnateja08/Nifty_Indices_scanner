@@ -29,6 +29,7 @@ jobs:
         echo "🕒 Current IST Time: $(TZ='Asia/Kolkata' date)"
     - name: Run Market Intelligence Scanner (Neon Cyan Theme)
       env:
+        PYTHONUNBUFFERED: "1"
         GMAIL_USER: ${{ secrets.GMAIL_USER }}
         GMAIL_APP_PASS: ${{ secrets.GMAIL_APP_PASS }}
         RECEIVER_EMAIL: ${{ secrets.RECEIVER_EMAIL }}
@@ -37,7 +38,7 @@ jobs:
         TWILIO_FROM: ${{ secrets.TWILIO_FROM }}
         TWILIO_TO: ${{ secrets.TWILIO_TO }}
       run: |
-        python Nifty_indices_scanner.py
+        python -u Nifty_indices_scanner.py
     - name: Verify index.html was generated
       run: |
         if [ -f "index.html" ]; then
