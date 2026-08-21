@@ -39,6 +39,26 @@ jobs:
         TWILIO_TO: ${{ secrets.TWILIO_TO }}
       run: |
         python -u Nifty_indices_scanner.py
+    - name: Persist sector cache
+      run: |
+        # FIX-9: sector_cache.json holds the last-known-good index data so
+        # a throttled run can fall back to it instead of showing nothing.
+        # It must be committed on the working branch (not gh-pages, which
+        # gets wiped/replaced each deploy) so it survives to the next run.
+        if [ -f "sector_cache.json" ]; then
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add sector_cache.json
+          if git diff --staged --quiet; then
+            echo "ℹ️ Cache unchanged — nothing to commit"
+          else
+            git commit -m "🗄️ Update sector cache - $(TZ='Asia/Kolkata' date '+%Y-%m-%d %H:%M IST')"
+            git push origin HEAD
+            echo "✅ sector_cache.json committed"
+          fi
+        else
+          echo "⚠️ sector_cache.json not found — skipping"
+        fi
     - name: Verify index.html was generated
       run: |
         if [ -f "index.html" ]; then
