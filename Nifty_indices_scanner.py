@@ -53,6 +53,38 @@ CHANGES in v2 (logic borrowed from Nifty50_stocksanalyzer_v5.4):
            UNIONBANK, INDIANB, BANKINDIA, MAHABANK — current NSE weightages.
            (Existing Nifty Bank sector composition is untouched.)
 
+  FIX-7  Yahoo throttling fix — retry + backoff + request pacing
+           Root cause of "No index data" on Realty/FMCG/Metal/Auto/Energy/
+           Consumer Durables/PSU Bank in earlier runs: the tickers were
+           NOT wrong (^CNXFMCG, ^CNXMETAL, ^CNXAUTO, ^CNXREALTY, ^CNXCONSUM,
+           ^CNXPSUBANK, ^CNXENERGY are all confirmed live on Yahoo Finance).
+           Yahoo has been intermittently returning empty dataframes (0 rows,
+           no error) for valid tickers when hit with back-to-back requests
+           — a widely-reported yfinance issue since 2025. The old code had
+           zero retry logic, so one blip = permanent "No index data" for
+           that entire sector. Fixed via:
+             · _download_with_retry() — retries each ticker up to 3x with
+               exponential backoff (1s, 2s, 4s + jitter) before giving up
+             · time.sleep(0.4) pacing between every sequential Yahoo call
+               in the main scan loop (index + each stock)
+           Ticker symbols themselves are unchanged — they were already correct.
+
+  FIX-8  Browser-impersonating session (curl_cffi) — the real fix for
+           persistent, non-random "No index data" failures
+           FIX-7's retry+backoff helped with brief blips but did NOT fix
+           runs where the SAME sectors failed every time (Realty, FMCG,
+           Metal, Auto, Energy, Consumer Durables, PSU Bank) while the
+           first few sectors scanned each run kept succeeding. Root cause:
+           Yahoo detects and throttles yfinance's default bare
+           python-requests client much more aggressively than a real
+           browser, and once throttled mid-run the block lasts minutes —
+           far longer than a few seconds of retry backoff can outlast.
+           Fix: _make_yf_session() creates a curl_cffi session that
+           impersonates Chrome's TLS/HTTP fingerprint; every yf.download()
+           call now goes through it. Falls back gracefully (with a console
+           warning) to yfinance's default session if curl_cffi isn't
+           installed — install it with: pip install curl_cffi
+
 UNCHANGED:
   ✅ Removed "v3" from title
   ✅ Explain box moved BELOW Sector Scorecard
@@ -61,7 +93,7 @@ UNCHANGED:
      sector bullish gate, scoring, HTML/email generation — untouched.
 
 REQUIREMENTS:
-    pip install yfinance pandas numpy pytz
+    pip install yfinance pandas numpy pytz curl_cffi
 ENV VARS (optional):
     GMAIL_USER, GMAIL_APP_PASS, RECEIVER_EMAIL
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -442,14 +474,64 @@ def reversal_confirmations(data):
 # =============================================================================
 #  FETCH + ANALYZE
 # =============================================================================
+def _make_yf_session():
+    """
+    FIX-8: Yahoo's bot detection blocks yfinance's default bare
+    python-requests client much more aggressively than it blocks a real
+    browser. Once blocked mid-run, the block persists for minutes — far
+    longer than FIX-7's few-second retry backoff — which is why sectors
+    scanned later in the run (Realty, FMCG, Metal, Auto, Energy, Consumer
+    Durables, PSU Bank) kept failing even after retries were added, while
+    the first couple of sectors scanned each run kept succeeding.
+    Fix: route every yf.download() through a curl_cffi session that
+    impersonates a real Chrome browser's TLS/HTTP fingerprint, which Yahoo
+    does not throttle the same way. Falls back to yfinance's own default
+    session (no impersonation) if curl_cffi isn't installed — the retry
+    logic in FIX-7 still helps in that case, just not as reliably.
+    """
+    try:
+        from curl_cffi import requests as curl_requests
+        return curl_requests.Session(impersonate="chrome")
+    except ImportError:
+        log_msg = "⚠️  curl_cffi not installed — falling back to default session (less reliable). Run: pip install curl_cffi"
+        print(f"{YELLOW}{log_msg}{RESET}")
+        return None
+
+_YF_SESSION = _make_yf_session()
+
+
+def _download_with_retry(ticker, period="1y", interval="1d", max_retries=3):
+    """
+    yf.download() wrapper with retry + exponential backoff + a real-browser
+    session (FIX-8) to survive Yahoo's throttling of the default yfinance
+    client. See _make_yf_session() docstring for the full root-cause story.
+    """
+    import random
+    for attempt in range(1, max_retries + 1):
+        try:
+            with suppress_stdout():
+                kwargs = dict(period=period, interval=interval,
+                              progress=False, multi_level_index=False)
+                if _YF_SESSION is not None:
+                    kwargs["session"] = _YF_SESSION
+                data = yf.download(ticker, **kwargs)
+            if data is not None and not data.empty and len(data) >= 200:
+                return data
+        except Exception:
+            pass
+        if attempt < max_retries:
+            time.sleep((2 ** (attempt - 1)) + random.uniform(0, 0.5))
+    return None
+
+
 def fetch_and_analyze(ticker, period="1y"):
     # Period upgraded 6mo → 1y so SMA200 is always available for the
     # falling-knife MA-bearish check (borrowed from Stocks Analyzer v5.4).
+    # FIX-7: now uses _download_with_retry() instead of a single direct
+    # yf.download() call — see that function's docstring for why.
     try:
-        with suppress_stdout():
-            data = yf.download(ticker, period=period, interval="1d",
-                               progress=False, multi_level_index=False)
-        if data.empty or len(data) < 200:
+        data = _download_with_retry(ticker, period=period, interval="1d")
+        if data is None:
             return None
 
         close = data['Close']
@@ -1703,6 +1785,7 @@ def main():
         print(f"{YELLOW}📊 Scanning {sector_name}...{RESET}")
 
         idx_data = fetch_and_analyze(config['ticker'])
+        time.sleep(0.4)   # FIX-7: pace requests — reduces Yahoo throttling
         if not idx_data:
             print(f"{RED}   ❌ No index data{RESET}")
             continue
@@ -1725,6 +1808,7 @@ def main():
         stocks_data = []
         for ticker, info in config['stocks'].items():
             sd = fetch_and_analyze(ticker)
+            time.sleep(0.4)   # FIX-7: pace requests — reduces Yahoo throttling
             if sd:
                 sd['symbol']   = ticker.replace('.NS', '')
                 sd['weight']   = info['weight']
