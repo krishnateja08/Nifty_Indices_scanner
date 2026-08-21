@@ -109,6 +109,7 @@ import pytz
 import contextlib
 import io
 import os
+import logging
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
@@ -123,6 +124,28 @@ RECEIVER_EMAIL = os.getenv('RECEIVER_EMAIL', 'krishnateja.sapbasis@gmail.com')
 def suppress_stdout():
     with contextlib.redirect_stdout(io.StringIO()):
         yield
+
+# FIX-10  yfinance logs errors like "No data found, symbol may be delisted"
+#         through Python's logging module, not print() — so suppress_stdout's
+#         redirect_stdout() never catches it (that's why it leaked straight
+#         into the GitHub Actions job log even though every yf.download()
+#         call is wrapped in suppress_stdout()). Attaching our own handler
+#         to yfinance's logger lets us (a) silence the console spam and
+#         (b) inspect what it said, so a PERMANENTLY delisted ticker can
+#         fail fast instead of burning the full FIX-9 backoff (up to ~48s)
+#         retrying something that can never succeed.
+_YF_LOG_BUFFER = io.StringIO()
+_yf_logger = logging.getLogger('yfinance')
+_yf_logger.setLevel(logging.ERROR)
+_yf_logger.handlers = [logging.StreamHandler(_YF_LOG_BUFFER)]
+_yf_logger.propagate = False
+
+def _yf_error_is_permanent():
+    """Check whether yfinance's last log output indicates a permanent
+    failure (delisted/nonexistent ticker) rather than a transient one
+    (throttling, network blip)."""
+    msg = _YF_LOG_BUFFER.getvalue().lower()
+    return 'delisted' in msg or 'no data found' in msg or 'not found' in msg
 
 # ─── ANSI TERMINAL COLOURS ────────────────────────────────────────────────────
 RED = "\033[91m"; GREEN = "\033[92m"; YELLOW = "\033[93m"
@@ -185,7 +208,7 @@ sectors_config = {
             "HCLTECH.NS":    {"weight": 11.0, "industry": "IT Services"},
             "TECHM.NS":      {"weight": 10.0, "industry": "IT Services"},
             "WIPRO.NS":      {"weight":  7.0, "industry": "IT Services"},
-            "LTI.NS":       {"weight":  6.0, "industry": "IT Services"},
+            "LTIM.NS":      {"weight":  6.0, "industry": "IT Services"},  # was LTI.NS — merged into LTIMindtree Nov 2022
             "PERSISTENT.NS": {"weight":  4.0, "industry": "Product Engineering"},
             "COFORGE.NS":    {"weight":  3.0, "industry": "IT Consulting"},
         }
@@ -519,6 +542,8 @@ def _download_with_retry(ticker, period="1y", interval="1d", max_retries=4):
     """
     import random
     for attempt in range(1, max_retries + 1):
+        _YF_LOG_BUFFER.seek(0)
+        _YF_LOG_BUFFER.truncate(0)
         try:
             with suppress_stdout():
                 kwargs = dict(period=period, interval=interval,
@@ -530,6 +555,11 @@ def _download_with_retry(ticker, period="1y", interval="1d", max_retries=4):
                 return data
         except Exception:
             pass
+        # FIX-10: a delisted/nonexistent ticker will fail identically on
+        # every attempt no matter how long we wait — stop immediately
+        # instead of sleeping through 2-3 more rounds of backoff for nothing.
+        if _yf_error_is_permanent():
+            return None
         if attempt < max_retries:
             wait = (attempt * 8) + random.uniform(0, 2)
             time.sleep(wait)
