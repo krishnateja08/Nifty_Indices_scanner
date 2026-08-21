@@ -582,6 +582,18 @@ def _analyze_ohlcv(data):
     Shared by fetch_and_analyze() (real index/stock tickers) and
     build_synthetic_index() (composite sector series) — see FIX-10."""
     try:
+        # FIX-13: Yahoo sometimes appends a trailing "today" row with NaN
+        # OHLC (session not fully reported yet — happens near/after market
+        # hours). calculate_rsi()/calculate_macd() silently absorb that NaN
+        # (delta.where(delta>0,0) turns a NaN comparison into 0, so RSI/Score
+        # still render a number) but ltp = close.iloc[-1] does not, and since
+        # target_1/target_2/stop_loss/risk_reward all derive from ltp, they
+        # cascade to NaN too — the "₹nan" / "0.0×" rows in the buy table.
+        # Drop trailing NaN rows once, up front, so every field (ltp, RSI,
+        # MACD, ATR) is computed from the same last *complete* session.
+        data  = data[~data['Close'].isna()]
+        if data.empty:
+            return None
         close = data['Close']
         ltp   = float(close.iloc[-1])
 
@@ -900,6 +912,92 @@ def generate_html(sector_analysis, bullish_sectors, ist_time):
     total_sectors = len(sector_analysis)
     bullish_count = len(bullish_sectors)
 
+    # ── FIX-13: Nifty Directional Status (market-wide summary card) ────
+    # Combines Option-2 (score/trend/volatility/verdict card) and Option-3
+    # (traffic-light color) from the requested design — one compact card
+    # above the sector grid instead of a separate gauge, since it reuses
+    # the existing s5-card visual language rather than adding a new style.
+    #
+    # Score inputs, each already computed per-sector during the scan:
+    #   - bullish_ratio : sectors passing the BULLISH gate / total sectors
+    #   - avg_rsi       : average RSI across all sector composites
+    #   - rising_pct    : % of sectors with RSI direction == 'Rising'
+    #   - avg_danger    : average danger score (0-6, lower = safer)
+    idxs = [a['index_data'] for a in sector_analysis.values() if a.get('index_data')]
+    n_idx = len(idxs) or 1
+    # FIX-13: skip any non-finite reading (belt-and-suspenders on top of the
+    # FIX-12 NaN guard) so one bad sector can't NaN out the whole card.
+    _finite_weeks = [i['week_chg_pct'] for i in idxs if pd.notna(i['week_chg_pct'])]
+    avg_rsi      = sum(i['rsi'] for i in idxs) / n_idx
+    avg_week     = (sum(_finite_weeks) / len(_finite_weeks)) if _finite_weeks else 0.0
+    avg_danger   = sum(i['danger_score'] for i in idxs) / n_idx
+    rising_pct   = sum(1 for i in idxs if i['rsi_direction'] == 'Rising') / n_idx
+    bullish_ratio = (bullish_count / total_sectors) if total_sectors else 0
+
+    directional_score = round(
+        40 * bullish_ratio +
+        25 * (avg_rsi / 100) +
+        20 * rising_pct +
+        15 * (1 - avg_danger / 6)
+    )
+    directional_score = max(0, min(100, directional_score))
+
+    if avg_week > 0.3:
+        market_trend = "Up ↑"
+    elif avg_week < -0.3:
+        market_trend = "Down ↓"
+    else:
+        market_trend = "Flat →"
+
+    if avg_danger >= 3.5:
+        market_vol = "High"
+    elif avg_danger >= 1.5:
+        market_vol = "Medium"
+    else:
+        market_vol = "Low"
+
+    if directional_score >= 65:
+        verdict_text, verdict_color, verdict_emoji = "Buy — Strong Confirmation", "var(--ng)", "🟢"
+    elif directional_score >= 40:
+        verdict_text, verdict_color, verdict_emoji = "Watch — Mixed Signals", "var(--no)", "🟡"
+    else:
+        verdict_text, verdict_color, verdict_emoji = "Avoid — Market Weak", "var(--nr)", "🔴"
+
+    directional_bar_html = f"""
+<div class="section" id="directional-status-section">
+  <div style="background:linear-gradient(135deg,#001328,#000814);border:1px solid #0a2540;
+    border-radius:14px;padding:18px 22px;display:flex;align-items:center;
+    justify-content:space-between;flex-wrap:wrap;gap:16px;
+    box-shadow:0 0 24px rgba(0,217,255,.06)">
+    <div>
+      <div style="font-size:.7rem;letter-spacing:1.5px;color:#80deea;font-weight:800;
+        text-transform:uppercase;margin-bottom:4px">Nifty Directional Status</div>
+      <div style="font-size:1.6rem;font-weight:800;color:{verdict_color}">
+        {verdict_emoji} {verdict_text}
+      </div>
+    </div>
+    <div style="display:flex;gap:28px;flex-wrap:wrap">
+      <div style="text-align:center">
+        <div style="font-size:1.4rem;font-weight:800;color:{verdict_color}">{directional_score}<span style="font-size:.85rem;color:#5a7a94">/100</span></div>
+        <div style="font-size:.65rem;color:#5a7a94;text-transform:uppercase;letter-spacing:1px">Score</div>
+      </div>
+      <div style="text-align:center">
+        <div style="font-size:1.4rem;font-weight:800;color:#e0f7ff">{market_trend}</div>
+        <div style="font-size:.65rem;color:#5a7a94;text-transform:uppercase;letter-spacing:1px">Trend</div>
+      </div>
+      <div style="text-align:center">
+        <div style="font-size:1.4rem;font-weight:800;color:#e0f7ff">{market_vol}</div>
+        <div style="font-size:.65rem;color:#5a7a94;text-transform:uppercase;letter-spacing:1px">Volatility</div>
+      </div>
+      <div style="text-align:center">
+        <div style="font-size:1.4rem;font-weight:800;color:#e0f7ff">{bullish_count}/{total_sectors}</div>
+        <div style="font-size:.65rem;color:#5a7a94;text-transform:uppercase;letter-spacing:1px">Sectors Bullish</div>
+      </div>
+    </div>
+  </div>
+</div>
+"""
+
     # ── Sector Cards ──────────────────────────────────────────
     sector_cards_html = ""
     for sn, analysis in sector_analysis.items():
@@ -1140,7 +1238,7 @@ body::before{{
   pointer-events:none;z-index:0;
 }}
 .container{{
-  max-width:1500px;margin:auto;
+  max-width:2200px;width:100%;margin:auto;
   background:rgba(0,8,20,.97);
   border-radius:16px;
   box-shadow:0 0 60px rgba(0,217,255,.2);
@@ -1366,7 +1464,7 @@ tbody tr:last-child td{{border-bottom:none}}
 }}
 /* ── TABLET (≤900px) ─────────────────────────────────────── */
 @media(max-width:900px){{
-  .s5-grid{{grid-template-columns:repeat(5,1fr);}}
+  .s5-grid{{grid-template-columns:repeat(auto-fill,minmax(120px,1fr));}}
   table{{min-width:700px}}
 }}
 /* ── MOBILE LARGE (≤640px) ───────────────────────────────── */
@@ -1379,7 +1477,7 @@ tbody tr:last-child td{{border-bottom:none}}
   .summary{{padding:10px;gap:8px}}
   .stat{{flex:1 1 90px;padding:10px 8px}}
   .stat .num{{font-size:1.4rem}}
-  .s5-grid{{grid-template-columns:repeat(2,1fr);gap:6px}}
+  .s5-grid{{grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:6px}}
   .s5-card{{min-width:0;padding:10px 6px}}
   .s5-name{{font-size:.55rem}}
   .s5-ring-wrap{{width:60px;height:60px}}
@@ -1402,7 +1500,7 @@ tbody tr:last-child td{{border-bottom:none}}
 }}
 /* ── MOBILE SMALL (≤400px) ───────────────────────────────── */
 @media(max-width:400px){{
-  .s5-grid{{grid-template-columns:repeat(2,1fr)}}
+  .s5-grid{{grid-template-columns:repeat(auto-fill,minmax(85px,1fr))}}
   .stat{{flex:1 1 80px}}
   .stat .num{{font-size:1.2rem}}
 }}
@@ -1452,6 +1550,7 @@ tbody tr:last-child td{{border-bottom:none}}
 </div>
 <div id="filter-banner-slot"></div>
 
+{directional_bar_html}
 <!-- ── SECTOR SCORECARD ────────────────────────────────────────── -->
 <div class="section" id="scorecard-section">
   <div class="section-title">🏆 Sector Scorecard</div>
@@ -1683,6 +1782,62 @@ def generate_email_html(sector_analysis, bullish_sectors, ist_time, top_picks, a
       </tr>
     </table>"""
 
+    # ── FIX-13: Nifty Directional Status — same scoring as generate_html(),
+    # rendered as an inline-styled table (no flex/grid — many email clients
+    # strip those). See the FIX-13 note in generate_html() for the formula.
+    idxs = [a['index_data'] for a in sector_analysis.values() if a.get('index_data')]
+    n_idx = len(idxs) or 1
+    _finite_weeks_e = [i['week_chg_pct'] for i in idxs if pd.notna(i['week_chg_pct'])]
+    avg_rsi_e     = sum(i['rsi'] for i in idxs) / n_idx
+    avg_week_e    = (sum(_finite_weeks_e) / len(_finite_weeks_e)) if _finite_weeks_e else 0.0
+    avg_danger_e  = sum(i['danger_score'] for i in idxs) / n_idx
+    rising_pct_e  = sum(1 for i in idxs if i['rsi_direction'] == 'Rising') / n_idx
+    bullish_ratio_e = (bull_n / total) if total else 0
+
+    directional_score_e = round(
+        40 * bullish_ratio_e + 25 * (avg_rsi_e / 100) +
+        20 * rising_pct_e + 15 * (1 - avg_danger_e / 6)
+    )
+    directional_score_e = max(0, min(100, directional_score_e))
+
+    trend_e = "Up ↑" if avg_week_e > 0.3 else ("Down ↓" if avg_week_e < -0.3 else "Flat →")
+    vol_e   = "High" if avg_danger_e >= 3.5 else ("Medium" if avg_danger_e >= 1.5 else "Low")
+
+    if directional_score_e >= 65:
+        verdict_e, vcolor_e, vemoji_e = "Buy — Strong Confirmation", "#00ff95", "🟢"
+    elif directional_score_e >= 40:
+        verdict_e, vcolor_e, vemoji_e = "Watch — Mixed Signals", "#ffa502", "🟡"
+    else:
+        verdict_e, vcolor_e, vemoji_e = "Avoid — Market Weak", "#ff6b9d", "🔴"
+
+    directional_bar_row = f"""
+    <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:24px;
+      background:#001328;border:1px solid #0a2540;border-radius:10px">
+      <tr>
+        <td style="padding:16px 20px">
+          <div style="font-size:11px;letter-spacing:1.5px;color:#80deea;font-weight:800;
+            text-transform:uppercase;margin-bottom:6px">Nifty Directional Status</div>
+          <div style="font-size:20px;font-weight:800;color:{vcolor_e}">{vemoji_e} {verdict_e}</div>
+        </td>
+        <td style="text-align:center;padding:16px 10px">
+          <div style="font-size:18px;font-weight:800;color:{vcolor_e}">{directional_score_e}<span style="font-size:11px;color:#5a7a94">/100</span></div>
+          <div style="font-size:9px;color:#5a7a94;text-transform:uppercase">Score</div>
+        </td>
+        <td style="text-align:center;padding:16px 10px">
+          <div style="font-size:18px;font-weight:800;color:#e0f7ff">{trend_e}</div>
+          <div style="font-size:9px;color:#5a7a94;text-transform:uppercase">Trend</div>
+        </td>
+        <td style="text-align:center;padding:16px 10px">
+          <div style="font-size:18px;font-weight:800;color:#e0f7ff">{vol_e}</div>
+          <div style="font-size:9px;color:#5a7a94;text-transform:uppercase">Volatility</div>
+        </td>
+        <td style="text-align:center;padding:16px 20px">
+          <div style="font-size:18px;font-weight:800;color:#e0f7ff">{bull_n}/{total}</div>
+          <div style="font-size:9px;color:#5a7a94;text-transform:uppercase">Bullish</div>
+        </td>
+      </tr>
+    </table>"""
+
     # ── Sector scorecard rows ──────────────────────────────────
     sector_rows = ""
     for sn, analysis in sector_analysis.items():
@@ -1829,6 +1984,7 @@ def generate_email_html(sector_analysis, bullish_sectors, ist_time, top_picks, a
 
     <!-- SUMMARY STATS -->
     {stats_row}
+    {directional_bar_row}
 
     <!-- SECTOR SCORECARD -->
     <div style="font-size:14px;font-weight:800;color:#00d9ff;
