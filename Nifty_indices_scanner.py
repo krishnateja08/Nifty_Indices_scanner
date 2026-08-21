@@ -587,7 +587,12 @@ def _analyze_ohlcv(data):
 
         prev_close    = float(close.iloc[-2])
         day_chg_pct   = ((ltp - prev_close) / prev_close) * 100
-        week_chg_pct  = ((ltp - float(close.iloc[-6]))  / float(close.iloc[-6]))  * 100 if len(close) >= 6  else 0.0
+        # FIX-12: guard against NaN reaching week_chg_pct — len(close)>=6 only
+        # confirms enough rows exist, not that iloc[-6] itself is non-NaN (can
+        # happen if a composite/source series has a stray NaN mid-series).
+        # Falls back to 0.0 (shown as "—" in the UI) rather than "+nan%".
+        _week_ref    = float(close.iloc[-6]) if len(close) >= 6 else None
+        week_chg_pct = ((ltp - _week_ref) / _week_ref) * 100 if _week_ref and pd.notna(_week_ref) else 0.0
 
         high_52w = float(data['High'].tail(252).max() if len(data) >= 252 else data['High'].max())
 
@@ -738,6 +743,14 @@ def build_synthetic_index(stocks_dict, period="1y"):
         time.sleep(0.4)  # FIX-7 pacing — same courtesy as the main stock loop
         if data is None or data.empty or len(data) < 200:
             continue
+        # FIX-12: dedupe any duplicate index timestamps (occasional yfinance
+        # quirk around DST/corporate-action adjustments). A duplicate label
+        # makes .loc[common_index, col] below return multiple rows for that
+        # date, silently misaligning the composite at that spot and
+        # producing NaN — RSI/rolling calcs mask this since they smooth over
+        # gaps, but the fixed-offset week_chg_pct (close.iloc[-6]) doesn't,
+        # which is exactly the "week +nan%" symptom this fixes.
+        data = data[~data.index.duplicated(keep='last')]
         frames[symbol] = (data, meta['weight'])
         total_weight += meta['weight']
 
@@ -757,12 +770,22 @@ def build_synthetic_index(stocks_dict, period="1y"):
     for col in ['Open', 'High', 'Low', 'Close']:
         weighted_sum = None
         for symbol, (data, weight) in frames.items():
-            aligned = data.loc[common_index, col]
+            # FIX-12: reindex (not .loc) — reindex requires a unique index
+            # on both sides and maps 1:1, so it can't silently expand into
+            # extra misaligned rows the way .loc with a duplicate label can.
+            aligned = data[col].reindex(common_index)
             base    = float(aligned.iloc[0])
             normalized = (aligned / base) * 100.0 * (weight / total_weight)
             weighted_sum = normalized if weighted_sum is None else weighted_sum + normalized
         composite[col] = weighted_sum
-    composite['Volume'] = sum(data.loc[common_index, 'Volume'] for data, _ in frames.values())
+    composite['Volume'] = sum(data['Volume'].reindex(common_index) for data, _ in frames.values())
+
+    # FIX-12: belt-and-suspenders — if any row still ended up with a NaN
+    # (e.g. a constituent's Volume genuinely missing that day), drop it
+    # rather than let it silently propagate into RSI/week-change math.
+    composite = composite.dropna()
+    if len(composite) < 200:
+        return None
 
     result = _analyze_ohlcv(composite)
     if result is not None:
