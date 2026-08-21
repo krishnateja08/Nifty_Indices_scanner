@@ -109,7 +109,6 @@ import pytz
 import contextlib
 import io
 import os
-import logging
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
@@ -124,28 +123,6 @@ RECEIVER_EMAIL = os.getenv('RECEIVER_EMAIL', 'krishnateja.sapbasis@gmail.com')
 def suppress_stdout():
     with contextlib.redirect_stdout(io.StringIO()):
         yield
-
-# FIX-10  yfinance logs errors like "No data found, symbol may be delisted"
-#         through Python's logging module, not print() — so suppress_stdout's
-#         redirect_stdout() never catches it (that's why it leaked straight
-#         into the GitHub Actions job log even though every yf.download()
-#         call is wrapped in suppress_stdout()). Attaching our own handler
-#         to yfinance's logger lets us (a) silence the console spam and
-#         (b) inspect what it said, so a PERMANENTLY delisted ticker can
-#         fail fast instead of burning the full FIX-9 backoff (up to ~48s)
-#         retrying something that can never succeed.
-_YF_LOG_BUFFER = io.StringIO()
-_yf_logger = logging.getLogger('yfinance')
-_yf_logger.setLevel(logging.ERROR)
-_yf_logger.handlers = [logging.StreamHandler(_YF_LOG_BUFFER)]
-_yf_logger.propagate = False
-
-def _yf_error_is_permanent():
-    """Check whether yfinance's last log output indicates a permanent
-    failure (delisted/nonexistent ticker) rather than a transient one
-    (throttling, network blip)."""
-    msg = _YF_LOG_BUFFER.getvalue().lower()
-    return 'delisted' in msg or 'no data found' in msg or 'not found' in msg
 
 # ─── ANSI TERMINAL COLOURS ────────────────────────────────────────────────────
 RED = "\033[91m"; GREEN = "\033[92m"; YELLOW = "\033[93m"
@@ -208,7 +185,7 @@ sectors_config = {
             "HCLTECH.NS":    {"weight": 11.0, "industry": "IT Services"},
             "TECHM.NS":      {"weight": 10.0, "industry": "IT Services"},
             "WIPRO.NS":      {"weight":  7.0, "industry": "IT Services"},
-            "LTIM.NS":      {"weight":  6.0, "industry": "IT Services"},  # was LTI.NS — merged into LTIMindtree Nov 2022
+            "LTI.NS":       {"weight":  6.0, "industry": "IT Services"},
             "PERSISTENT.NS": {"weight":  4.0, "industry": "Product Engineering"},
             "COFORGE.NS":    {"weight":  3.0, "industry": "IT Consulting"},
         }
@@ -525,16 +502,14 @@ def _make_yf_session():
 _YF_SESSION = _make_yf_session()
 
 
-def _download_with_retry(ticker, period="1y", interval="1d", max_retries=4):
+def _download_with_retry(ticker, period="1y", interval="1d", max_retries=3):
     """
-    Single-ticker download with retry + backoff. Kept as a fallback path
-    (e.g. re-fetching one stock that dropped out of a batch) — the main
-    scan loop now uses _download_batch_with_retry() instead (see FIX-11).
+    yf.download() wrapper with retry + exponential backoff + a real-browser
+    session (FIX-8) to survive Yahoo's throttling of the default yfinance
+    client. See _make_yf_session() docstring for the full root-cause story.
     """
     import random
     for attempt in range(1, max_retries + 1):
-        _YF_LOG_BUFFER.seek(0)
-        _YF_LOG_BUFFER.truncate(0)
         try:
             with suppress_stdout():
                 kwargs = dict(period=period, interval=interval,
@@ -546,94 +521,19 @@ def _download_with_retry(ticker, period="1y", interval="1d", max_retries=4):
                 return data
         except Exception:
             pass
-        if _yf_error_is_permanent():
-            return None
         if attempt < max_retries:
-            wait = (attempt * 8) + random.uniform(0, 2)
-            time.sleep(wait)
+            time.sleep((2 ** (attempt - 1)) + random.uniform(0, 0.5))
     return None
 
 
-def _download_batch_with_retry(tickers, period="1y", interval="1d", max_retries=4):
-    """
-    FIX-11  Batch download — the actual fix for the "always the same
-             sectors fail" pattern.
-
-    Root cause confirmed: ^CNXREALTY, ^CNXFMCG, ^CNXMETAL, ^CNXAUTO,
-    ^CNXENERGY etc. are all valid, live Yahoo tickers — the problem was
-    never the tickers. It's that the old code made ~9 SEPARATE sequential
-    yf.download() calls per sector (1 index + 8 stocks) × 10 sectors =
-    ~90 individual HTTP requests per run. Yahoo's throttle is triggered
-    by cumulative request COUNT, not randomly — by the time the scan
-    reached sector 5 (Realty), it had already made ~35-40 requests and
-    reliably crossed the threshold. The block then persists for minutes
-    (per FIX-8), which is why every sector from Realty onward failed as
-    a solid block, every single run, rather than randomly.
-
-    Fix: download an entire sector's index + all its stock tickers in
-    ONE yf.download() call. This cuts ~90 requests/run down to ~10 —
-    one per sector — keeping the whole run comfortably under Yahoo's
-    threshold instead of retrying/backing off around it.
-    """
-    import random
-    for attempt in range(1, max_retries + 1):
-        _YF_LOG_BUFFER.seek(0)
-        _YF_LOG_BUFFER.truncate(0)
-        try:
-            with suppress_stdout():
-                kwargs = dict(period=period, interval=interval, progress=False,
-                              group_by='ticker', threads=True)
-                if _YF_SESSION is not None:
-                    kwargs["session"] = _YF_SESSION
-                data = yf.download(tickers, **kwargs)
-            if data is not None and not data.empty:
-                return data
-        except Exception:
-            pass
-        if _yf_error_is_permanent():
-            return None
-        if attempt < max_retries:
-            wait = (attempt * 8) + random.uniform(0, 2)
-            time.sleep(wait)
-    return None
-
-
-def _extract_ticker_df(batch_data, ticker):
-    """
-    Slice one ticker's OHLCV rows out of a batched yf.download() result.
-    Handles both the normal multi-ticker (MultiIndex columns) case and the
-    edge case where only a single ticker ended up in the batch (flat columns).
-    Returns None if the ticker isn't present or has insufficient clean data.
-    """
-    if batch_data is None:
-        return None
+def fetch_and_analyze(ticker, period="1y"):
+    # Period upgraded 6mo → 1y so SMA200 is always available for the
+    # falling-knife MA-bearish check (borrowed from Stocks Analyzer v5.4).
+    # FIX-7: now uses _download_with_retry() instead of a single direct
+    # yf.download() call — see that function's docstring for why.
     try:
-        if isinstance(batch_data.columns, pd.MultiIndex):
-            top_level = batch_data.columns.get_level_values(0)
-            if ticker not in top_level:
-                return None
-            df = batch_data[ticker].copy()
-        else:
-            df = batch_data.copy()
-        if 'Close' not in df.columns:
-            return None
-        df = df.dropna(subset=['Close'])
-        if len(df) < 200:
-            return None
-        return df
-    except Exception:
-        return None
-
-
-def analyze_data(data):
-    """
-    Runs all indicator/verdict/scoring logic on an already-fetched OHLCV
-    dataframe. Split out from fetch_and_analyze() (FIX-11) so a batch
-    download's per-ticker slice can be analyzed directly, without each
-    ticker needing its own separate yf.download() call.
-    """
-    try:
-        if data is None or data.empty or len(data) < 200:
+        data = _download_with_retry(ticker, period=period, interval="1d")
+        if data is None:
             return None
 
         close = data['Close']
@@ -746,16 +646,6 @@ def analyze_data(data):
         }
     except Exception:
         return None
-
-
-def fetch_and_analyze(ticker, period="1y"):
-    """
-    Single-ticker fetch + analyze. Kept for the end-of-run retry pass and
-    any one-off fallback fetch — the main scan loop uses the batched path
-    (_download_batch_with_retry + analyze_data) instead. See FIX-11.
-    """
-    data = _download_with_retry(ticker, period=period, interval="1d")
-    return analyze_data(data)
 
 
 # =============================================================================
@@ -1892,37 +1782,21 @@ def main():
 
     sector_analysis = {}
     bullish_sectors = []
-    failed_sectors  = []   # FIX-9: sectors with no index data get one more shot later
 
-    # FIX-11  scan_sector() now does ONE batched download per sector
-    #         (index + all its stocks together) instead of ~9 separate
-    #         sequential yf.download() calls. See _download_batch_with_retry()
-    #         docstring for the full root-cause story on why this — not more
-    #         backoff tuning — is what actually fixes the "same sectors always
-    #         fail" pattern.
-    def scan_sector(sector_name, config):
+    for sector_name, config in sectors_config.items():
         print(f"{YELLOW}📊 Scanning {sector_name}...{RESET}")
 
-        tickers = [config['ticker']] + list(config['stocks'].keys())
-        batch   = _download_batch_with_retry(tickers, period="1y", interval="1d")
-        time.sleep(2.0)   # FIX-11: one pause per sector now, not one per ticker
-
-        idx_df   = _extract_ticker_df(batch, config['ticker'])
-        idx_data = analyze_data(idx_df)
-
-        # Fallback: if this one ticker dropped out of the batch (rare —
-        # e.g. a single symbol Yahoo choked on) try it alone before giving up.
-        if not idx_data:
-            idx_data = fetch_and_analyze(config['ticker'])
-
+        idx_data = fetch_and_analyze(config['ticker'])
+        time.sleep(0.4)   # FIX-7: pace requests — reduces Yahoo throttling
         if not idx_data:
             print(f"{RED}   ❌ No index data{RESET}")
-            return None
+            continue
 
         is_bull, reasons = is_sector_bullish(idx_data)
 
         rsi_dir_label = idx_data.get('rsi_direction', 'Flat')
         if is_bull:
+            bullish_sectors.append(sector_name)
             print(f"{GREEN}   ✅ BULLISH  RSI:{idx_data['rsi']:.1f} ({rsi_dir_label})  "
                   f"Slope:{idx_data['rsi_slope']:+.1f}  "
                   f"Danger:{idx_data['danger_score']}/6{RESET}")
@@ -1935,60 +1809,18 @@ def main():
 
         stocks_data = []
         for ticker, info in config['stocks'].items():
-            st_df = _extract_ticker_df(batch, ticker)
-            sd    = analyze_data(st_df)
-            if not sd:
-                # Fallback: single retry for just this stock, same as above
-                sd = fetch_and_analyze(ticker)
+            sd = fetch_and_analyze(ticker)
+            time.sleep(0.4)   # FIX-7: pace requests — reduces Yahoo throttling
             if sd:
                 sd['symbol']   = ticker.replace('.NS', '')
                 sd['weight']   = info['weight']
                 sd['industry'] = info['industry']
                 stocks_data.append(sd)
 
-        return {'index_data': idx_data, 'stocks': stocks_data, 'is_bull': is_bull}
-
-    for sector_name, config in sectors_config.items():
-        result = scan_sector(sector_name, config)
-        if result is None:
-            failed_sectors.append(sector_name)
-            continue
         sector_analysis[sector_name] = {
-            'index_data': result['index_data'],
-            'stocks':     result['stocks'],
+            'index_data': idx_data,
+            'stocks':     stocks_data,
         }
-        if result['is_bull']:
-            bullish_sectors.append(sector_name)
-
-    # ── FIX-9: Retry pass for sectors that had no index data ────
-    # Per FIX-8's own findings, a Yahoo throttle block persists for
-    # MINUTES once triggered — so a long cooldown here has a real chance
-    # of clearing it, unlike the few-second in-loop retry backoff.
-    if failed_sectors:
-        cooldown = 60
-        print(f"\n{YELLOW}⏳ {len(failed_sectors)} sector(s) had no data "
-              f"({', '.join(failed_sectors)}). Cooling down {cooldown}s "
-              f"before retrying...{RESET}")
-        time.sleep(cooldown)
-
-        still_failed = []
-        for sector_name in failed_sectors:
-            config = sectors_config[sector_name]
-            print(f"{YELLOW}🔁 Retrying {sector_name}...{RESET}")
-            result = scan_sector(sector_name, config)
-            if result is None:
-                still_failed.append(sector_name)
-                continue
-            sector_analysis[sector_name] = {
-                'index_data': result['index_data'],
-                'stocks':     result['stocks'],
-            }
-            if result['is_bull']:
-                bullish_sectors.append(sector_name)
-
-        if still_failed:
-            print(f"{RED}⚠️  Still no data after retry: {', '.join(still_failed)}{RESET}")
-        failed_sectors = still_failed
 
     # ── Summary ───────────────────────────────────────────────
     all_valid   = [st for sn in bullish_sectors
