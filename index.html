@@ -45,12 +45,16 @@ body::before{
 #live-clock{
   font-family:'JetBrains Mono',monospace;
   background:var(--nc);color:#000;
-  border-radius:30px;padding:10px 22px;
-  font-weight:700;font-size:.82rem;
-  white-space:nowrap;
+  border-radius:16px;padding:10px 20px;
+  font-weight:700;font-size:.72rem;
+  white-space:nowrap;line-height:1.7;
   box-shadow:0 0 20px rgba(0,217,255,.5);
-  flex-shrink:0;
+  flex-shrink:0;text-align:left;
 }
+#market-status{font-size:.68rem;font-weight:800;margin-top:2px;}
+.market-status-open{color:#00602e;}
+.market-status-pre{color:#7a4b00;}
+.market-status-closed{color:#7a0030;}
 .summary{
   display:flex;flex-wrap:wrap;gap:12px;
   padding:20px 28px;
@@ -194,6 +198,35 @@ body::before{
 .s5-db-label{font-size:.55rem;color:#2a5070;display:flex;justify-content:space-between;margin-bottom:3px;}
 .s5-db-track{height:4px;background:rgba(255,255,255,.06);border-radius:3px;overflow:hidden;}
 .s5-db-fill{height:100%;border-radius:3px;transition:width .8s ease}
+.s5-spark-wrap{margin-top:6px;display:flex;flex-direction:column;align-items:center;gap:1px}
+.s5-spark{display:block}
+.s5-spark-lbl{font-size:.52rem;color:#2a5070;text-transform:uppercase;letter-spacing:.4px}
+.score-meter{display:flex;flex-direction:column;align-items:center;line-height:1}
+.score-meter-tags{display:flex;gap:6px;font-size:.62rem;font-weight:700;margin-top:-2px}
+.mood-bar-wrap{margin-top:16px;}
+.mood-bar-track{position:relative;display:flex;height:10px;border-radius:6px;overflow:visible;}
+.mood-bar-seg{flex:1;height:100%;opacity:.85;}
+.mood-bar-seg:first-child{border-radius:6px 0 0 6px;}
+.mood-bar-seg:last-child{border-radius:0 6px 6px 0;}
+.mood-bar-marker{position:absolute;top:-5px;transform:translateX(-50%);width:2px;height:20px;background:#fff;box-shadow:0 0 8px #fff;transition:left 1s ease;}
+.mood-bar-marker-tip{position:absolute;top:-6px;left:50%;transform:translateX(-50%);width:0;height:0;border-left:5px solid transparent;border-right:5px solid transparent;border-top:6px solid #fff;}
+.mood-bar-labels{display:flex;justify-content:space-between;margin-top:6px;font-size:.65rem;color:#5a7a94;font-weight:700;}
+.knife-toggle{display:flex;align-items:center;gap:8px;cursor:pointer;font-size:.72rem;color:#80deea;font-weight:700;}
+.knife-toggle input{position:absolute;opacity:0;width:0;height:0;}
+.knife-toggle-track{position:relative;width:38px;height:20px;background:rgba(0,255,149,.25);border:1px solid var(--ng);border-radius:12px;transition:background .25s;flex-shrink:0;}
+.knife-toggle input:not(:checked) + .knife-toggle-track{background:rgba(255,107,157,.2);border-color:var(--nr);}
+.knife-toggle-thumb{position:absolute;top:1px;left:1px;width:16px;height:16px;border-radius:50%;background:var(--ng);transition:left .25s,background .25s;}
+.knife-toggle input:not(:checked) + .knife-toggle-track .knife-toggle-thumb{left:19px;background:var(--nr);}
+.alerts-panel{display:flex;flex-direction:column;gap:8px;}
+.alert-item{display:flex;align-items:center;gap:10px;padding:10px 14px;border-radius:8px;font-size:.78rem;font-weight:600;}
+.alert-icon{font-size:1rem;flex-shrink:0;}
+.alert-ok{background:rgba(0,255,149,.06);border:1px solid rgba(0,255,149,.2);color:#9df7d6;}
+.alert-danger{background:rgba(255,107,157,.06);border:1px solid rgba(255,107,157,.2);color:#ffb3d9;}
+.alert-empty{color:#2a5070;font-size:.78rem;padding:8px 4px;}
+.legend-panel{display:flex;flex-wrap:wrap;gap:14px;padding:12px 16px;}
+.legend-item{display:flex;align-items:center;gap:6px;font-size:.72rem;color:#80deea;font-weight:600;}
+.legend-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
+.corr-table td, .corr-table th{text-align:center;}
 .tbl-wrap{overflow-x:auto;border-radius:8px;border:1px solid rgba(0,217,255,.12);margin-bottom:8px;}
 table{width:100%;border-collapse:collapse;min-width:900px}
 thead tr{background:linear-gradient(135deg,var(--bg2),#003d7a)}
@@ -224,6 +257,17 @@ tbody tr:last-child td{border-bottom:none}
 .detail-icon{font-size:1.2rem}
 .detail-header h3{font-size:.95rem;font-weight:800;color:var(--nc);text-shadow:0 0 8px rgba(0,217,255,.5);flex:1;}
 .detail-meta{font-size:.78rem;color:#80deea;width:100%}
+.drill-wrap{padding:12px 16px;display:flex;flex-direction:column;gap:10px;background:rgba(0,217,255,.02);border-bottom:1px solid rgba(0,217,255,.1);}
+.drill-lane-title{font-size:.68rem;font-weight:800;color:#80deea;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;}
+.drill-row{display:flex;flex-wrap:wrap;gap:8px;}
+.drill-pill{background:rgba(0,217,255,.05);border:1px solid rgba(0,217,255,.12);border-radius:8px;padding:6px 12px;text-align:center;min-width:78px;}
+.drill-sym{font-size:.68rem;font-weight:800;color:#e0f2f1;}
+.drill-metric{font-size:.8rem;font-weight:800;font-family:'JetBrains Mono',monospace;}
+.drill-sub{font-size:.55rem;color:#4a7a78;text-transform:uppercase;}
+.drill-empty{font-size:.72rem;color:#2a5070;}
+.detail-full-toggle{padding:0 16px 14px;}
+.detail-full-toggle summary{cursor:pointer;font-size:.72rem;color:#00d9ff;font-weight:700;padding:8px 0;}
+.detail-full-toggle summary:hover{color:#80deea;}
 .avoided-section{
   padding:24px 28px;
   background:rgba(255,107,157,.03);
@@ -301,10 +345,14 @@ tbody tr:last-child td{border-bottom:none}
     <h1>🎯 Nifty Sector Scanner</h1>
     <div class="sub">
       Falling-Knife Filter · 6-Point Danger Check · Reversal Confirmation<br>
-      Report generated: 22 Aug 2026 03:24 AM IST
+      Report generated: 22 Aug 2026 04:06 AM IST
     </div>
   </div>
-  <div id="live-clock">🕐 Loading...</div>
+  <div id="live-clock">
+    <div id="clock-ist">🕐 IST — Loading...</div>
+    <div id="clock-est">🕒 EST — Loading...</div>
+    <div id="market-status">● …</div>
+  </div>
 </div>
 
 <!-- ── SUMMARY STRIP ──────────────────────────────────────────── -->
@@ -368,6 +416,51 @@ tbody tr:last-child td{border-bottom:none}
       </div>
     </div>
   </div>
+  <!-- Suggestion #2: Market Mood Bar — literal 🔴/🟡/🟢 horizontal gauge,
+       marker position driven by the same directional_score computed above. -->
+  <div class="mood-bar-wrap">
+    <div class="mood-bar-track">
+      <div class="mood-bar-seg" style="background:var(--nr)"></div>
+      <div class="mood-bar-seg" style="background:var(--no)"></div>
+      <div class="mood-bar-seg" style="background:var(--ng)"></div>
+      <div class="mood-bar-marker" style="left:31%"><div class="mood-bar-marker-tip"></div></div>
+    </div>
+    <div class="mood-bar-labels">
+      <span>🔴 Avoid</span><span>🟡 Neutral</span><span>🟢 Strong</span>
+    </div>
+  </div>
+</div>
+
+
+<div class="section" style="padding-top:0">
+  <div class="legend-panel">
+    <div class="legend-item"><span class="legend-dot" style="background:#00ff95"></span>Bullish / Safe</div>
+    <div class="legend-item"><span class="legend-dot" style="background:#ffa502"></span>Watch / Caution</div>
+    <div class="legend-item"><span class="legend-dot" style="background:#ff6b9d"></span>Avoid / Danger</div>
+    <div class="legend-item"><span class="legend-dot" style="background:#00d9ff"></span>Neutral / Info</div>
+    <div class="legend-item"><span class="legend-dot" style="background:#c586ff"></span>Synthetic Sector</div>
+  </div>
+</div>
+
+
+<div class="section" id="sector-alerts-section">
+  <div class="section-title">🔔 Sector Alerts</div>
+  <div class="alerts-panel"><div class="alert-empty">No sector changes since the last run.</div></div>
+</div>
+
+
+<div class="section" id="correlation-section">
+  <div class="section-title">🔗 Index Correlation Panel</div>
+  <p style="color:#5a7a94;font-size:.72rem;margin-bottom:12px">
+    30-session return correlation vs broad-market benchmarks. High (|r|≥0.7) means the sector
+    largely moves with that index — useful for gauging diversification / concentrated risk.
+  </p>
+  <div class="tbl-wrap">
+    <table class="corr-table">
+      <thead><tr><th style="text-align:left">Sector</th><th>NIFTY 50</th><th>BANK NIFTY</th><th>FIN NIFTY</th></tr></thead>
+      <tbody><tr><td style="text-align:left;font-weight:800;color:#e0f2f1">Nifty Bank</td><td style="color:#00ff95;font-weight:800;font-family:'JetBrains Mono',monospace">+0.87</td><td style="color:#00ff95;font-weight:800;font-family:'JetBrains Mono',monospace">+1.00</td><td style="color:#5a7a94;font-weight:800;font-family:'JetBrains Mono',monospace">+0.17</td></tr><tr><td style="text-align:left;font-weight:800;color:#e0f2f1">Nifty PSU Bank</td><td style="color:#5a7a94;font-weight:800;font-family:'JetBrains Mono',monospace">-0.03</td><td style="color:#5a7a94;font-weight:800;font-family:'JetBrains Mono',monospace">-0.08</td><td style="color:#00ff95;font-weight:800;font-family:'JetBrains Mono',monospace">+0.77</td></tr><tr><td style="text-align:left;font-weight:800;color:#e0f2f1">Nifty IT</td><td style="color:#ffa502;font-weight:800;font-family:'JetBrains Mono',monospace">+0.61</td><td style="color:#ffa502;font-weight:800;font-family:'JetBrains Mono',monospace">+0.42</td><td style="color:#5a7a94;font-weight:800;font-family:'JetBrains Mono',monospace">-0.04</td></tr><tr><td style="text-align:left;font-weight:800;color:#e0f2f1">Nifty Pharma</td><td style="color:#5a7a94;font-weight:800;font-family:'JetBrains Mono',monospace">+0.23</td><td style="color:#5a7a94;font-weight:800;font-family:'JetBrains Mono',monospace">+0.04</td><td style="color:#5a7a94;font-weight:800;font-family:'JetBrains Mono',monospace">-0.05</td></tr><tr><td style="text-align:left;font-weight:800;color:#e0f2f1">Nifty Realty</td><td style="color:#ffa502;font-weight:800;font-family:'JetBrains Mono',monospace">+0.59</td><td style="color:#ffa502;font-weight:800;font-family:'JetBrains Mono',monospace">+0.55</td><td style="color:#5a7a94;font-weight:800;font-family:'JetBrains Mono',monospace">+0.01</td></tr><tr><td style="text-align:left;font-weight:800;color:#e0f2f1">Nifty FMCG</td><td style="color:#ffa502;font-weight:800;font-family:'JetBrains Mono',monospace">+0.63</td><td style="color:#ffa502;font-weight:800;font-family:'JetBrains Mono',monospace">+0.41</td><td style="color:#ffa502;font-weight:800;font-family:'JetBrains Mono',monospace">+0.54</td></tr><tr><td style="text-align:left;font-weight:800;color:#e0f2f1">Nifty Metal</td><td style="color:#5a7a94;font-weight:800;font-family:'JetBrains Mono',monospace">+0.31</td><td style="color:#5a7a94;font-weight:800;font-family:'JetBrains Mono',monospace">+0.18</td><td style="color:#5a7a94;font-weight:800;font-family:'JetBrains Mono',monospace">+0.22</td></tr><tr><td style="text-align:left;font-weight:800;color:#e0f2f1">Nifty Auto</td><td style="color:#ffa502;font-weight:800;font-family:'JetBrains Mono',monospace">+0.40</td><td style="color:#5a7a94;font-weight:800;font-family:'JetBrains Mono',monospace">+0.15</td><td style="color:#5a7a94;font-weight:800;font-family:'JetBrains Mono',monospace">+0.04</td></tr><tr><td style="text-align:left;font-weight:800;color:#e0f2f1">Nifty Energy</td><td style="color:#ffa502;font-weight:800;font-family:'JetBrains Mono',monospace">+0.57</td><td style="color:#ffa502;font-weight:800;font-family:'JetBrains Mono',monospace">+0.54</td><td style="color:#5a7a94;font-weight:800;font-family:'JetBrains Mono',monospace">+0.16</td></tr><tr><td style="text-align:left;font-weight:800;color:#e0f2f1">Nifty Consumer Durables</td><td style="color:#ffa502;font-weight:800;font-family:'JetBrains Mono',monospace">+0.61</td><td style="color:#ffa502;font-weight:800;font-family:'JetBrains Mono',monospace">+0.46</td><td style="color:#5a7a94;font-weight:800;font-family:'JetBrains Mono',monospace">-0.15</td></tr></tbody>
+    </table>
+  </div>
 </div>
 
 <!-- ── SECTOR SCORECARD ────────────────────────────────────────── -->
@@ -418,6 +511,10 @@ tbody tr:last-child td{border-bottom:none}
               <div class="s5-db-fill" style="width:17%;background:#ffa502"></div>
             </div>
           </div>
+          <div class="s5-spark-wrap"><svg class="s5-spark" width="96" height="26" viewBox="0 0 96 26">
+  <polyline points="3.0,3.0 21.0,10.3 39.0,10.0 57.0,21.9 75.0,23.0 93.0,10.0" fill="none" stroke="#ff6b9d" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
+  <circle cx="93.0" cy="10.0" r="2.4" fill="#ff6b9d"/>
+</svg><span class="s5-spark-lbl">5-day trend</span></div>
         </div>
         <div class="s5-card bear clickable-card" onclick="document.getElementById('avoided-section').scrollIntoView({behavior:'smooth',block:'start'})" title="Click to see blocked stocks ↓">
           <div class="s5-header">
@@ -462,6 +559,10 @@ tbody tr:last-child td{border-bottom:none}
               <div class="s5-db-fill" style="width:0%;background:#00ff95"></div>
             </div>
           </div>
+          <div class="s5-spark-wrap"><svg class="s5-spark" width="96" height="26" viewBox="0 0 96 26">
+  <polyline points="3.0,4.2 21.0,3.0 39.0,23.0 57.0,12.7 75.0,17.8 93.0,13.3" fill="none" stroke="#ff6b9d" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
+  <circle cx="93.0" cy="13.3" r="2.4" fill="#ff6b9d"/>
+</svg><span class="s5-spark-lbl">5-day trend</span></div>
         </div>
         <div class="s5-card bear clickable-card" onclick="document.getElementById('avoided-section').scrollIntoView({behavior:'smooth',block:'start'})" title="Click to see blocked stocks ↓">
           <div class="s5-header">
@@ -506,6 +607,10 @@ tbody tr:last-child td{border-bottom:none}
               <div class="s5-db-fill" style="width:50%;background:#ff6b9d"></div>
             </div>
           </div>
+          <div class="s5-spark-wrap"><svg class="s5-spark" width="96" height="26" viewBox="0 0 96 26">
+  <polyline points="3.0,3.0 21.0,4.6 39.0,13.4 57.0,23.0 75.0,19.5 93.0,15.6" fill="none" stroke="#ff6b9d" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
+  <circle cx="93.0" cy="15.6" r="2.4" fill="#ff6b9d"/>
+</svg><span class="s5-spark-lbl">5-day trend</span></div>
         </div>
         <div class="s5-card bear clickable-card" onclick="document.getElementById('avoided-section').scrollIntoView({behavior:'smooth',block:'start'})" title="Click to see blocked stocks ↓">
           <div class="s5-header">
@@ -550,11 +655,15 @@ tbody tr:last-child td{border-bottom:none}
               <div class="s5-db-fill" style="width:33%;background:#ffa502"></div>
             </div>
           </div>
+          <div class="s5-spark-wrap"><svg class="s5-spark" width="96" height="26" viewBox="0 0 96 26">
+  <polyline points="3.0,3.0 21.0,15.9 39.0,21.5 57.0,20.4 75.0,23.0 93.0,17.5" fill="none" stroke="#ff6b9d" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
+  <circle cx="93.0" cy="17.5" r="2.4" fill="#ff6b9d"/>
+</svg><span class="s5-spark-lbl">5-day trend</span></div>
         </div>
         <div class="s5-card bull clickable-card" onclick="document.getElementById('sector-nifty-realty').scrollIntoView({behavior:'smooth',block:'start'});this.classList.add('card-flash')" title="Click to jump to sector detail ↓">
           <div class="s5-header">
             <div class="s5-icon">🏢</div>
-            <div class="s5-name">Nifty Realty <span style="font-size:.6rem;color:#70a1ff;font-weight:700" title="Yahoo has no history for this index ticker — composite built from 100.0% of constituent weight">◆ SYNTHETIC</span></div>
+            <div class="s5-name">Nifty Realty <span style="font-size:.6rem;color:#c586ff;font-weight:700" title="Yahoo has no history for this index ticker — composite built from 100.0% of constituent weight">◆ SYNTHETIC</span></div>
           </div>
           <div class="s5-ring-wrap"><svg width="74" height="74" viewBox="0 0 100 100" class="rsi-svg">
   <circle cx="50" cy="50" r="40" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="8"/>
@@ -594,11 +703,15 @@ tbody tr:last-child td{border-bottom:none}
               <div class="s5-db-fill" style="width:0%;background:#00ff95"></div>
             </div>
           </div>
+          <div class="s5-spark-wrap"><svg class="s5-spark" width="96" height="26" viewBox="0 0 96 26">
+  <polyline points="3.0,18.3 21.0,23.0 39.0,3.0 57.0,19.9 75.0,20.7 93.0,5.4" fill="none" stroke="#00ff95" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
+  <circle cx="93.0" cy="5.4" r="2.4" fill="#00ff95"/>
+</svg><span class="s5-spark-lbl">5-day trend</span></div>
         </div>
         <div class="s5-card bear clickable-card" onclick="document.getElementById('avoided-section').scrollIntoView({behavior:'smooth',block:'start'})" title="Click to see blocked stocks ↓">
           <div class="s5-header">
             <div class="s5-icon">🛒</div>
-            <div class="s5-name">Nifty FMCG <span style="font-size:.6rem;color:#70a1ff;font-weight:700" title="Yahoo has no history for this index ticker — composite built from 100.0% of constituent weight">◆ SYNTHETIC</span></div>
+            <div class="s5-name">Nifty FMCG <span style="font-size:.6rem;color:#c586ff;font-weight:700" title="Yahoo has no history for this index ticker — composite built from 100.0% of constituent weight">◆ SYNTHETIC</span></div>
           </div>
           <div class="s5-ring-wrap"><svg width="74" height="74" viewBox="0 0 100 100" class="rsi-svg">
   <circle cx="50" cy="50" r="40" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="8"/>
@@ -638,11 +751,15 @@ tbody tr:last-child td{border-bottom:none}
               <div class="s5-db-fill" style="width:50%;background:#ff6b9d"></div>
             </div>
           </div>
+          <div class="s5-spark-wrap"><svg class="s5-spark" width="96" height="26" viewBox="0 0 96 26">
+  <polyline points="3.0,3.0 21.0,6.2 39.0,14.6 57.0,20.1 75.0,23.0 93.0,18.4" fill="none" stroke="#ff6b9d" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
+  <circle cx="93.0" cy="18.4" r="2.4" fill="#ff6b9d"/>
+</svg><span class="s5-spark-lbl">5-day trend</span></div>
         </div>
         <div class="s5-card bull clickable-card" onclick="document.getElementById('sector-nifty-metal').scrollIntoView({behavior:'smooth',block:'start'});this.classList.add('card-flash')" title="Click to jump to sector detail ↓">
           <div class="s5-header">
             <div class="s5-icon">⚙️</div>
-            <div class="s5-name">Nifty Metal <span style="font-size:.6rem;color:#70a1ff;font-weight:700" title="Yahoo has no history for this index ticker — composite built from 100.0% of constituent weight">◆ SYNTHETIC</span></div>
+            <div class="s5-name">Nifty Metal <span style="font-size:.6rem;color:#c586ff;font-weight:700" title="Yahoo has no history for this index ticker — composite built from 100.0% of constituent weight">◆ SYNTHETIC</span></div>
           </div>
           <div class="s5-ring-wrap"><svg width="74" height="74" viewBox="0 0 100 100" class="rsi-svg">
   <circle cx="50" cy="50" r="40" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="8"/>
@@ -682,11 +799,15 @@ tbody tr:last-child td{border-bottom:none}
               <div class="s5-db-fill" style="width:17%;background:#ffa502"></div>
             </div>
           </div>
+          <div class="s5-spark-wrap"><svg class="s5-spark" width="96" height="26" viewBox="0 0 96 26">
+  <polyline points="3.0,10.4 21.0,23.0 39.0,3.0 57.0,17.2 75.0,14.9 93.0,8.5" fill="none" stroke="#00ff95" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
+  <circle cx="93.0" cy="8.5" r="2.4" fill="#00ff95"/>
+</svg><span class="s5-spark-lbl">5-day trend</span></div>
         </div>
         <div class="s5-card bear clickable-card" onclick="document.getElementById('avoided-section').scrollIntoView({behavior:'smooth',block:'start'})" title="Click to see blocked stocks ↓">
           <div class="s5-header">
             <div class="s5-icon">🚗</div>
-            <div class="s5-name">Nifty Auto <span style="font-size:.6rem;color:#70a1ff;font-weight:700" title="Yahoo has no history for this index ticker — composite built from 100.0% of constituent weight">◆ SYNTHETIC</span></div>
+            <div class="s5-name">Nifty Auto <span style="font-size:.6rem;color:#c586ff;font-weight:700" title="Yahoo has no history for this index ticker — composite built from 100.0% of constituent weight">◆ SYNTHETIC</span></div>
           </div>
           <div class="s5-ring-wrap"><svg width="74" height="74" viewBox="0 0 100 100" class="rsi-svg">
   <circle cx="50" cy="50" r="40" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="8"/>
@@ -726,11 +847,15 @@ tbody tr:last-child td{border-bottom:none}
               <div class="s5-db-fill" style="width:17%;background:#ffa502"></div>
             </div>
           </div>
+          <div class="s5-spark-wrap"><svg class="s5-spark" width="96" height="26" viewBox="0 0 96 26">
+  <polyline points="3.0,5.4 21.0,13.1 39.0,21.8 57.0,19.2 75.0,23.0 93.0,3.0" fill="none" stroke="#00d9ff" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
+  <circle cx="93.0" cy="3.0" r="2.4" fill="#00d9ff"/>
+</svg><span class="s5-spark-lbl">5-day trend</span></div>
         </div>
         <div class="s5-card bear clickable-card" onclick="document.getElementById('avoided-section').scrollIntoView({behavior:'smooth',block:'start'})" title="Click to see blocked stocks ↓">
           <div class="s5-header">
             <div class="s5-icon">⚡</div>
-            <div class="s5-name">Nifty Energy <span style="font-size:.6rem;color:#70a1ff;font-weight:700" title="Yahoo has no history for this index ticker — composite built from 100.0% of constituent weight">◆ SYNTHETIC</span></div>
+            <div class="s5-name">Nifty Energy <span style="font-size:.6rem;color:#c586ff;font-weight:700" title="Yahoo has no history for this index ticker — composite built from 100.0% of constituent weight">◆ SYNTHETIC</span></div>
           </div>
           <div class="s5-ring-wrap"><svg width="74" height="74" viewBox="0 0 100 100" class="rsi-svg">
   <circle cx="50" cy="50" r="40" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="8"/>
@@ -770,11 +895,15 @@ tbody tr:last-child td{border-bottom:none}
               <div class="s5-db-fill" style="width:67%;background:#ff6b9d"></div>
             </div>
           </div>
+          <div class="s5-spark-wrap"><svg class="s5-spark" width="96" height="26" viewBox="0 0 96 26">
+  <polyline points="3.0,3.0 21.0,8.5 39.0,8.8 57.0,9.5 75.0,23.0 93.0,18.5" fill="none" stroke="#ff6b9d" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
+  <circle cx="93.0" cy="18.5" r="2.4" fill="#ff6b9d"/>
+</svg><span class="s5-spark-lbl">5-day trend</span></div>
         </div>
         <div class="s5-card bear clickable-card" onclick="document.getElementById('avoided-section').scrollIntoView({behavior:'smooth',block:'start'})" title="Click to see blocked stocks ↓">
           <div class="s5-header">
             <div class="s5-icon">📺</div>
-            <div class="s5-name">Nifty Consumer Durables <span style="font-size:.6rem;color:#70a1ff;font-weight:700" title="Yahoo has no history for this index ticker — composite built from 100.0% of constituent weight">◆ SYNTHETIC</span></div>
+            <div class="s5-name">Nifty Consumer Durables <span style="font-size:.6rem;color:#c586ff;font-weight:700" title="Yahoo has no history for this index ticker — composite built from 100.0% of constituent weight">◆ SYNTHETIC</span></div>
           </div>
           <div class="s5-ring-wrap"><svg width="74" height="74" viewBox="0 0 100 100" class="rsi-svg">
   <circle cx="50" cy="50" r="40" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="8"/>
@@ -814,6 +943,10 @@ tbody tr:last-child td{border-bottom:none}
               <div class="s5-db-fill" style="width:50%;background:#ff6b9d"></div>
             </div>
           </div>
+          <div class="s5-spark-wrap"><svg class="s5-spark" width="96" height="26" viewBox="0 0 96 26">
+  <polyline points="3.0,8.2 21.0,3.0 39.0,10.2 57.0,17.1 75.0,23.0 93.0,17.8" fill="none" stroke="#ff6b9d" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
+  <circle cx="93.0" cy="17.8" r="2.4" fill="#ff6b9d"/>
+</svg><span class="s5-spark-lbl">5-day trend</span></div>
         </div></div>
   </div>
 </div>
@@ -846,12 +979,19 @@ tbody tr:last-child td{border-bottom:none}
 
 <!-- ── BUY TABLE ──────────────────────────────────────────────── -->
 <div class="section" id="buy-table-section">
-  <div class="section-title">🟢 Top Valid Buy Recommendations — Knife-Filtered</div>
+  <div class="section-title" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px">
+    <span>🟢 Top Valid Buy Recommendations — Knife-Filtered</span>
+    <label class="knife-toggle" title="OFF reveals the blocked/falling-knife stocks below the table">
+      <input type="checkbox" id="knife-toggle-input" checked onchange="toggleKnifeFilter(this)">
+      <span class="knife-toggle-track"><span class="knife-toggle-thumb"></span></span>
+      <span class="knife-toggle-lbl" id="knife-toggle-lbl">Knife Filter: ON — Safe stocks only</span>
+    </label>
+  </div>
   <div class="tbl-wrap">
     <table>
       <thead><tr>
         <th>#</th><th>Stock</th><th>LTP</th><th>Day%</th><th>Week%</th>
-        <th>RSI (slope)</th><th>Score</th><th>⚠ Danger</th><th>✅ Reversals</th>
+        <th>RSI (slope)</th><th>Score</th><th>Meter</th><th>⚠ Danger</th><th>✅ Reversals</th>
         <th>Target</th><th>Stop Loss</th><th>R:R</th><th>Verdict</th>
       </tr></thead>
       <tbody id="buy-tbody">
@@ -870,6 +1010,18 @@ tbody tr:last-child td{border-bottom:none}
             <div style="font-size:.65rem;color:#00ff95">+7.0 slope</div>
           </td>
           <td style="color:#00ff95;font-weight:800;font-family:'JetBrains Mono',monospace">60/100</td>
+          <td><div class="score-meter" title="Score 60/100 - 0 danger flag(s) - 3 reversal(s)">
+<svg width="72" height="42" viewBox="0 0 100 58">
+  <path d="M8,54 A42,42 0 0,1 92,54" fill="none" stroke="rgba(255,255,255,.08)" stroke-width="9" stroke-linecap="round"/>
+  <path d="M8,54 A42,42 0 0,1 92,54" fill="none" stroke="#00ff95" stroke-width="9" stroke-linecap="round"
+    stroke-dasharray="106.8" stroke-dashoffset="42.7"
+    style="filter:drop-shadow(0 0 5px #00ff95);transition:stroke-dashoffset 1s ease"/>
+  <text x="50" y="46" text-anchor="middle" fill="#00ff95" font-size="18" font-weight="800" font-family="monospace">60</text>
+</svg>
+<div class="score-meter-tags">
+  <span style="color:#ff6b9d">&#9940;0</span><span style="color:#00ff95">&#9989;3</span>
+</div>
+</div></td>
           <td><span style="color:#00ff95;font-size:.68rem;font-weight:700">✅ No Flags</span></td>
           <td><span class="rev-chip">✅ Bullish Engulfing</span><span class="rev-chip">✅ MACD Hist Improving</span></td>
           <td>
@@ -895,6 +1047,18 @@ tbody tr:last-child td{border-bottom:none}
             <div style="font-size:.65rem;color:#00ff95">+3.7 slope</div>
           </td>
           <td style="color:#ffa502;font-weight:800;font-family:'JetBrains Mono',monospace">55/100</td>
+          <td><div class="score-meter" title="Score 55/100 - 1 danger flag(s) - 2 reversal(s)">
+<svg width="72" height="42" viewBox="0 0 100 58">
+  <path d="M8,54 A42,42 0 0,1 92,54" fill="none" stroke="rgba(255,255,255,.08)" stroke-width="9" stroke-linecap="round"/>
+  <path d="M8,54 A42,42 0 0,1 92,54" fill="none" stroke="#ffa502" stroke-width="9" stroke-linecap="round"
+    stroke-dasharray="106.8" stroke-dashoffset="48.1"
+    style="filter:drop-shadow(0 0 5px #ffa502);transition:stroke-dashoffset 1s ease"/>
+  <text x="50" y="46" text-anchor="middle" fill="#ffa502" font-size="18" font-weight="800" font-family="monospace">55</text>
+</svg>
+<div class="score-meter-tags">
+  <span style="color:#ff6b9d">&#9940;1</span><span style="color:#00ff95">&#9989;2</span>
+</div>
+</div></td>
           <td><span class="warn-chip">⛔ Institutions Selling</span></td>
           <td><span class="rev-chip">✅ Bullish Engulfing</span><span class="rev-chip">✅ SMA20 Stabilizing</span></td>
           <td>
@@ -920,6 +1084,18 @@ tbody tr:last-child td{border-bottom:none}
             <div style="font-size:.65rem;color:#00ff95">+9.6 slope</div>
           </td>
           <td style="color:#ffa502;font-weight:800;font-family:'JetBrains Mono',monospace">55/100</td>
+          <td><div class="score-meter" title="Score 55/100 - 0 danger flag(s) - 2 reversal(s)">
+<svg width="72" height="42" viewBox="0 0 100 58">
+  <path d="M8,54 A42,42 0 0,1 92,54" fill="none" stroke="rgba(255,255,255,.08)" stroke-width="9" stroke-linecap="round"/>
+  <path d="M8,54 A42,42 0 0,1 92,54" fill="none" stroke="#ffa502" stroke-width="9" stroke-linecap="round"
+    stroke-dasharray="106.8" stroke-dashoffset="48.1"
+    style="filter:drop-shadow(0 0 5px #ffa502);transition:stroke-dashoffset 1s ease"/>
+  <text x="50" y="46" text-anchor="middle" fill="#ffa502" font-size="18" font-weight="800" font-family="monospace">55</text>
+</svg>
+<div class="score-meter-tags">
+  <span style="color:#ff6b9d">&#9940;0</span><span style="color:#00ff95">&#9989;2</span>
+</div>
+</div></td>
           <td><span style="color:#00ff95;font-size:.68rem;font-weight:700">✅ No Flags</span></td>
           <td><span class="rev-chip">✅ Bullish Engulfing</span><span class="rev-chip">✅ SMA20 Stabilizing</span></td>
           <td>
@@ -945,6 +1121,18 @@ tbody tr:last-child td{border-bottom:none}
             <div style="font-size:.65rem;color:#00ff95">+8.9 slope</div>
           </td>
           <td style="color:#ffa502;font-weight:800;font-family:'JetBrains Mono',monospace">55/100</td>
+          <td><div class="score-meter" title="Score 55/100 - 0 danger flag(s) - 2 reversal(s)">
+<svg width="72" height="42" viewBox="0 0 100 58">
+  <path d="M8,54 A42,42 0 0,1 92,54" fill="none" stroke="rgba(255,255,255,.08)" stroke-width="9" stroke-linecap="round"/>
+  <path d="M8,54 A42,42 0 0,1 92,54" fill="none" stroke="#ffa502" stroke-width="9" stroke-linecap="round"
+    stroke-dasharray="106.8" stroke-dashoffset="48.1"
+    style="filter:drop-shadow(0 0 5px #ffa502);transition:stroke-dashoffset 1s ease"/>
+  <text x="50" y="46" text-anchor="middle" fill="#ffa502" font-size="18" font-weight="800" font-family="monospace">55</text>
+</svg>
+<div class="score-meter-tags">
+  <span style="color:#ff6b9d">&#9940;0</span><span style="color:#00ff95">&#9989;2</span>
+</div>
+</div></td>
           <td><span style="color:#00ff95;font-size:.68rem;font-weight:700">✅ No Flags</span></td>
           <td><span class="rev-chip">✅ Bullish Engulfing</span><span class="rev-chip">✅ SMA20 Stabilizing</span></td>
           <td>
@@ -970,6 +1158,18 @@ tbody tr:last-child td{border-bottom:none}
             <div style="font-size:.65rem;color:#00ff95">+3.7 slope</div>
           </td>
           <td style="color:#ffa502;font-weight:800;font-family:'JetBrains Mono',monospace">45/100</td>
+          <td><div class="score-meter" title="Score 45/100 - 0 danger flag(s) - 1 reversal(s)">
+<svg width="72" height="42" viewBox="0 0 100 58">
+  <path d="M8,54 A42,42 0 0,1 92,54" fill="none" stroke="rgba(255,255,255,.08)" stroke-width="9" stroke-linecap="round"/>
+  <path d="M8,54 A42,42 0 0,1 92,54" fill="none" stroke="#ffa502" stroke-width="9" stroke-linecap="round"
+    stroke-dasharray="106.8" stroke-dashoffset="58.7"
+    style="filter:drop-shadow(0 0 5px #ffa502);transition:stroke-dashoffset 1s ease"/>
+  <text x="50" y="46" text-anchor="middle" fill="#ffa502" font-size="18" font-weight="800" font-family="monospace">45</text>
+</svg>
+<div class="score-meter-tags">
+  <span style="color:#ff6b9d">&#9940;0</span><span style="color:#00ff95">&#9989;1</span>
+</div>
+</div></td>
           <td><span style="color:#00ff95;font-size:.68rem;font-weight:700">✅ No Flags</span></td>
           <td><span class="rev-chip">✅ SMA20 Stabilizing</span></td>
           <td>
@@ -995,6 +1195,18 @@ tbody tr:last-child td{border-bottom:none}
             <div style="font-size:.65rem;color:#00ff95">+4.1 slope</div>
           </td>
           <td style="color:#ffa502;font-weight:800;font-family:'JetBrains Mono',monospace">40/100</td>
+          <td><div class="score-meter" title="Score 40/100 - 0 danger flag(s) - 1 reversal(s)">
+<svg width="72" height="42" viewBox="0 0 100 58">
+  <path d="M8,54 A42,42 0 0,1 92,54" fill="none" stroke="rgba(255,255,255,.08)" stroke-width="9" stroke-linecap="round"/>
+  <path d="M8,54 A42,42 0 0,1 92,54" fill="none" stroke="#ffa502" stroke-width="9" stroke-linecap="round"
+    stroke-dasharray="106.8" stroke-dashoffset="64.1"
+    style="filter:drop-shadow(0 0 5px #ffa502);transition:stroke-dashoffset 1s ease"/>
+  <text x="50" y="46" text-anchor="middle" fill="#ffa502" font-size="18" font-weight="800" font-family="monospace">40</text>
+</svg>
+<div class="score-meter-tags">
+  <span style="color:#ff6b9d">&#9940;0</span><span style="color:#00ff95">&#9989;1</span>
+</div>
+</div></td>
           <td><span style="color:#00ff95;font-size:.68rem;font-weight:700">✅ No Flags</span></td>
           <td><span class="rev-chip">✅ SMA20 Stabilizing</span></td>
           <td>
@@ -1020,6 +1232,18 @@ tbody tr:last-child td{border-bottom:none}
             <div style="font-size:.65rem;color:#ff6b9d">-3.2 slope</div>
           </td>
           <td style="color:#888;font-weight:800;font-family:'JetBrains Mono',monospace">35/100</td>
+          <td><div class="score-meter" title="Score 35/100 - 1 danger flag(s) - 2 reversal(s)">
+<svg width="72" height="42" viewBox="0 0 100 58">
+  <path d="M8,54 A42,42 0 0,1 92,54" fill="none" stroke="rgba(255,255,255,.08)" stroke-width="9" stroke-linecap="round"/>
+  <path d="M8,54 A42,42 0 0,1 92,54" fill="none" stroke="#ff6b9d" stroke-width="9" stroke-linecap="round"
+    stroke-dasharray="106.8" stroke-dashoffset="69.4"
+    style="filter:drop-shadow(0 0 5px #ff6b9d);transition:stroke-dashoffset 1s ease"/>
+  <text x="50" y="46" text-anchor="middle" fill="#ff6b9d" font-size="18" font-weight="800" font-family="monospace">35</text>
+</svg>
+<div class="score-meter-tags">
+  <span style="color:#ff6b9d">&#9940;1</span><span style="color:#00ff95">&#9989;2</span>
+</div>
+</div></td>
           <td><span class="warn-chip">⛔ RSI Falling (59→56)</span></td>
           <td><span class="rev-chip">✅ Bullish Engulfing</span><span class="rev-chip">✅ SMA20 Stabilizing</span></td>
           <td>
@@ -1045,6 +1269,18 @@ tbody tr:last-child td{border-bottom:none}
             <div style="font-size:.65rem;color:#ff6b9d">-1.4 slope</div>
           </td>
           <td style="color:#888;font-weight:800;font-family:'JetBrains Mono',monospace">20/100</td>
+          <td><div class="score-meter" title="Score 20/100 - 0 danger flag(s) - 1 reversal(s)">
+<svg width="72" height="42" viewBox="0 0 100 58">
+  <path d="M8,54 A42,42 0 0,1 92,54" fill="none" stroke="rgba(255,255,255,.08)" stroke-width="9" stroke-linecap="round"/>
+  <path d="M8,54 A42,42 0 0,1 92,54" fill="none" stroke="#ff6b9d" stroke-width="9" stroke-linecap="round"
+    stroke-dasharray="106.8" stroke-dashoffset="85.5"
+    style="filter:drop-shadow(0 0 5px #ff6b9d);transition:stroke-dashoffset 1s ease"/>
+  <text x="50" y="46" text-anchor="middle" fill="#ff6b9d" font-size="18" font-weight="800" font-family="monospace">20</text>
+</svg>
+<div class="score-meter-tags">
+  <span style="color:#ff6b9d">&#9940;0</span><span style="color:#00ff95">&#9989;1</span>
+</div>
+</div></td>
           <td><span style="color:#00ff95;font-size:.68rem;font-weight:700">✅ No Flags</span></td>
           <td><span class="rev-chip">✅ SMA20 Stabilizing</span></td>
           <td>
@@ -1070,6 +1306,18 @@ tbody tr:last-child td{border-bottom:none}
             <div style="font-size:.65rem;color:#ff6b9d">-6.5 slope</div>
           </td>
           <td style="color:#888;font-weight:800;font-family:'JetBrains Mono',monospace">20/100</td>
+          <td><div class="score-meter" title="Score 20/100 - 1 danger flag(s) - 1 reversal(s)">
+<svg width="72" height="42" viewBox="0 0 100 58">
+  <path d="M8,54 A42,42 0 0,1 92,54" fill="none" stroke="rgba(255,255,255,.08)" stroke-width="9" stroke-linecap="round"/>
+  <path d="M8,54 A42,42 0 0,1 92,54" fill="none" stroke="#ff6b9d" stroke-width="9" stroke-linecap="round"
+    stroke-dasharray="106.8" stroke-dashoffset="85.5"
+    style="filter:drop-shadow(0 0 5px #ff6b9d);transition:stroke-dashoffset 1s ease"/>
+  <text x="50" y="46" text-anchor="middle" fill="#ff6b9d" font-size="18" font-weight="800" font-family="monospace">20</text>
+</svg>
+<div class="score-meter-tags">
+  <span style="color:#ff6b9d">&#9940;1</span><span style="color:#00ff95">&#9989;1</span>
+</div>
+</div></td>
           <td><span class="warn-chip">⛔ RSI Falling (61→54)</span></td>
           <td><span class="rev-chip">✅ SMA20 Stabilizing</span></td>
           <td>
@@ -1099,14 +1347,82 @@ tbody tr:last-child td{border-bottom:none}
               Danger <strong style="color:#00ff95">0/6</strong>
             </div>
           </div>
-          <div class="tbl-wrap">
-            <table>
-              <thead><tr>
-                <th>Stock</th><th>Wt%</th><th>LTP</th><th>Day%</th><th>Week%</th>
-                <th>RSI (slope)</th><th>Score</th><th>⚠ Danger</th>
-                <th>✅ Reversals</th><th>Target</th><th>Stop</th><th>Verdict</th>
-              </tr></thead>
-              <tbody>
+          
+          <div class="drill-wrap">
+            <div class="drill-lane"><div class="drill-lane-title">🏆 Top 5</div><div class="drill-row"><div class="drill-pill">
+              <div class="drill-sym">DLF</div>
+              <div class="drill-metric" style="color:#ffa502">55/100</div>
+              <div class="drill-sub">Score</div>
+            </div><div class="drill-pill">
+              <div class="drill-sym">BRIGADE</div>
+              <div class="drill-metric" style="color:#ffa502">55/100</div>
+              <div class="drill-sub">Score</div>
+            </div><div class="drill-pill">
+              <div class="drill-sym">PHOENIXLTD</div>
+              <div class="drill-metric" style="color:#ffa502">40/100</div>
+              <div class="drill-sub">Score</div>
+            </div><div class="drill-pill">
+              <div class="drill-sym">OBEROIRLTY</div>
+              <div class="drill-metric" style="color:#ffa502">40/100</div>
+              <div class="drill-sub">Score</div>
+            </div><div class="drill-pill">
+              <div class="drill-sym">GODREJPROP</div>
+              <div class="drill-metric" style="color:#ffa502">35/100</div>
+              <div class="drill-sub">Score</div>
+            </div></div></div>
+            <div class="drill-lane"><div class="drill-lane-title">🐢 Weakest 5</div><div class="drill-row"><div class="drill-pill">
+              <div class="drill-sym">PRESTIGE</div>
+              <div class="drill-metric" style="color:#ff6b9d">0/100</div>
+              <div class="drill-sub">Score</div>
+            </div><div class="drill-pill">
+              <div class="drill-sym">LODHA</div>
+              <div class="drill-metric" style="color:#ff6b9d">20/100</div>
+              <div class="drill-sub">Score</div>
+            </div><div class="drill-pill">
+              <div class="drill-sym">GODREJPROP</div>
+              <div class="drill-metric" style="color:#ff6b9d">35/100</div>
+              <div class="drill-sub">Score</div>
+            </div><div class="drill-pill">
+              <div class="drill-sym">PHOENIXLTD</div>
+              <div class="drill-metric" style="color:#ff6b9d">40/100</div>
+              <div class="drill-sub">Score</div>
+            </div><div class="drill-pill">
+              <div class="drill-sym">OBEROIRLTY</div>
+              <div class="drill-metric" style="color:#ff6b9d">40/100</div>
+              <div class="drill-sub">Score</div>
+            </div></div></div>
+            <div class="drill-lane"><div class="drill-lane-title">🔄 Reversal Candidates</div><div class="drill-row"><div class="drill-pill">
+              <div class="drill-sym">DLF</div>
+              <div class="drill-metric" style="color:#00d9ff">VALID</div>
+              <div class="drill-sub">2 signal(s)</div>
+            </div><div class="drill-pill">
+              <div class="drill-sym">BRIGADE</div>
+              <div class="drill-metric" style="color:#00d9ff">VALID</div>
+              <div class="drill-sub">2 signal(s)</div>
+            </div><div class="drill-pill">
+              <div class="drill-sym">PHOENIXLTD</div>
+              <div class="drill-metric" style="color:#00d9ff">AVOID</div>
+              <div class="drill-sub">1 signal(s)</div>
+            </div><div class="drill-pill">
+              <div class="drill-sym">OBEROIRLTY</div>
+              <div class="drill-metric" style="color:#00d9ff">VALID</div>
+              <div class="drill-sub">1 signal(s)</div>
+            </div><div class="drill-pill">
+              <div class="drill-sym">GODREJPROP</div>
+              <div class="drill-metric" style="color:#00d9ff">AVOID</div>
+              <div class="drill-sub">1 signal(s)</div>
+            </div></div></div>
+          </div>
+          <details class="detail-full-toggle">
+            <summary>Show full constituent table (7 stocks)</summary>
+            <div class="tbl-wrap">
+              <table>
+                <thead><tr>
+                  <th>Stock</th><th>Wt%</th><th>LTP</th><th>Day%</th><th>Week%</th>
+                  <th>RSI (slope)</th><th>Score</th><th>⚠ Danger</th>
+                  <th>✅ Reversals</th><th>Target</th><th>Stop</th><th>Verdict</th>
+                </tr></thead>
+                <tbody>
             <tr class="">
               <td style="font-weight:800;color:#e0f2f1">DLF</td>
               <td style="color:#4a7a78">21.1%</td>
@@ -1226,8 +1542,9 @@ tbody tr:last-child td{border-bottom:none}
               <td style="color:#ff6b9d;font-family:'JetBrains Mono',monospace">₹1514.61</td>
               <td><span class="vtag" style="background:#ff6b9d;color:#000">🚫 AVOID</span></td>
             </tr></tbody>
-            </table>
-          </div>
+              </table>
+            </div>
+          </details>
         </div>
         <div class="detail-block" id="sector-nifty-metal">
           <div class="detail-header">
@@ -1240,14 +1557,82 @@ tbody tr:last-child td{border-bottom:none}
               Danger <strong style="color:#00ff95">1/6</strong>
             </div>
           </div>
-          <div class="tbl-wrap">
-            <table>
-              <thead><tr>
-                <th>Stock</th><th>Wt%</th><th>LTP</th><th>Day%</th><th>Week%</th>
-                <th>RSI (slope)</th><th>Score</th><th>⚠ Danger</th>
-                <th>✅ Reversals</th><th>Target</th><th>Stop</th><th>Verdict</th>
-              </tr></thead>
-              <tbody>
+          
+          <div class="drill-wrap">
+            <div class="drill-lane"><div class="drill-lane-title">🏆 Top 5</div><div class="drill-row"><div class="drill-pill">
+              <div class="drill-sym">JSWSTEEL</div>
+              <div class="drill-metric" style="color:#00ff95">60/100</div>
+              <div class="drill-sub">Score</div>
+            </div><div class="drill-pill">
+              <div class="drill-sym">SAIL</div>
+              <div class="drill-metric" style="color:#ffa502">55/100</div>
+              <div class="drill-sub">Score</div>
+            </div><div class="drill-pill">
+              <div class="drill-sym">JINDALSTEL</div>
+              <div class="drill-metric" style="color:#ffa502">45/100</div>
+              <div class="drill-sub">Score</div>
+            </div><div class="drill-pill">
+              <div class="drill-sym">HINDZINC</div>
+              <div class="drill-metric" style="color:#ffa502">35/100</div>
+              <div class="drill-sub">Score</div>
+            </div><div class="drill-pill">
+              <div class="drill-sym">HINDALCO</div>
+              <div class="drill-metric" style="color:#ffa502">20/100</div>
+              <div class="drill-sub">Score</div>
+            </div></div></div>
+            <div class="drill-lane"><div class="drill-lane-title">🐢 Weakest 5</div><div class="drill-row"><div class="drill-pill">
+              <div class="drill-sym">TATASTEEL</div>
+              <div class="drill-metric" style="color:#ff6b9d">0/100</div>
+              <div class="drill-sub">Score</div>
+            </div><div class="drill-pill">
+              <div class="drill-sym">NMDC</div>
+              <div class="drill-metric" style="color:#ff6b9d">0/100</div>
+              <div class="drill-sub">Score</div>
+            </div><div class="drill-pill">
+              <div class="drill-sym">HINDALCO</div>
+              <div class="drill-metric" style="color:#ff6b9d">20/100</div>
+              <div class="drill-sub">Score</div>
+            </div><div class="drill-pill">
+              <div class="drill-sym">VEDL</div>
+              <div class="drill-metric" style="color:#ff6b9d">20/100</div>
+              <div class="drill-sub">Score</div>
+            </div><div class="drill-pill">
+              <div class="drill-sym">HINDZINC</div>
+              <div class="drill-metric" style="color:#ff6b9d">35/100</div>
+              <div class="drill-sub">Score</div>
+            </div></div></div>
+            <div class="drill-lane"><div class="drill-lane-title">🔄 Reversal Candidates</div><div class="drill-row"><div class="drill-pill">
+              <div class="drill-sym">JSWSTEEL</div>
+              <div class="drill-metric" style="color:#00d9ff">VALID</div>
+              <div class="drill-sub">3 signal(s)</div>
+            </div><div class="drill-pill">
+              <div class="drill-sym">SAIL</div>
+              <div class="drill-metric" style="color:#00d9ff">VALID</div>
+              <div class="drill-sub">2 signal(s)</div>
+            </div><div class="drill-pill">
+              <div class="drill-sym">HINDZINC</div>
+              <div class="drill-metric" style="color:#00d9ff">VALID</div>
+              <div class="drill-sub">2 signal(s)</div>
+            </div><div class="drill-pill">
+              <div class="drill-sym">JINDALSTEL</div>
+              <div class="drill-metric" style="color:#00d9ff">VALID</div>
+              <div class="drill-sub">1 signal(s)</div>
+            </div><div class="drill-pill">
+              <div class="drill-sym">HINDALCO</div>
+              <div class="drill-metric" style="color:#00d9ff">VALID</div>
+              <div class="drill-sub">1 signal(s)</div>
+            </div></div></div>
+          </div>
+          <details class="detail-full-toggle">
+            <summary>Show full constituent table (8 stocks)</summary>
+            <div class="tbl-wrap">
+              <table>
+                <thead><tr>
+                  <th>Stock</th><th>Wt%</th><th>LTP</th><th>Day%</th><th>Week%</th>
+                  <th>RSI (slope)</th><th>Score</th><th>⚠ Danger</th>
+                  <th>✅ Reversals</th><th>Target</th><th>Stop</th><th>Verdict</th>
+                </tr></thead>
+                <tbody>
             <tr class="top-row">
               <td style="font-weight:800;color:#e0f2f1">JSWSTEEL</td>
               <td style="color:#4a7a78">14.0%</td>
@@ -1384,8 +1769,9 @@ tbody tr:last-child td{border-bottom:none}
               <td style="color:#ff6b9d;font-family:'JetBrains Mono',monospace">₹81.12</td>
               <td><span class="vtag" style="background:#ff6b9d;color:#000">🚫 AVOID</span></td>
             </tr></tbody>
-            </table>
-          </div>
+              </table>
+            </div>
+          </details>
         </div>
 </div>
 
@@ -1556,13 +1942,42 @@ tbody tr:last-child td{border-bottom:none}
 
 <script>
 function updateClock() {
-  var now  = new Date();
-  var opts = {
-    timeZone:'Asia/Kolkata',day:'2-digit',month:'short',year:'numeric',
-    hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:true
-  };
-  var el = document.getElementById('live-clock');
-  if (el) el.textContent = '🕐 ' + now.toLocaleString('en-IN', opts) + ' IST';
+  var now = new Date();
+
+  var istOpts = {timeZone:'Asia/Kolkata',day:'2-digit',month:'short',year:'numeric',
+    hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:true};
+  var estOpts = {timeZone:'America/New_York',day:'2-digit',month:'short',
+    hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:true};
+
+  var istEl = document.getElementById('clock-ist');
+  var estEl = document.getElementById('clock-est');
+  if (istEl) istEl.textContent = '🕐 IST ' + now.toLocaleString('en-IN', istOpts);
+  if (estEl) estEl.textContent = '🕒 EST ' + now.toLocaleString('en-US', estOpts);
+
+  // Suggestion #8: market open/closed indicator — NSE cash session is
+  // 09:15–15:30 IST, Mon–Fri. Reads IST wall-clock components directly
+  // via Intl so it's correct regardless of the viewer's own timezone.
+  var istParts = new Intl.DateTimeFormat('en-US', {
+    timeZone:'Asia/Kolkata', weekday:'short', hour:'2-digit', minute:'2-digit', hour12:false
+  }).formatToParts(now);
+  var map = {};
+  istParts.forEach(function(p) { map[p.type] = p.value; });
+  var wd = map.weekday, hh = parseInt(map.hour, 10), mm = parseInt(map.minute, 10);
+  var mins = hh * 60 + mm;
+  var isWeekday = ['Mon','Tue','Wed','Thu','Fri'].indexOf(wd) !== -1;
+
+  var statusEl = document.getElementById('market-status');
+  if (statusEl) {
+    var text, cls;
+    if (!isWeekday) { text = 'Market Closed (Weekend)'; cls = 'closed'; }
+    else if (mins < 9*60) { text = 'Pre-Market'; cls = 'pre'; }
+    else if (mins < 9*60+15) { text = 'Pre-Open Session'; cls = 'pre'; }
+    else if (mins < 15*60+30) { text = 'Market Open'; cls = 'open'; }
+    else if (mins < 16*60) { text = 'Post-Market'; cls = 'pre'; }
+    else { text = 'Market Closed'; cls = 'closed'; }
+    statusEl.textContent = '● ' + text;
+    statusEl.className = 'market-status-' + cls;
+  }
 }
 updateClock();
 setInterval(updateClock, 1000);
@@ -1579,6 +1994,27 @@ window.addEventListener('load', function() {
       card.classList.remove('card-flash');
     });
   });
+});
+
+// ── SUGGESTION #5: KNIFE FILTER TOGGLE ──────────────────────────
+// ON (default) = only safe/valid stocks visible, avoided table tucked
+// away. OFF = also reveal the falling-knife/blocked stocks table so
+// the user can see everything the scan looked at, not just the winners.
+function toggleKnifeFilter(cb) {
+  var section = document.getElementById('avoided-section');
+  var lbl     = document.getElementById('knife-toggle-lbl');
+  if (cb.checked) {
+    section.classList.add('row-hidden');
+    lbl.textContent = 'Knife Filter: ON — Safe stocks only';
+  } else {
+    section.classList.remove('row-hidden');
+    lbl.textContent = 'Knife Filter: OFF — Showing all stocks';
+    section.scrollIntoView({behavior:'smooth', block:'start'});
+  }
+}
+window.addEventListener('load', function() {
+  var sec = document.getElementById('avoided-section');
+  if (sec) sec.classList.add('row-hidden');   // ON by default
 });
 
 // ── SUMMARY-CARD FILTERING ──────────────────────────────────────
