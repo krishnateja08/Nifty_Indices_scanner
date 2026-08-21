@@ -301,7 +301,7 @@ tbody tr:last-child td{border-bottom:none}
     <h1>🎯 Nifty Sector Scanner</h1>
     <div class="sub">
       Falling-Knife Filter · 6-Point Danger Check · Reversal Confirmation<br>
-      Report generated: 22 Aug 2026 02:59 AM IST
+      Report generated: 22 Aug 2026 03:08 AM IST
     </div>
   </div>
   <div id="live-clock">🕐 Loading...</div>
@@ -314,11 +314,11 @@ tbody tr:last-child td{border-bottom:none}
     <div class="lbl">Sectors Scanned</div>
   </div>
   <div class="stat" style="border-color:var(--ng)" onclick="filterCard('bullish', this)" title="Click to see only bullish sectors">
-    <div class="num" style="color:var(--ng)">0</div>
+    <div class="num" style="color:var(--ng)">2</div>
     <div class="lbl">Truly Bullish</div>
   </div>
   <div class="stat" style="border-color:var(--nc)" onclick="filterCard('valid-buys', this)" title="Click to jump to valid buys">
-    <div class="num" style="color:var(--nc)">0</div>
+    <div class="num" style="color:var(--nc)">6</div>
     <div class="lbl">Valid Buys</div>
   </div>
   <div class="stat" style="border-color:var(--no)" onclick="filterCard('strong-watch', this)" title="Click to see only Strong Watch picks">
@@ -330,7 +330,7 @@ tbody tr:last-child td{border-bottom:none}
     <div class="lbl">Avoided (Knife)</div>
   </div>
   <div class="stat" style="border-color:var(--nc)" onclick="filterCard('top-pick', this)" title="Click to see only the top pick">
-    <div class="num" id="top-pick-symbol" style="color:var(--nc);font-size:1.1rem;padding-top:8px">—</div>
+    <div class="num" id="top-pick-symbol" style="color:var(--nc);font-size:1.1rem;padding-top:8px">PHOENIXLTD</div>
     <div class="lbl">Top Pick</div>
   </div>
 </div>
@@ -473,7 +473,7 @@ tbody tr:last-child td{border-bottom:none}
             </div>
           </div>
         </div>
-        <div class="s5-card bear clickable-card" onclick="document.getElementById('avoided-section').scrollIntoView({behavior:'smooth',block:'start'})" title="Click to see blocked stocks ↓">
+        <div class="s5-card bull clickable-card" onclick="document.getElementById('sector-nifty-realty').scrollIntoView({behavior:'smooth',block:'start'});this.classList.add('card-flash')" title="Click to jump to sector detail ↓">
           <div class="s5-header">
             <div class="s5-icon">🏢</div>
             <div class="s5-name">Nifty Realty <span style="font-size:.6rem;color:#70a1ff;font-weight:700" title="Yahoo has no history for this index ticker — composite built from 100.0% of constituent weight">◆ SYNTHETIC</span></div>
@@ -481,26 +481,26 @@ tbody tr:last-child td{border-bottom:none}
           <div class="s5-ring-wrap"><svg width="74" height="74" viewBox="0 0 100 100" class="rsi-svg">
   <circle cx="50" cy="50" r="40" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="8"/>
   <circle cx="50" cy="50" r="40" fill="none"
-    stroke="#ff6b9d" stroke-width="8" stroke-linecap="round"
+    stroke="#00ff95" stroke-width="8" stroke-linecap="round"
     stroke-dasharray="251.3"
     stroke-dashoffset="112.6"
     transform="rotate(-90 50 50)"
-    style="filter:drop-shadow(0 0 8px #ff6b9d);transition:stroke-dashoffset 1s ease"/>
+    style="filter:drop-shadow(0 0 8px #00ff95);transition:stroke-dashoffset 1s ease"/>
 </svg>
             <div class="s5-ring-label">
-              <div class="s5-rsi-num" style="color:#ff6b9d">55.2</div>
+              <div class="s5-rsi-num" style="color:#00ff95">55.2</div>
               <div class="s5-rsi-sub">RSI</div>
             </div>
           </div>
-          <div class="badge-bear">🔴 BLOCKED</div>
+          <div class="badge-bull">🟢 BULLISH</div>
           <div class="s5-stats">
             <div class="s5-stat">
               <div class="s5-sl">Slope</div>
-              <div class="s5-sv" style="color:#00ff95">+3.8 ↑</div>
+              <div class="s5-sv" style="color:#00ff95">+2.6 ↑</div>
             </div>
             <div class="s5-stat">
               <div class="s5-sl">Week</div>
-              <div class="s5-sv" style="color:#ff6b9d">+nan%</div>
+              <div class="s5-sv" style="color:#00ff95">+1.08%</div>
             </div>
             <div class="s5-stat" style="grid-column:span 2">
               <div class="s5-sl">Key Signal</div>
@@ -540,11 +540,11 @@ tbody tr:last-child td{border-bottom:none}
           <div class="s5-stats">
             <div class="s5-stat">
               <div class="s5-sl">Slope</div>
-              <div class="s5-sv" style="color:#ff6b9d">-5.3 ↓</div>
+              <div class="s5-sv" style="color:#ff6b9d">-7.7 ↓</div>
             </div>
             <div class="s5-stat">
               <div class="s5-sl">Week</div>
-              <div class="s5-sv" style="color:#ff6b9d">+nan%</div>
+              <div class="s5-sv" style="color:#ff6b9d">-2.37%</div>
             </div>
             <div class="s5-stat" style="grid-column:span 2">
               <div class="s5-sl">Key Signal</div>
@@ -554,14 +554,14 @@ tbody tr:last-child td{border-bottom:none}
           <div class="s5-danger-bar">
             <div class="s5-db-label">
               <span>Danger</span>
-              <span style="color:#ffa502;font-weight:700">1/6</span>
+              <span style="color:#ff6b9d;font-weight:700">3/6</span>
             </div>
             <div class="s5-db-track">
-              <div class="s5-db-fill" style="width:17%;background:#ffa502"></div>
+              <div class="s5-db-fill" style="width:50%;background:#ff6b9d"></div>
             </div>
           </div>
         </div>
-        <div class="s5-card bear clickable-card" onclick="document.getElementById('avoided-section').scrollIntoView({behavior:'smooth',block:'start'})" title="Click to see blocked stocks ↓">
+        <div class="s5-card bull clickable-card" onclick="document.getElementById('sector-nifty-metal').scrollIntoView({behavior:'smooth',block:'start'});this.classList.add('card-flash')" title="Click to jump to sector detail ↓">
           <div class="s5-header">
             <div class="s5-icon">⚙️</div>
             <div class="s5-name">Nifty Metal <span style="font-size:.6rem;color:#70a1ff;font-weight:700" title="Yahoo has no history for this index ticker — composite built from 100.0% of constituent weight">◆ SYNTHETIC</span></div>
@@ -569,39 +569,39 @@ tbody tr:last-child td{border-bottom:none}
           <div class="s5-ring-wrap"><svg width="74" height="74" viewBox="0 0 100 100" class="rsi-svg">
   <circle cx="50" cy="50" r="40" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="8"/>
   <circle cx="50" cy="50" r="40" fill="none"
-    stroke="#ff6b9d" stroke-width="8" stroke-linecap="round"
+    stroke="#00ff95" stroke-width="8" stroke-linecap="round"
     stroke-dasharray="251.3"
     stroke-dashoffset="117.7"
     transform="rotate(-90 50 50)"
-    style="filter:drop-shadow(0 0 8px #ff6b9d);transition:stroke-dashoffset 1s ease"/>
+    style="filter:drop-shadow(0 0 8px #00ff95);transition:stroke-dashoffset 1s ease"/>
 </svg>
             <div class="s5-ring-label">
-              <div class="s5-rsi-num" style="color:#ff6b9d">53.2</div>
+              <div class="s5-rsi-num" style="color:#00ff95">53.2</div>
               <div class="s5-rsi-sub">RSI</div>
             </div>
           </div>
-          <div class="badge-bear">🔴 BLOCKED</div>
+          <div class="badge-bull">🟢 BULLISH</div>
           <div class="s5-stats">
             <div class="s5-stat">
               <div class="s5-sl">Slope</div>
-              <div class="s5-sv" style="color:#00ff95">+4.1 ↑</div>
+              <div class="s5-sv" style="color:#00ff95">+0.0 ↑</div>
             </div>
             <div class="s5-stat">
               <div class="s5-sl">Week</div>
-              <div class="s5-sv" style="color:#ff6b9d">+nan%</div>
+              <div class="s5-sv" style="color:#00ff95">+0.14%</div>
             </div>
             <div class="s5-stat" style="grid-column:span 2">
               <div class="s5-sl">Key Signal</div>
-              <div class="s5-sv" style="font-size:.72rem;color:#80deea">week +nan%</div>
+              <div class="s5-sv" style="font-size:.72rem;color:#80deea">SMA20 Stabilizing</div>
             </div>
           </div>
           <div class="s5-danger-bar">
             <div class="s5-db-label">
               <span>Danger</span>
-              <span style="color:#00ff95;font-weight:700">0/6</span>
+              <span style="color:#ffa502;font-weight:700">1/6</span>
             </div>
             <div class="s5-db-track">
-              <div class="s5-db-fill" style="width:0%;background:#00ff95"></div>
+              <div class="s5-db-fill" style="width:17%;background:#ffa502"></div>
             </div>
           </div>
         </div>
@@ -628,24 +628,24 @@ tbody tr:last-child td{border-bottom:none}
           <div class="s5-stats">
             <div class="s5-stat">
               <div class="s5-sl">Slope</div>
-              <div class="s5-sv" style="color:#ff6b9d">-0.2 ↓</div>
+              <div class="s5-sv" style="color:#ff6b9d">-2.2 ↓</div>
             </div>
             <div class="s5-stat">
               <div class="s5-sl">Week</div>
-              <div class="s5-sv" style="color:#ff6b9d">+nan%</div>
+              <div class="s5-sv" style="color:#00ff95">+0.09%</div>
             </div>
             <div class="s5-stat" style="grid-column:span 2">
               <div class="s5-sl">Key Signal</div>
-              <div class="s5-sv" style="font-size:.72rem;color:#80deea">week +nan%</div>
+              <div class="s5-sv" style="font-size:.72rem;color:#80deea">SMA20 Stabilizing</div>
             </div>
           </div>
           <div class="s5-danger-bar">
             <div class="s5-db-label">
               <span>Danger</span>
-              <span style="color:#00ff95;font-weight:700">0/6</span>
+              <span style="color:#ffa502;font-weight:700">1/6</span>
             </div>
             <div class="s5-db-track">
-              <div class="s5-db-fill" style="width:0%;background:#00ff95"></div>
+              <div class="s5-db-fill" style="width:17%;background:#ffa502"></div>
             </div>
           </div>
         </div>
@@ -672,24 +672,24 @@ tbody tr:last-child td{border-bottom:none}
           <div class="s5-stats">
             <div class="s5-stat">
               <div class="s5-sl">Slope</div>
-              <div class="s5-sv" style="color:#ff6b9d">-2.3 ↓</div>
+              <div class="s5-sv" style="color:#ff6b9d">-4.5 ↓</div>
             </div>
             <div class="s5-stat">
               <div class="s5-sl">Week</div>
-              <div class="s5-sv" style="color:#ff6b9d">+nan%</div>
+              <div class="s5-sv" style="color:#ff6b9d">-1.08%</div>
             </div>
             <div class="s5-stat" style="grid-column:span 2">
               <div class="s5-sl">Key Signal</div>
-              <div class="s5-sv" style="font-size:.72rem;color:#80deea">RSI Turning Up</div>
+              <div class="s5-sv" style="font-size:.72rem;color:#80deea">week -1.1%</div>
             </div>
           </div>
           <div class="s5-danger-bar">
             <div class="s5-db-label">
               <span>Danger</span>
-              <span style="color:#00ff95;font-weight:700">0/6</span>
+              <span style="color:#ff6b9d;font-weight:700">4/6</span>
             </div>
             <div class="s5-db-track">
-              <div class="s5-db-fill" style="width:0%;background:#00ff95"></div>
+              <div class="s5-db-fill" style="width:67%;background:#ff6b9d"></div>
             </div>
           </div>
         </div>
@@ -716,24 +716,24 @@ tbody tr:last-child td{border-bottom:none}
           <div class="s5-stats">
             <div class="s5-stat">
               <div class="s5-sl">Slope</div>
-              <div class="s5-sv" style="color:#ff6b9d">-7.9 ↓</div>
+              <div class="s5-sv" style="color:#ff6b9d">-5.8 ↓</div>
             </div>
             <div class="s5-stat">
               <div class="s5-sl">Week</div>
-              <div class="s5-sv" style="color:#ff6b9d">+nan%</div>
+              <div class="s5-sv" style="color:#ff6b9d">-0.78%</div>
             </div>
             <div class="s5-stat" style="grid-column:span 2">
               <div class="s5-sl">Key Signal</div>
-              <div class="s5-sv" style="font-size:.72rem;color:#80deea">week +nan%</div>
+              <div class="s5-sv" style="font-size:.72rem;color:#80deea">SMA20 Stabilizing</div>
             </div>
           </div>
           <div class="s5-danger-bar">
             <div class="s5-db-label">
               <span>Danger</span>
-              <span style="color:#ffa502;font-weight:700">1/6</span>
+              <span style="color:#ff6b9d;font-weight:700">3/6</span>
             </div>
             <div class="s5-db-track">
-              <div class="s5-db-fill" style="width:17%;background:#ffa502"></div>
+              <div class="s5-db-fill" style="width:50%;background:#ff6b9d"></div>
             </div>
           </div>
         </div></div>
@@ -776,7 +776,157 @@ tbody tr:last-child td{border-bottom:none}
         <th>RSI (slope)</th><th>Score</th><th>⚠ Danger</th><th>✅ Reversals</th>
         <th>Target</th><th>Stop Loss</th><th>R:R</th><th>Verdict</th>
       </tr></thead>
-      <tbody id="buy-tbody"><tr><td colspan="13" style="text-align:center;color:#2a5070;padding:24px">No valid buys — market in downtrend. All falling knives blocked.</td></tr></tbody>
+      <tbody id="buy-tbody">
+        <tr class="" data-verdict="VALID" data-symbol="PHOENIXLTD" data-rank="1">
+          <td style="color:#2a5070;font-weight:700">1</td>
+          <td>
+            <div style="font-weight:800;color:#e0f2f1">PHOENIXLTD</div>
+            <div style="font-size:.68rem;color:#4a7a78">Nifty Realty</div>
+            <div style="font-size:.65rem;color:#2a5070">Real Estate - Retail</div>
+          </td>
+          <td><span style="font-family:'JetBrains Mono',monospace;font-weight:700;color:#f59e0b">₹nan</span></td>
+          <td style="color:#ff6b9d;font-weight:600">+nan%</td>
+          <td style="color:#ff6b9d;font-weight:600">+nan%</td>
+          <td>
+            <div style="color:#ffa502;font-weight:800;font-family:'JetBrains Mono',monospace">46.7</div>
+            <div style="font-size:.65rem;color:#00ff95">+6.4 slope</div>
+          </td>
+          <td style="color:#ffa502;font-weight:800;font-family:'JetBrains Mono',monospace">40/100</td>
+          <td><span style="color:#00ff95;font-size:.68rem;font-weight:700">✅ No Flags</span></td>
+          <td><span class="rev-chip">✅ MACD Hist Improving</span></td>
+          <td>
+            <div style="color:#00ff95;font-weight:700;font-family:'JetBrains Mono',monospace">₹nan</div>
+            <div style="font-size:.68rem;color:#2dd4bf">T2: ₹nan</div>
+          </td>
+          <td style="color:#ff6b9d;font-weight:700;font-family:'JetBrains Mono',monospace">₹nan</td>
+          <td style="color:#ff6b9d;font-weight:800;font-family:'JetBrains Mono',monospace">0.0×</td>
+          <td><span class="vtag" style="background:#00ff95;color:#000">✅ VALID BUY</span></td>
+        </tr>
+        <tr class="" data-verdict="VALID" data-symbol="GODREJPROP" data-rank="2">
+          <td style="color:#2a5070;font-weight:700">2</td>
+          <td>
+            <div style="font-weight:800;color:#e0f2f1">GODREJPROP</div>
+            <div style="font-size:.68rem;color:#4a7a78">Nifty Realty</div>
+            <div style="font-size:.65rem;color:#2a5070">Real Estate - Residential</div>
+          </td>
+          <td><span style="font-family:'JetBrains Mono',monospace;font-weight:700;color:#f59e0b">₹nan</span></td>
+          <td style="color:#ff6b9d;font-weight:600">+nan%</td>
+          <td style="color:#ff6b9d;font-weight:600">+nan%</td>
+          <td>
+            <div style="color:#ffa502;font-weight:800;font-family:'JetBrains Mono',monospace">48.5</div>
+            <div style="font-size:.65rem;color:#00ff95">+3.9 slope</div>
+          </td>
+          <td style="color:#ffa502;font-weight:800;font-family:'JetBrains Mono',monospace">40/100</td>
+          <td><span class="warn-chip">⛔ Institutions Selling</span></td>
+          <td><span class="rev-chip">✅ MACD Hist Improving</span></td>
+          <td>
+            <div style="color:#00ff95;font-weight:700;font-family:'JetBrains Mono',monospace">₹nan</div>
+            <div style="font-size:.68rem;color:#2dd4bf">T2: ₹nan</div>
+          </td>
+          <td style="color:#ff6b9d;font-weight:700;font-family:'JetBrains Mono',monospace">₹nan</td>
+          <td style="color:#ff6b9d;font-weight:800;font-family:'JetBrains Mono',monospace">0.0×</td>
+          <td><span class="vtag" style="background:#00ff95;color:#000">✅ VALID BUY</span></td>
+        </tr>
+        <tr class="" data-verdict="VALID" data-symbol="JSWSTEEL" data-rank="3">
+          <td style="color:#2a5070;font-weight:700">3</td>
+          <td>
+            <div style="font-weight:800;color:#e0f2f1">JSWSTEEL</div>
+            <div style="font-size:.68rem;color:#4a7a78">Nifty Metal</div>
+            <div style="font-size:.65rem;color:#2a5070">Steel</div>
+          </td>
+          <td><span style="font-family:'JetBrains Mono',monospace;font-weight:700;color:#f59e0b">₹nan</span></td>
+          <td style="color:#ff6b9d;font-weight:600">+nan%</td>
+          <td style="color:#ff6b9d;font-weight:600">+nan%</td>
+          <td>
+            <div style="color:#00ff95;font-weight:800;font-family:'JetBrains Mono',monospace">58.1</div>
+            <div style="font-size:.65rem;color:#00ff95">+8.6 slope</div>
+          </td>
+          <td style="color:#ffa502;font-weight:800;font-family:'JetBrains Mono',monospace">40/100</td>
+          <td><span style="color:#00ff95;font-size:.68rem;font-weight:700">✅ No Flags</span></td>
+          <td><span class="rev-chip">✅ MACD Hist Improving</span></td>
+          <td>
+            <div style="color:#00ff95;font-weight:700;font-family:'JetBrains Mono',monospace">₹nan</div>
+            <div style="font-size:.68rem;color:#2dd4bf">T2: ₹nan</div>
+          </td>
+          <td style="color:#ff6b9d;font-weight:700;font-family:'JetBrains Mono',monospace">₹nan</td>
+          <td style="color:#ff6b9d;font-weight:800;font-family:'JetBrains Mono',monospace">0.0×</td>
+          <td><span class="vtag" style="background:#00ff95;color:#000">✅ VALID BUY</span></td>
+        </tr>
+        <tr class="" data-verdict="VALID" data-symbol="HINDZINC" data-rank="4">
+          <td style="color:#2a5070;font-weight:700">4</td>
+          <td>
+            <div style="font-weight:800;color:#e0f2f1">HINDZINC</div>
+            <div style="font-size:.68rem;color:#4a7a78">Nifty Metal</div>
+            <div style="font-size:.65rem;color:#2a5070">Zinc</div>
+          </td>
+          <td><span style="font-family:'JetBrains Mono',monospace;font-weight:700;color:#f59e0b">₹nan</span></td>
+          <td style="color:#ff6b9d;font-weight:600">+nan%</td>
+          <td style="color:#ff6b9d;font-weight:600">+nan%</td>
+          <td>
+            <div style="color:#00ff95;font-weight:800;font-family:'JetBrains Mono',monospace">55.7</div>
+            <div style="font-size:.65rem;color:#00ff95">+5.0 slope</div>
+          </td>
+          <td style="color:#ffa502;font-weight:800;font-family:'JetBrains Mono',monospace">40/100</td>
+          <td><span style="color:#00ff95;font-size:.68rem;font-weight:700">✅ No Flags</span></td>
+          <td><span class="rev-chip">✅ MACD Hist Improving</span></td>
+          <td>
+            <div style="color:#00ff95;font-weight:700;font-family:'JetBrains Mono',monospace">₹nan</div>
+            <div style="font-size:.68rem;color:#2dd4bf">T2: ₹nan</div>
+          </td>
+          <td style="color:#ff6b9d;font-weight:700;font-family:'JetBrains Mono',monospace">₹nan</td>
+          <td style="color:#ff6b9d;font-weight:800;font-family:'JetBrains Mono',monospace">0.0×</td>
+          <td><span class="vtag" style="background:#00ff95;color:#000">✅ VALID BUY</span></td>
+        </tr>
+        <tr class="" data-verdict="VALID" data-symbol="LODHA" data-rank="5">
+          <td style="color:#2a5070;font-weight:700">5</td>
+          <td>
+            <div style="font-weight:800;color:#e0f2f1">LODHA</div>
+            <div style="font-size:.68rem;color:#4a7a78">Nifty Realty</div>
+            <div style="font-size:.65rem;color:#2a5070">Real Estate - Residential</div>
+          </td>
+          <td><span style="font-family:'JetBrains Mono',monospace;font-weight:700;color:#f59e0b">₹nan</span></td>
+          <td style="color:#ff6b9d;font-weight:600">+nan%</td>
+          <td style="color:#ff6b9d;font-weight:600">+nan%</td>
+          <td>
+            <div style="color:#00ff95;font-weight:800;font-family:'JetBrains Mono',monospace">58.3</div>
+            <div style="font-size:.65rem;color:#ff6b9d">-3.0 slope</div>
+          </td>
+          <td style="color:#888;font-weight:800;font-family:'JetBrains Mono',monospace">20/100</td>
+          <td><span class="warn-chip">⛔ RSI Falling (61→58)</span></td>
+          <td><span class="rev-chip">✅ MACD Hist Improving</span></td>
+          <td>
+            <div style="color:#00ff95;font-weight:700;font-family:'JetBrains Mono',monospace">₹nan</div>
+            <div style="font-size:.68rem;color:#2dd4bf">T2: ₹nan</div>
+          </td>
+          <td style="color:#ff6b9d;font-weight:700;font-family:'JetBrains Mono',monospace">₹nan</td>
+          <td style="color:#ff6b9d;font-weight:800;font-family:'JetBrains Mono',monospace">0.0×</td>
+          <td><span class="vtag" style="background:#00ff95;color:#000">✅ VALID BUY</span></td>
+        </tr>
+        <tr class="" data-verdict="VALID" data-symbol="PRESTIGE" data-rank="6">
+          <td style="color:#2a5070;font-weight:700">6</td>
+          <td>
+            <div style="font-weight:800;color:#e0f2f1">PRESTIGE</div>
+            <div style="font-size:.68rem;color:#4a7a78">Nifty Realty</div>
+            <div style="font-size:.65rem;color:#2a5070">Real Estate - Mixed</div>
+          </td>
+          <td><span style="font-family:'JetBrains Mono',monospace;font-weight:700;color:#f59e0b">₹nan</span></td>
+          <td style="color:#ff6b9d;font-weight:600">+nan%</td>
+          <td style="color:#ff6b9d;font-weight:600">+nan%</td>
+          <td>
+            <div style="color:#ffa502;font-weight:800;font-family:'JetBrains Mono',monospace">46.9</div>
+            <div style="font-size:.65rem;color:#ff6b9d">-0.9 slope</div>
+          </td>
+          <td style="color:#888;font-weight:800;font-family:'JetBrains Mono',monospace">20/100</td>
+          <td><span style="color:#00ff95;font-size:.68rem;font-weight:700">✅ No Flags</span></td>
+          <td><span class="rev-chip">✅ MACD Hist Improving</span></td>
+          <td>
+            <div style="color:#00ff95;font-weight:700;font-family:'JetBrains Mono',monospace">₹nan</div>
+            <div style="font-size:.68rem;color:#2dd4bf">T2: ₹nan</div>
+          </td>
+          <td style="color:#ff6b9d;font-weight:700;font-family:'JetBrains Mono',monospace">₹nan</td>
+          <td style="color:#ff6b9d;font-weight:800;font-family:'JetBrains Mono',monospace">0.0×</td>
+          <td><span class="vtag" style="background:#00ff95;color:#000">✅ VALID BUY</span></td>
+        </tr></tbody>
     </table>
   </div>
 </div>
@@ -784,7 +934,306 @@ tbody tr:last-child td{border-bottom:none}
 <!-- ── SECTOR DETAIL ──────────────────────────────────────────── -->
 <div class="section">
   <div class="section-title">📊 Bullish Sector Detail</div>
-  <p style="color:#2a5070;padding:12px">No bullish sectors with clean setups detected.</p>
+  
+        <div class="detail-block" id="sector-nifty-realty">
+          <div class="detail-header">
+            <span class="detail-icon">🏢</span>
+            <h3>NIFTY REALTY</h3>
+            <div class="detail-meta">
+              RSI <strong>55.2</strong> &nbsp;|&nbsp;
+              Slope <strong style="color:#00ff95">+2.6</strong> &nbsp;|&nbsp;
+              Week <strong style="color:#00ff95">+1.08%</strong> &nbsp;|&nbsp;
+              Danger <strong style="color:#00ff95">0/6</strong>
+            </div>
+          </div>
+          <div class="tbl-wrap">
+            <table>
+              <thead><tr>
+                <th>Stock</th><th>Wt%</th><th>LTP</th><th>Day%</th><th>Week%</th>
+                <th>RSI (slope)</th><th>Score</th><th>⚠ Danger</th>
+                <th>✅ Reversals</th><th>Target</th><th>Stop</th><th>Verdict</th>
+              </tr></thead>
+              <tbody>
+            <tr class="">
+              <td style="font-weight:800;color:#e0f2f1">PHOENIXLTD</td>
+              <td style="color:#4a7a78">16.1%</td>
+              <td style="font-family:'JetBrains Mono',monospace;color:#f59e0b">₹nan</td>
+              <td style="color:#ff6b9d">+nan%</td>
+              <td style="color:#ff6b9d">+nan%</td>
+              <td>
+                <span style="color:#ffa502;font-weight:800">46.7</span>
+                <span style="color:#00ff95;font-size:.68rem"> (+6.4)</span>
+              </td>
+              <td style="color:#ffa502;font-weight:800">40/100</td>
+              <td><span style="color:#00ff95;font-size:.68rem;font-weight:700">✅ No Flags</span></td>
+              <td><span class="rev-chip">✅ MACD Hist Improving</span></td>
+              <td style="color:#00ff95;font-family:'JetBrains Mono',monospace">₹nan</td>
+              <td style="color:#ff6b9d;font-family:'JetBrains Mono',monospace">₹nan</td>
+              <td><span class="vtag" style="background:#00ff95;color:#000">✅ VALID BUY</span></td>
+            </tr>
+            <tr class="">
+              <td style="font-weight:800;color:#e0f2f1">GODREJPROP</td>
+              <td style="color:#4a7a78">12.2%</td>
+              <td style="font-family:'JetBrains Mono',monospace;color:#f59e0b">₹nan</td>
+              <td style="color:#ff6b9d">+nan%</td>
+              <td style="color:#ff6b9d">+nan%</td>
+              <td>
+                <span style="color:#ffa502;font-weight:800">48.5</span>
+                <span style="color:#00ff95;font-size:.68rem"> (+3.9)</span>
+              </td>
+              <td style="color:#ffa502;font-weight:800">40/100</td>
+              <td><span class="warn-chip">⛔ Institutions Selling</span></td>
+              <td><span class="rev-chip">✅ MACD Hist Improving</span></td>
+              <td style="color:#00ff95;font-family:'JetBrains Mono',monospace">₹nan</td>
+              <td style="color:#ff6b9d;font-family:'JetBrains Mono',monospace">₹nan</td>
+              <td><span class="vtag" style="background:#00ff95;color:#000">✅ VALID BUY</span></td>
+            </tr>
+            <tr class="">
+              <td style="font-weight:800;color:#e0f2f1">DLF</td>
+              <td style="color:#4a7a78">21.1%</td>
+              <td style="font-family:'JetBrains Mono',monospace;color:#f59e0b">₹nan</td>
+              <td style="color:#ff6b9d">+nan%</td>
+              <td style="color:#ff6b9d">+nan%</td>
+              <td>
+                <span style="color:#00ff95;font-weight:800">59.3</span>
+                <span style="color:#00ff95;font-size:.68rem"> (+3.4)</span>
+              </td>
+              <td style="color:#888;font-weight:800">30/100</td>
+              <td><span class="warn-chip">⛔ Institutions Selling</span></td>
+              <td><span style="color:#555;font-size:.68rem">—</span></td>
+              <td style="color:#00ff95;font-family:'JetBrains Mono',monospace">₹nan</td>
+              <td style="color:#ff6b9d;font-family:'JetBrains Mono',monospace">₹nan</td>
+              <td><span class="vtag" style="background:#555555;color:#fff">👀 WATCH</span></td>
+            </tr>
+            <tr class="">
+              <td style="font-weight:800;color:#e0f2f1">OBEROIRLTY</td>
+              <td style="color:#4a7a78">8.5%</td>
+              <td style="font-family:'JetBrains Mono',monospace;color:#f59e0b">₹nan</td>
+              <td style="color:#ff6b9d">+nan%</td>
+              <td style="color:#ff6b9d">+nan%</td>
+              <td>
+                <span style="color:#00ff95;font-weight:800">59.4</span>
+                <span style="color:#00ff95;font-size:.68rem"> (+4.1)</span>
+              </td>
+              <td style="color:#888;font-weight:800">30/100</td>
+              <td><span style="color:#00ff95;font-size:.68rem;font-weight:700">✅ No Flags</span></td>
+              <td><span style="color:#555;font-size:.68rem">—</span></td>
+              <td style="color:#00ff95;font-family:'JetBrains Mono',monospace">₹nan</td>
+              <td style="color:#ff6b9d;font-family:'JetBrains Mono',monospace">₹nan</td>
+              <td><span class="vtag" style="background:#555555;color:#fff">👀 WATCH</span></td>
+            </tr>
+            <tr class="">
+              <td style="font-weight:800;color:#e0f2f1">BRIGADE</td>
+              <td style="color:#4a7a78">6.0%</td>
+              <td style="font-family:'JetBrains Mono',monospace;color:#f59e0b">₹nan</td>
+              <td style="color:#ff6b9d">+nan%</td>
+              <td style="color:#ff6b9d">+nan%</td>
+              <td>
+                <span style="color:#00ff95;font-weight:800">69.1</span>
+                <span style="color:#00ff95;font-size:.68rem"> (+9.0)</span>
+              </td>
+              <td style="color:#888;font-weight:800">30/100</td>
+              <td><span style="color:#00ff95;font-size:.68rem;font-weight:700">✅ No Flags</span></td>
+              <td><span style="color:#555;font-size:.68rem">—</span></td>
+              <td style="color:#00ff95;font-family:'JetBrains Mono',monospace">₹nan</td>
+              <td style="color:#ff6b9d;font-family:'JetBrains Mono',monospace">₹nan</td>
+              <td><span class="vtag" style="background:#555555;color:#fff">👀 WATCH</span></td>
+            </tr>
+            <tr class="">
+              <td style="font-weight:800;color:#e0f2f1">LODHA</td>
+              <td style="color:#4a7a78">14.2%</td>
+              <td style="font-family:'JetBrains Mono',monospace;color:#f59e0b">₹nan</td>
+              <td style="color:#ff6b9d">+nan%</td>
+              <td style="color:#ff6b9d">+nan%</td>
+              <td>
+                <span style="color:#00ff95;font-weight:800">58.3</span>
+                <span style="color:#ff6b9d;font-size:.68rem"> (-3.0)</span>
+              </td>
+              <td style="color:#888;font-weight:800">20/100</td>
+              <td><span class="warn-chip">⛔ RSI Falling (61→58)</span></td>
+              <td><span class="rev-chip">✅ MACD Hist Improving</span></td>
+              <td style="color:#00ff95;font-family:'JetBrains Mono',monospace">₹nan</td>
+              <td style="color:#ff6b9d;font-family:'JetBrains Mono',monospace">₹nan</td>
+              <td><span class="vtag" style="background:#00ff95;color:#000">✅ VALID BUY</span></td>
+            </tr>
+            <tr class="">
+              <td style="font-weight:800;color:#e0f2f1">PRESTIGE</td>
+              <td style="color:#4a7a78">12.8%</td>
+              <td style="font-family:'JetBrains Mono',monospace;color:#f59e0b">₹nan</td>
+              <td style="color:#ff6b9d">+nan%</td>
+              <td style="color:#ff6b9d">+nan%</td>
+              <td>
+                <span style="color:#ffa502;font-weight:800">46.9</span>
+                <span style="color:#ff6b9d;font-size:.68rem"> (-0.9)</span>
+              </td>
+              <td style="color:#888;font-weight:800">20/100</td>
+              <td><span style="color:#00ff95;font-size:.68rem;font-weight:700">✅ No Flags</span></td>
+              <td><span class="rev-chip">✅ MACD Hist Improving</span></td>
+              <td style="color:#00ff95;font-family:'JetBrains Mono',monospace">₹nan</td>
+              <td style="color:#ff6b9d;font-family:'JetBrains Mono',monospace">₹nan</td>
+              <td><span class="vtag" style="background:#00ff95;color:#000">✅ VALID BUY</span></td>
+            </tr></tbody>
+            </table>
+          </div>
+        </div>
+        <div class="detail-block" id="sector-nifty-metal">
+          <div class="detail-header">
+            <span class="detail-icon">⚙️</span>
+            <h3>NIFTY METAL</h3>
+            <div class="detail-meta">
+              RSI <strong>53.2</strong> &nbsp;|&nbsp;
+              Slope <strong style="color:#00ff95">+0.0</strong> &nbsp;|&nbsp;
+              Week <strong style="color:#00ff95">+0.14%</strong> &nbsp;|&nbsp;
+              Danger <strong style="color:#00ff95">1/6</strong>
+            </div>
+          </div>
+          <div class="tbl-wrap">
+            <table>
+              <thead><tr>
+                <th>Stock</th><th>Wt%</th><th>LTP</th><th>Day%</th><th>Week%</th>
+                <th>RSI (slope)</th><th>Score</th><th>⚠ Danger</th>
+                <th>✅ Reversals</th><th>Target</th><th>Stop</th><th>Verdict</th>
+              </tr></thead>
+              <tbody>
+            <tr class="">
+              <td style="font-weight:800;color:#e0f2f1">JSWSTEEL</td>
+              <td style="color:#4a7a78">14.0%</td>
+              <td style="font-family:'JetBrains Mono',monospace;color:#f59e0b">₹nan</td>
+              <td style="color:#ff6b9d">+nan%</td>
+              <td style="color:#ff6b9d">+nan%</td>
+              <td>
+                <span style="color:#00ff95;font-weight:800">58.1</span>
+                <span style="color:#00ff95;font-size:.68rem"> (+8.6)</span>
+              </td>
+              <td style="color:#ffa502;font-weight:800">40/100</td>
+              <td><span style="color:#00ff95;font-size:.68rem;font-weight:700">✅ No Flags</span></td>
+              <td><span class="rev-chip">✅ MACD Hist Improving</span></td>
+              <td style="color:#00ff95;font-family:'JetBrains Mono',monospace">₹nan</td>
+              <td style="color:#ff6b9d;font-family:'JetBrains Mono',monospace">₹nan</td>
+              <td><span class="vtag" style="background:#00ff95;color:#000">✅ VALID BUY</span></td>
+            </tr>
+            <tr class="">
+              <td style="font-weight:800;color:#e0f2f1">HINDZINC</td>
+              <td style="color:#4a7a78">6.0%</td>
+              <td style="font-family:'JetBrains Mono',monospace;color:#f59e0b">₹nan</td>
+              <td style="color:#ff6b9d">+nan%</td>
+              <td style="color:#ff6b9d">+nan%</td>
+              <td>
+                <span style="color:#00ff95;font-weight:800">55.7</span>
+                <span style="color:#00ff95;font-size:.68rem"> (+5.0)</span>
+              </td>
+              <td style="color:#ffa502;font-weight:800">40/100</td>
+              <td><span style="color:#00ff95;font-size:.68rem;font-weight:700">✅ No Flags</span></td>
+              <td><span class="rev-chip">✅ MACD Hist Improving</span></td>
+              <td style="color:#00ff95;font-family:'JetBrains Mono',monospace">₹nan</td>
+              <td style="color:#ff6b9d;font-family:'JetBrains Mono',monospace">₹nan</td>
+              <td><span class="vtag" style="background:#00ff95;color:#000">✅ VALID BUY</span></td>
+            </tr>
+            <tr class="">
+              <td style="font-weight:800;color:#e0f2f1">JINDALSTEL</td>
+              <td style="color:#4a7a78">12.0%</td>
+              <td style="font-family:'JetBrains Mono',monospace;color:#f59e0b">₹nan</td>
+              <td style="color:#ff6b9d">+nan%</td>
+              <td style="color:#ff6b9d">+nan%</td>
+              <td>
+                <span style="color:#00ff95;font-weight:800">56.9</span>
+                <span style="color:#00ff95;font-size:.68rem"> (+6.1)</span>
+              </td>
+              <td style="color:#888;font-weight:800">30/100</td>
+              <td><span style="color:#00ff95;font-size:.68rem;font-weight:700">✅ No Flags</span></td>
+              <td><span style="color:#555;font-size:.68rem">—</span></td>
+              <td style="color:#00ff95;font-family:'JetBrains Mono',monospace">₹nan</td>
+              <td style="color:#ff6b9d;font-family:'JetBrains Mono',monospace">₹nan</td>
+              <td><span class="vtag" style="background:#555555;color:#fff">👀 WATCH</span></td>
+            </tr>
+            <tr class="">
+              <td style="font-weight:800;color:#e0f2f1">SAIL</td>
+              <td style="color:#4a7a78">6.5%</td>
+              <td style="font-family:'JetBrains Mono',monospace;color:#f59e0b">₹nan</td>
+              <td style="color:#ff6b9d">+nan%</td>
+              <td style="color:#ff6b9d">+nan%</td>
+              <td>
+                <span style="color:#00ff95;font-weight:800">55.8</span>
+                <span style="color:#00ff95;font-size:.68rem"> (+7.5)</span>
+              </td>
+              <td style="color:#888;font-weight:800">30/100</td>
+              <td><span style="color:#00ff95;font-size:.68rem;font-weight:700">✅ No Flags</span></td>
+              <td><span style="color:#555;font-size:.68rem">—</span></td>
+              <td style="color:#00ff95;font-family:'JetBrains Mono',monospace">₹nan</td>
+              <td style="color:#ff6b9d;font-family:'JetBrains Mono',monospace">₹nan</td>
+              <td><span class="vtag" style="background:#555555;color:#fff">👀 WATCH</span></td>
+            </tr>
+            <tr class="">
+              <td style="font-weight:800;color:#e0f2f1">TATASTEEL</td>
+              <td style="color:#4a7a78">17.0%</td>
+              <td style="font-family:'JetBrains Mono',monospace;color:#f59e0b">₹nan</td>
+              <td style="color:#ff6b9d">+nan%</td>
+              <td style="color:#ff6b9d">+nan%</td>
+              <td>
+                <span style="color:#ffa502;font-weight:800">41.2</span>
+                <span style="color:#00ff95;font-size:.68rem"> (+1.1)</span>
+              </td>
+              <td style="color:#888;font-weight:800">20/100</td>
+              <td><span style="color:#00ff95;font-size:.68rem;font-weight:700">✅ No Flags</span></td>
+              <td><span style="color:#555;font-size:.68rem">—</span></td>
+              <td style="color:#00ff95;font-family:'JetBrains Mono',monospace">₹nan</td>
+              <td style="color:#ff6b9d;font-family:'JetBrains Mono',monospace">₹nan</td>
+              <td><span class="vtag" style="background:#555555;color:#fff">👀 WATCH</span></td>
+            </tr>
+            <tr class="">
+              <td style="font-weight:800;color:#e0f2f1">VEDL</td>
+              <td style="color:#4a7a78">7.5%</td>
+              <td style="font-family:'JetBrains Mono',monospace;color:#f59e0b">₹nan</td>
+              <td style="color:#ff6b9d">+nan%</td>
+              <td style="color:#ff6b9d">+nan%</td>
+              <td>
+                <span style="color:#ffa502;font-weight:800">45.9</span>
+                <span style="color:#00ff95;font-size:.68rem"> (+2.3)</span>
+              </td>
+              <td style="color:#888;font-weight:800">20/100</td>
+              <td><span style="color:#00ff95;font-size:.68rem;font-weight:700">✅ No Flags</span></td>
+              <td><span style="color:#555;font-size:.68rem">—</span></td>
+              <td style="color:#00ff95;font-family:'JetBrains Mono',monospace">₹nan</td>
+              <td style="color:#ff6b9d;font-family:'JetBrains Mono',monospace">₹nan</td>
+              <td><span class="vtag" style="background:#555555;color:#fff">👀 WATCH</span></td>
+            </tr>
+            <tr class="">
+              <td style="font-weight:800;color:#e0f2f1">HINDALCO</td>
+              <td style="color:#4a7a78">15.0%</td>
+              <td style="font-family:'JetBrains Mono',monospace;color:#f59e0b">₹nan</td>
+              <td style="color:#ff6b9d">+nan%</td>
+              <td style="color:#ff6b9d">+nan%</td>
+              <td>
+                <span style="color:#00ff95;font-weight:800">54.2</span>
+                <span style="color:#ff6b9d;font-size:.68rem"> (-1.7)</span>
+              </td>
+              <td style="color:#888;font-weight:800">10/100</td>
+              <td><span style="color:#00ff95;font-size:.68rem;font-weight:700">✅ No Flags</span></td>
+              <td><span style="color:#555;font-size:.68rem">—</span></td>
+              <td style="color:#00ff95;font-family:'JetBrains Mono',monospace">₹nan</td>
+              <td style="color:#ff6b9d;font-family:'JetBrains Mono',monospace">₹nan</td>
+              <td><span class="vtag" style="background:#555555;color:#fff">👀 WATCH</span></td>
+            </tr>
+            <tr class="">
+              <td style="font-weight:800;color:#e0f2f1">NMDC</td>
+              <td style="color:#4a7a78">8.0%</td>
+              <td style="font-family:'JetBrains Mono',monospace;color:#f59e0b">₹nan</td>
+              <td style="color:#ff6b9d">+nan%</td>
+              <td style="color:#ff6b9d">+nan%</td>
+              <td>
+                <span style="color:#ffa502;font-weight:800">45.6</span>
+                <span style="color:#ff6b9d;font-size:.68rem"> (-0.9)</span>
+              </td>
+              <td style="color:#888;font-weight:800">10/100</td>
+              <td><span style="color:#00ff95;font-size:.68rem;font-weight:700">✅ No Flags</span></td>
+              <td><span style="color:#555;font-size:.68rem">—</span></td>
+              <td style="color:#00ff95;font-family:'JetBrains Mono',monospace">₹nan</td>
+              <td style="color:#ff6b9d;font-family:'JetBrains Mono',monospace">₹nan</td>
+              <td><span class="vtag" style="background:#555555;color:#fff">👀 WATCH</span></td>
+            </tr></tbody>
+            </table>
+          </div>
+        </div>
 </div>
 
 <!-- ── AVOIDED TABLE ──────────────────────────────────────────── -->
